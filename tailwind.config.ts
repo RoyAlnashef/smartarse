@@ -71,10 +71,20 @@ const config: Config = {
           '4': '#0aa26c',
           '5': '#098259',
         },
+        /** Client + login theme (smart A.R.S.E) — keep dashboard on mint/dark + Inter */
+        arse: {
+          cyan: '#00ffff',
+          magenta: '#ff0099',
+          black: '#000000',
+          white: '#ffffff',
+        },
       },
       fontFamily: {
         sans: ['var(--font-inter)'],
         serif: ['var(--font-dm-serif)'],
+        'arse-smart': ['var(--font-vintage-goods)', 'cursive'],
+        'arse-title': ['var(--font-raleway)', 'system-ui', 'sans-serif'],
+        'arse-body': ['var(--font-dm-sans-arse)', 'system-ui', 'sans-serif'],
       },
       borderRadius: {
         lg: 'var(--radius)',

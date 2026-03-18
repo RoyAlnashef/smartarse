@@ -13,7 +13,7 @@
 ## API surface (`useAuth`)
 
 - `user`, `isAuthenticated`, `isLoading`
-- `login(email)` → `boolean` (mock: match `users` by email)
+- `login(email)` → `User | null` (mock: match `users` by email, case-insensitive)
 - `logout()` — clears session
 - `switchRole(role)` — **dev/demo only**: swaps to a fixed mock user per role (`roleDefaults`)
 - `getVisibleProjects()` — **single source** for project lists by role

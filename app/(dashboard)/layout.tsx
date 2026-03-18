@@ -13,14 +13,19 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const { isAuthenticated, isLoading } = useAuth()
+  const { user, isAuthenticated, isLoading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (isLoading) return
+    if (!isAuthenticated) {
       router.replace("/")
+      return
     }
-  }, [isAuthenticated, isLoading, router])
+    if (user && user.role !== "admin") {
+      router.replace("/client/projects")
+    }
+  }, [isAuthenticated, isLoading, user, router])
 
   // Show spinner while auth is hydrating
   if (isLoading) {
@@ -33,6 +38,15 @@ export default function DashboardLayout({
 
   // Still waiting for redirect to happen
   if (!isAuthenticated) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-mint-300 border-t-transparent" />
+      </div>
+    )
+  }
+
+  // Admin shell only — client / end-user go to themed client area
+  if (!user || user.role !== "admin") {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-mint-300 border-t-transparent" />

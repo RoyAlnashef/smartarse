@@ -4,6 +4,12 @@
 
 @layer base {
   :root {
+    /* smart A.R.S.E client surface (also usable in raw CSS) */
+    --arse-cyan: #00ffff;
+    --arse-magenta: #ff0099;
+    --arse-black: #000000;
+    --arse-white: #ffffff;
+
     --background: #f9fafb;
     --foreground: #262626;
     --card: #ffffff;
@@ -35,5 +41,16 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  /** Login / client marketing backdrop (wireframe; replace art later) */
+  .arse-surface-bg {
+    background: linear-gradient(
+      165deg,
+      var(--arse-cyan) 0%,
+      #7ee8e8 35%,
+      #b8f7f7 55%,
+      var(--arse-cyan) 100%
+    );
   }
 }

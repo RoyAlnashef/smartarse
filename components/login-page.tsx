@@ -1,8 +1,11 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { Lock, User } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
+import { cn } from "@/lib/utils"
 import type { UserRole } from "@/lib/types"
 
 const quickLogins: { role: UserRole; label: string; email: string; description: string }[] = [
@@ -10,6 +13,10 @@ const quickLogins: { role: UserRole; label: string; email: string; description: 
   { role: "client", label: "Client", email: "marcus@acmeretail.com", description: "Client project view" },
   { role: "user", label: "User", email: "david@acmeretail.com", description: "Assigned projects only" },
 ]
+
+function postLoginPath(role: UserRole) {
+  return role === "admin" ? "/dashboard" : "/client/projects"
+}
 
 export function LoginPage() {
   const [email, setEmail] = useState("")
@@ -21,140 +28,152 @@ export function LoginPage() {
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError("")
-    const success = login(email)
-    if (success) {
-      router.push("/dashboard")
+    const user = login(email)
+    if (user) {
+      router.replace(postLoginPath(user.role))
     } else {
       setError("Account not found. Try a demo login below.")
     }
   }
 
-  function handleQuickLogin(email: string) {
-    login(email)
-    router.push("/dashboard")
+  function handleQuickLogin(emailAddr: string) {
+    const user = login(emailAddr)
+    if (user) router.replace(postLoginPath(user.role))
   }
 
   return (
-    <div className="flex min-h-screen">
-      {/* Left panel - branding */}
-      <div className="hidden flex-col justify-between bg-dark-950 p-12 lg:flex lg:w-1/2">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-mint-300">
-              <span className="font-serif text-lg font-bold text-dark-950">D</span>
-            </div>
-            <span className="text-2xl font-semibold text-white">Disrupt</span>
-          </div>
-        </div>
+    <div className="arse-surface-bg relative flex min-h-screen flex-col font-arse-body text-arse-black">
+      {/* Decorative waves (wireframe — swap for final art) */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.12]"
+        aria-hidden
+        style={{
+          backgroundImage: `repeating-linear-gradient(
+            -12deg,
+            transparent,
+            transparent 40px,
+            rgba(0,0,0,0.08) 40px,
+            rgba(0,0,0,0.08) 41px
+          )`,
+        }}
+      />
 
-        <div className="space-y-6">
-          <h1 className="text-balance text-5xl font-bold leading-tight text-white">
-            Not business
-            <br />
-            <span className="text-mint-300">as usual.</span>
+      <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6">
+        <div className="w-full max-w-md text-center">
+          {/* disrupt wordmark — placeholder until logo asset */}
+          <p className="font-serif text-2xl font-bold tracking-tight text-arse-black sm:text-3xl">
+            disrupt
+          </p>
+
+          <h1 className="mt-6 flex flex-wrap items-end justify-center gap-x-1 gap-y-0 text-4xl sm:text-5xl md:text-6xl">
+            <span className="font-arse-smart text-arse-magenta leading-none">smart</span>
+            <span className="font-arse-title font-bold tracking-[0.12em] text-arse-black">A.R.S.E</span>
           </h1>
-          <p className="max-w-md text-lg leading-relaxed text-dark-300">
-            Turn your market research into actionable intelligence. Ask questions, uncover insights, and make data-driven decisions with AI.
-          </p>
-        </div>
-
-        <p className="text-sm text-dark-400">
-          Disrupt Insight Ltd. All rights reserved.
-        </p>
-      </div>
-
-      {/* Right panel - login form */}
-      <div className="flex flex-1 flex-col items-center justify-center px-6 py-12">
-        {/* Mobile logo */}
-        <div className="mb-8 flex items-center gap-3 lg:hidden">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-dark-950">
-            <span className="font-serif text-lg font-bold text-mint-300">D</span>
-          </div>
-          <span className="text-2xl font-semibold text-foreground">Disrupt</span>
-        </div>
-
-        <div className="w-full max-w-sm">
-          <h2 className="text-2xl font-semibold text-foreground">Sign in to your account</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Enter your credentials to access the platform
+          <p className="font-arse-title mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-arse-black sm:text-sm">
+            Agentic research search engine
           </p>
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-foreground">
-                Email address
-              </label>
+          <p className="font-arse-title mt-10 text-sm font-bold uppercase tracking-[0.35em] text-arse-magenta">
+            Login
+          </p>
+
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4 text-left">
+            <div className="flex items-center gap-3">
+              <User className="h-6 w-6 shrink-0 text-arse-magenta" strokeWidth={1.75} aria-hidden />
               <input
                 id="email"
                 type="email"
+                autoComplete="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1.5 block w-full rounded-lg border border-border bg-card px-3.5 py-2.5 text-sm text-foreground placeholder-muted-foreground shadow-sm focus:border-mint-400 focus:outline-none focus:ring-2 focus:ring-mint-300/20"
-                placeholder="you@company.com"
+                placeholder="Email or username"
+                className={cn(
+                  "min-h-12 flex-1 rounded-full border-2 border-arse-magenta bg-arse-white/90 px-5 py-3 text-sm text-arse-black",
+                  "placeholder:text-arse-black/40",
+                  "focus:border-arse-black focus:outline-none focus:ring-2 focus:ring-arse-black/15"
+                )}
               />
             </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-foreground">
-                Password
-              </label>
+            <div className="flex items-center gap-3">
+              <Lock className="h-6 w-6 shrink-0 text-arse-magenta" strokeWidth={1.75} aria-hidden />
               <input
                 id="password"
                 type="password"
+                autoComplete="current-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="mt-1.5 block w-full rounded-lg border border-border bg-card px-3.5 py-2.5 text-sm text-foreground placeholder-muted-foreground shadow-sm focus:border-mint-400 focus:outline-none focus:ring-2 focus:ring-mint-300/20"
-                placeholder="Enter your password"
+                placeholder="Password"
+                className={cn(
+                  "min-h-12 flex-1 rounded-full border-2 border-arse-magenta bg-arse-white/90 px-5 py-3 text-sm text-arse-black",
+                  "placeholder:text-arse-black/40",
+                  "focus:border-arse-black focus:outline-none focus:ring-2 focus:ring-arse-black/15"
+                )}
               />
             </div>
 
-            {error && (
-              <p className="text-sm text-red-600">{error}</p>
-            )}
+            {error ? <p className="text-center text-sm text-red-700">{error}</p> : null}
 
-            <button
-              type="submit"
-              className="w-full rounded-lg bg-dark-950 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-dark-800"
-            >
-              Sign in
-            </button>
+            <div className="pt-2">
+              <button
+                type="submit"
+                className="w-full rounded-full bg-arse-black py-3.5 text-sm font-semibold uppercase tracking-wider text-arse-white transition hover:bg-arse-black/90"
+              >
+                Sign in
+              </button>
+            </div>
           </form>
 
-          {/* Quick demo logins */}
+          {/* Quick demo */}
           <div className="mt-10">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border" />
+                <div className="w-full border-t border-arse-black/15" />
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="bg-background px-3 text-muted-foreground">
-                  Quick demo access
-                </span>
-              </div>
+              <p className="relative mx-auto inline-block bg-[#b8f7f7] px-3 text-xs font-medium uppercase tracking-wider text-arse-black/60">
+                Quick demo access
+              </p>
             </div>
-
-            <div className="mt-5 space-y-2">
+            <ul className="mt-4 space-y-2">
               {quickLogins.map((item) => (
-                <button
-                  key={item.role}
-                  onClick={() => handleQuickLogin(item.email)}
-                  className="group flex w-full items-center justify-between rounded-lg border border-border bg-card px-4 py-3 text-left transition-colors hover:border-mint-400 hover:bg-mint-50"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{item.label}</p>
-                    <p className="text-xs text-muted-foreground">{item.description}</p>
-                  </div>
-                  <span className="text-xs text-muted-foreground transition-colors group-hover:text-mint-600">
-                    {item.email}
-                  </span>
-                </button>
+                <li key={item.role}>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickLogin(item.email)}
+                    className={cn(
+                      "flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-arse-black/20 bg-arse-white/80 px-4 py-3 text-left",
+                      "transition hover:border-arse-magenta hover:bg-arse-white"
+                    )}
+                  >
+                    <div>
+                      <p className="font-arse-title text-sm font-bold text-arse-black">{item.label}</p>
+                      <p className="text-xs text-arse-black/55">{item.description}</p>
+                    </div>
+                    <span className="max-w-[48%] truncate text-xs text-arse-black/50">{item.email}</span>
+                  </button>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         </div>
-      </div>
+      </main>
+
+      <footer className="relative z-10 mt-auto flex flex-col items-center justify-between gap-3 px-4 py-6 text-[10px] font-medium uppercase tracking-wider text-arse-black sm:flex-row sm:px-8 sm:text-xs">
+        <nav className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+          <span className="text-arse-black/40">|</span>
+          <Link href="/help/faq" className="hover:text-arse-magenta">
+            FAQ
+          </Link>
+          <span className="text-arse-black/40">|</span>
+          <Link href="/help/privacy" className="hover:text-arse-magenta">
+            Privacy policy
+          </Link>
+          <span className="text-arse-black/40">|</span>
+          <span className="cursor-default hover:text-arse-magenta">Contact the team</span>
+        </nav>
+        <p className="text-arse-black/70">© Disrupt Insight {new Date().getFullYear()}</p>
+      </footer>
     </div>
   )
 }

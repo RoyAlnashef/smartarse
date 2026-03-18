@@ -1,0 +1,110 @@
+"use client"
+
+import { useMemo, useState } from "react"
+import { Search } from "lucide-react"
+import { ClientProjectCard } from "@/components/client/client-project-card"
+import { useAuth } from "@/lib/auth-context"
+import { cn } from "@/lib/utils"
+
+export default function ClientProjectsPage() {
+  const { getVisibleProjects } = useAuth()
+  const [search, setSearch] = useState("")
+  const projects = getVisibleProjects()
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    if (!q) return projects
+    return projects.filter(
+      (p) =>
+        p.name.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) ||
+        p.clientName.toLowerCase().includes(q)
+    )
+  }, [projects, search])
+
+  return (
+    <div className="px-4 pb-12 pt-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl">
+        {/* Hero branding */}
+        <div className="flex flex-col items-center text-center lg:flex-row lg:justify-center lg:gap-10 lg:text-left">
+          <div className="max-w-xl">
+            <h1 className="flex flex-wrap items-end justify-center gap-x-2 gap-y-1 text-4xl sm:text-5xl md:text-6xl lg:justify-start">
+              <span className="font-arse-smart text-arse-magenta leading-none">smart</span>
+              <span className="font-arse-title font-bold tracking-[0.12em] text-arse-black">A.R.S.E</span>
+            </h1>
+            <p className="font-arse-title mt-2 text-xs font-semibold uppercase tracking-[0.25em] text-arse-black sm:text-sm">
+              Agentic research search engine
+            </p>
+          </div>
+          <div
+            className="mt-6 hidden h-28 w-28 shrink-0 rounded-2xl bg-gradient-to-br from-arse-magenta/30 via-arse-cyan/50 to-arse-magenta/20 lg:block"
+            aria-hidden
+            title="Illustration placeholder"
+          />
+        </div>
+
+        {/* Search */}
+        <div className="mx-auto mt-10 max-w-2xl">
+          <label htmlFor="client-project-search" className="font-arse-title text-xs font-bold uppercase tracking-[0.2em] text-arse-black">
+            Project search
+          </label>
+          <div className="relative mt-2">
+            <input
+              id="client-project-search"
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search projects…"
+              className={cn(
+                "w-full rounded-lg border-4 border-arse-black bg-arse-cyan py-3 pl-4 pr-14 font-arse-body text-sm text-arse-black placeholder:text-arse-black/45",
+                "focus:outline-none focus:ring-2 focus:ring-arse-magenta"
+              )}
+            />
+            <Search className="pointer-events-none absolute right-4 top-1/2 h-6 w-6 -translate-y-1/2 text-arse-black" strokeWidth={2.5} />
+          </div>
+        </div>
+
+        {/* Projects grid + side label */}
+        <div className="relative mt-14 flex gap-6 lg:gap-10">
+          <aside className="relative hidden w-28 shrink-0 lg:block">
+            <div
+              className="absolute -left-4 top-8 h-40 w-40 rounded-full opacity-40"
+              style={{
+                background: "radial-gradient(circle, var(--arse-cyan) 1.5px, transparent 1.5px)",
+                backgroundSize: "10px 10px",
+              }}
+              aria-hidden
+            />
+            <p
+              className="font-arse-title absolute left-0 top-24 origin-left -rotate-90 whitespace-nowrap text-4xl font-light uppercase tracking-[0.35em] text-arse-black"
+              style={{ letterSpacing: "0.2em" }}
+            >
+              Projects
+            </p>
+            <p className="absolute left-8 top-[14rem] max-w-[10rem] text-xs leading-snug text-arse-black/50">
+              Space for secondary copy if needed.
+            </p>
+          </aside>
+
+          <div className="min-w-0 flex-1">
+            <p className="mb-6 font-arse-title text-2xl font-light uppercase tracking-[0.2em] text-arse-black lg:hidden">
+              Projects
+            </p>
+            {filtered.length > 0 ? (
+              <div className="grid gap-6 sm:grid-cols-2">
+                {filtered.map((project) => (
+                  <ClientProjectCard key={project.id} project={project} />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border-2 border-dashed border-arse-black/20 bg-arse-cyan/20 px-6 py-16 text-center">
+                <p className="font-arse-title font-semibold text-arse-black">No projects match</p>
+                <p className="mt-2 text-sm text-arse-black/60">Try another search term.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

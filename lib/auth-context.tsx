@@ -15,7 +15,7 @@ interface AuthContextValue {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
-  login: (email: string) => boolean
+  login: (email: string) => User | null
   logout: () => void
   switchRole: (role: UserRole) => void
   getVisibleProjects: () => typeof projects
@@ -66,13 +66,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const login = useCallback((email: string) => {
-    const found = users.find((u) => u.email === email)
+    const found = users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase())
     if (found) {
       setCurrentUser(found)
       setUserToStorage(found)
-      return true
+      return found
     }
-    return false
+    return null
   }, [])
 
   const logout = useCallback(() => {
