@@ -1,17 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-
-const sectionLinks = [
-  { href: "/help/faq", label: "FAQ" },
-  { href: "/help/privacy", label: "Privacy policy" },
-  { href: "/help/contact", label: "Contact the team" },
-]
 
 export function HelpPublicHeader() {
-  const pathname = usePathname()
-  // Only shown when the visitor is not signed in (see HelpLayoutHeader).
   const workspaceHref = "/"
   const workspaceLabel = "Sign in"
 
@@ -36,33 +27,13 @@ export function HelpPublicHeader() {
           </div>
         </div>
 
-        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4">
-          <Link
-            href={workspaceHref}
-            className="w-full rounded-full border-2 border-arse-magenta bg-arse-white/90 px-4 py-2 text-center text-xs font-bold uppercase tracking-wide text-arse-black sm:w-auto"
-            title={workspaceLabel}
-          >
-            {workspaceLabel}
-          </Link>
-
-          <nav aria-label="Help sections">
-            <ul className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[10px] font-semibold uppercase tracking-wider text-arse-black sm:text-xs">
-              {sectionLinks.map((item) => {
-                const isActive = pathname === item.href
-                return (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className={isActive ? "text-arse-magenta" : "hover:text-arse-magenta"}
-                    >
-                      {item.label}
-                    </Link>
-                  </li>
-                )
-              })}
-            </ul>
-          </nav>
-        </div>
+        <Link
+          href={workspaceHref}
+          className="w-full rounded-full border-2 border-arse-magenta bg-arse-white/90 px-4 py-2 text-center text-xs font-bold uppercase tracking-wide text-arse-black sm:w-auto lg:shrink-0"
+          title={workspaceLabel}
+        >
+          {workspaceLabel}
+        </Link>
       </div>
     </header>
   )
