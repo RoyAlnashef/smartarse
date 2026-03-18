@@ -1,11 +1,16 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
+import { uploadedFiles, conversations as mockConversations } from "@/lib/mock-data"
+import type { ChatMessage } from "@/lib/types"
+import { ProjectDetailCard } from "@/components/client/project-detail/project-detail-card"
+import { SourcesSelector } from "@/components/client/project-detail/sources-selector"
+import { ProjectChat } from "@/components/client/project-detail/project-chat"
 
-export default function ClientProjectDetailPlaceholderPage() {
+export default function ClientProjectDetailPage() {
   const params = useParams()
   const id = typeof params.id === "string" ? params.id : ""
   const { getVisibleProjects } = useAuth()
@@ -13,6 +18,20 @@ export default function ClientProjectDetailPlaceholderPage() {
     () => getVisibleProjects().find((p) => p.id === id),
     [getVisibleProjects, id]
   )
+
+  const projectFiles = useMemo(
+    () => uploadedFiles.filter((f) => f.projectId === id),
+    [id]
+  )
+  const seededMessages = useMemo<ChatMessage[]>(() => {
+    const first = mockConversations.find((c) => c.projectId === id)
+    return first?.messages ?? []
+  }, [id])
+
+  const [selectedDocs, setSelectedDocs] = useState<Set<string>>(
+    () => new Set(projectFiles.filter((f) => f.status === "ready").map((f) => f.id))
+  )
+  const [messages, setMessages] = useState<ChatMessage[]>(seededMessages)
 
   if (!project) {
     return (
@@ -29,22 +48,51 @@ export default function ClientProjectDetailPlaceholderPage() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-12">
-      <Link
-        href="/client/projects"
-        className="font-arse-body text-sm font-medium text-arse-black/70 hover:text-arse-magenta"
-      >
-        ← Projects
-      </Link>
-      <div className="mt-8 rounded-3xl border-4 border-arse-magenta bg-white p-8">
-        <p className="font-arse-title text-xs font-bold uppercase tracking-widest text-arse-magenta">
-          Coming next
-        </p>
-        <h1 className="font-arse-title mt-2 text-2xl font-bold text-arse-black">{project.name}</h1>
-        <p className="mt-4 font-arse-body text-sm leading-relaxed text-arse-black/75">{project.description}</p>
-        <p className="mt-8 rounded-xl border-2 border-dashed border-arse-black/20 bg-arse-cyan/30 px-4 py-6 text-center text-sm text-arse-black/60">
-          Themed project detail and chat will be built in a later spec.
-        </p>
+    <div className="px-4 pb-12 pt-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <Link
+          href="/client/projects"
+          className="font-arse-body text-sm font-medium text-arse-black/70 hover:text-arse-magenta"
+        >
+          ← Projects
+        </Link>
+
+        <div className="mt-6 grid gap-6 lg:grid-cols-[20rem,1fr] lg:gap-8">
+          <aside className="space-y-6">
+            <ProjectDetailCard project={project} />
+            <SourcesSelector
+              files={projectFiles}
+              selected={selectedDocs}
+              onToggle={(fileId) => {
+                setSelectedDocs((prev) => {
+                  const next = new Set(prev)
+                  if (next.has(fileId)) next.delete(fileId)
+                  else next.add(fileId)
+                  return next
+                })
+              }}
+            />
+          </aside>
+
+          <div className="min-w-0">
+            <ProjectChat
+              messages={messages}
+              onSend={(content) => {
+                setMessages((prev) => [
+                  ...prev,
+                  {
+                    id: `msg-${Date.now()}`,
+                    conversationId: `conv-${id}`,
+                    role: "user",
+                    content,
+                    timestamp: new Date().toISOString(),
+                    documentIds: Array.from(selectedDocs),
+                  },
+                ])
+              }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -59,7 +59,7 @@ export function LoginPage() {
       />
 
       <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6">
-        <div className="w-full max-w-md text-center">
+        <div className="flex w-full max-w-md flex-col items-center justify-start text-center">
           {/* disrupt wordmark — placeholder until logo asset */}
           <p className="font-serif text-2xl font-bold tracking-tight text-arse-black sm:text-3xl">
             disrupt
@@ -77,7 +77,7 @@ export function LoginPage() {
             Login
           </p>
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4 text-left">
+          <form onSubmit={handleSubmit} className="mt-6 w-80 space-y-4 text-left">
             <div className="flex items-center gap-3">
               <User className="h-6 w-6 shrink-0 text-arse-magenta" strokeWidth={1.75} aria-hidden />
               <input
