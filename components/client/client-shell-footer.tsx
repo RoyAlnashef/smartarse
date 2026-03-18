@@ -13,7 +13,9 @@ export function ClientShellFooter() {
           Privacy policy
         </Link>
         <span className="text-arse-black/30">|</span>
-        <span className="text-arse-black/60">Contact the team</span>
+        <Link href="/help/contact" className="hover:text-arse-magenta">
+          Contact the team
+        </Link>
       </nav>
     </footer>
   )

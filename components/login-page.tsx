@@ -170,7 +170,9 @@ export function LoginPage() {
             Privacy policy
           </Link>
           <span className="text-arse-black/40">|</span>
-          <span className="cursor-default hover:text-arse-magenta">Contact the team</span>
+          <Link href="/help/contact" className="hover:text-arse-magenta">
+            Contact the team
+          </Link>
         </nav>
         <p className="text-arse-black/70">© Disrupt Insight {new Date().getFullYear()}</p>
       </footer>
