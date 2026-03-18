@@ -13,11 +13,14 @@ import { ProjectChat } from "@/components/client/project-detail/project-chat"
 export default function ClientProjectDetailPage() {
   const params = useParams()
   const id = typeof params.id === "string" ? params.id : ""
-  const { getVisibleProjects } = useAuth()
+  const { getClientForUser, getVisibleProjects } = useAuth()
   const project = useMemo(
     () => getVisibleProjects().find((p) => p.id === id),
     [getVisibleProjects, id]
   )
+  const client = getClientForUser()
+  const remaining = client ? client.totalCredits - client.usedCredits : 0
+  const total = client?.totalCredits ?? 0
 
   const projectFiles = useMemo(
     () => uploadedFiles.filter((f) => f.projectId === id),
@@ -59,6 +62,23 @@ export default function ClientProjectDetailPage() {
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[20rem,1fr] lg:gap-8">
           <aside className="space-y-6">
+            {client ? (
+              <div className="w-full rounded-xl border-2 border-arse-black bg-arse-magenta px-3 py-2 sm:px-4">
+                <span className="font-arse-title text-xs font-bold uppercase tracking-wider text-arse-black">
+                  Credits
+                </span>
+                <div className="mt-2 flex items-center gap-2 rounded-full border-2 border-arse-black bg-arse-black px-3 py-1.5 text-arse-white">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-arse-white/40 text-[10px] font-bold">
+                    AI
+                  </span>
+                  <div className="flex flex-1 flex-wrap items-center justify-center gap-2 text-center font-arse-body text-xs font-semibold sm:justify-between sm:text-left">
+                    <span>Remaining {remaining}</span>
+                    <span className="hidden h-4 w-px bg-arse-white/40 sm:block" aria-hidden />
+                    <span>Total {total}</span>
+                  </div>
+                </div>
+              </div>
+            ) : null}
             <ProjectDetailCard project={project} />
             <SourcesSelector
               files={projectFiles}

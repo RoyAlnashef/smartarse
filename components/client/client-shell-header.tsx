@@ -11,8 +11,6 @@ export function ClientShellHeader() {
   const router = useRouter()
   const client = getClientForUser()
   const displayName = (client?.name ?? user?.name ?? "User").toUpperCase()
-  const remaining = client ? client.totalCredits - client.usedCredits : 0
-  const total = client?.totalCredits ?? 0
 
   function handleLogout() {
     logout()
@@ -77,23 +75,7 @@ export function ClientShellHeader() {
         </div>
       </div>
 
-      {client ? (
-        <div className="mx-auto mt-4 flex max-w-7xl items-center gap-3 rounded-xl border-2 border-arse-black bg-arse-magenta px-3 py-2 sm:px-4">
-          <span className="font-arse-title text-xs font-bold uppercase tracking-wider text-arse-black">
-            Credits
-          </span>
-          <div className="flex flex-1 items-center gap-2 rounded-full border-2 border-arse-black bg-arse-black px-3 py-1.5 text-arse-white">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-arse-white/40 text-[10px] font-bold">
-              AI
-            </span>
-            <div className="flex flex-1 flex-wrap items-center justify-center gap-2 text-center font-arse-body text-xs font-semibold sm:justify-between sm:text-left">
-              <span>Remaining {remaining}</span>
-              <span className="hidden h-4 w-px bg-arse-white/40 sm:block" aria-hidden />
-              <span>Total {total}</span>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {/* Credits widget moved to the Project Detail sidebar */}
     </header>
   )
 }
