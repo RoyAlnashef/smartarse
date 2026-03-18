@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { LogOut, Settings } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
@@ -22,7 +23,13 @@ export function ClientShellHeader() {
     <header className="border-b-4 border-arse-black bg-white px-4 py-4 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
         <div className="flex flex-wrap items-center gap-4 lg:gap-8">
-          <p className="font-serif text-xl font-bold tracking-tight text-arse-black sm:text-2xl">disrupt</p>
+          <Link
+            href="/client/projects"
+            title="Project list"
+            className="font-serif text-xl font-bold tracking-tight text-arse-black sm:text-2xl hover:opacity-90"
+          >
+            disrupt
+          </Link>
           <div className="hidden h-10 w-px bg-arse-black/20 sm:block" aria-hidden />
           <div className="flex items-center gap-2">
             <span className="font-arse-smart text-2xl text-arse-magenta sm:text-3xl">smart</span>
@@ -51,13 +58,13 @@ export function ClientShellHeader() {
             >
               {displayName}
             </button>
-            <button
-              type="button"
-              title="Settings (coming soon)"
+            <Link
+              href="/client/settings"
+              title="Settings"
               className="rounded-lg border-2 border-transparent p-2 text-arse-black hover:border-arse-magenta/30"
             >
               <Settings className="h-5 w-5" strokeWidth={2} />
-            </button>
+            </Link>
             <button
               type="button"
               onClick={handleLogout}
