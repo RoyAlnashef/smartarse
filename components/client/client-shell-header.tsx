@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { LogOut, Settings } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { cn } from "@/lib/utils"
@@ -20,10 +20,12 @@ const clientNameDivClass = cn(
 export function ClientShellHeader({ variant = "client" }: { variant?: "client" | "help" }) {
   const { user, logout, getClientForUser, isLoading } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
   const isHelp = variant === "help"
   const showGuestHelp = isHelp && (isLoading || !user)
   const client = user ? getClientForUser() : null
   const displayName = (client?.name ?? user?.name ?? "User").toUpperCase()
+  const isProjectListPage = pathname === "/client/projects"
 
   const homeHref = isHelp && showGuestHelp ? "/" : "/client/projects"
 
@@ -34,8 +36,8 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
 
   return (
     <header className="bg-white px-4 py-4 sm:px-6 lg:px-8">
-      <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
-        <div className="flex flex-wrap items-center gap-4 lg:gap-8">
+      <div className="w-full flex flex-col gap-4 lg:grid lg:grid-cols-[auto_1fr_auto] lg:items-start lg:gap-6">
+        <div className="flex flex-wrap items-center gap-4 lg:gap-8 lg:justify-self-start">
           <Link
             href={homeHref}
             title={showGuestHelp ? "Go to sign in" : "Project list"}
@@ -48,30 +50,63 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
                 draggable={false}
               />
           </Link>
-          <div className="hidden h-10 w-px bg-arse-black/20 sm:block" aria-hidden />
-          <div className="flex items-center gap-2">
-            <span className="font-arse-smart text-2xl text-arse-magenta sm:text-3xl">smart</span>
-            <span className="font-arse-title text-xl font-bold tracking-[0.15em] text-arse-black sm:text-2xl">
-              A.R.S.E
-            </span>
-            {/* Robot placeholder (small screens) */}
-            <span
-              className="ml-1 hidden sm:inline-flex sm:items-center sm:justify-center"
+          {!isProjectListPage && (
+            <div
+              className="hidden h-10 w-px bg-arse-black/20 sm:block lg:hidden"
               aria-hidden
-              title="Robot illustration"
-            >
-              <img
-                src="/robot.png"
-                alt=""
+            />
+          )}
+          {!isProjectListPage && (
+            // Mobile brand cluster (desktop brand is centered separately).
+            <div className="flex items-center gap-2 lg:hidden">
+              <span className="font-arse-smart text-2xl text-arse-magenta sm:text-3xl">smart</span>
+              <span className="font-arse-title text-xl font-bold tracking-[0.15em] text-arse-black sm:text-2xl">
+                A.R.S.E
+              </span>
+              {/* Robot placeholder (small screens) */}
+              <span
+                className="ml-1 hidden sm:inline-flex sm:items-center sm:justify-center"
                 aria-hidden
-                draggable={false}
-                className="h-[56px] w-auto translate-y-0"
-              />
-            </span>
-          </div>
+                title="Robot illustration"
+              >
+                <img
+                  src="/robot.png"
+                  alt=""
+                  aria-hidden
+                  draggable={false}
+                  className="h-[56px] w-auto translate-y-0"
+                />
+              </span>
+            </div>
+          )}
         </div>
 
-        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start sm:gap-4">
+        {!isProjectListPage && (
+          <div className="hidden items-center justify-center lg:flex lg:justify-self-center">
+            <span className="flex items-center gap-2">
+              <span className="font-arse-smart text-2xl text-arse-magenta sm:text-3xl">smart</span>
+              <span className="font-arse-title text-xl font-bold tracking-[0.15em] text-arse-black sm:text-2xl">
+                A.R.S.E
+              </span>
+              {/* Robot placeholder (small screens) */}
+              <span
+                className="ml-1 hidden sm:inline-flex sm:items-center sm:justify-center"
+                aria-hidden
+                title="Robot illustration"
+              >
+                <img
+                  src="/robot.png"
+                  alt=""
+                  aria-hidden
+                  draggable={false}
+                  className="h-[56px] w-auto translate-y-0"
+                />
+              </span>
+            </span>
+          </div>
+        )}
+
+        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start sm:gap-4 lg:justify-self-end">
           <div
             className="flex flex-wrap items-center gap-2 sm:gap-3"
             {...(showGuestHelp ? { "aria-busy": isLoading } : {})}
