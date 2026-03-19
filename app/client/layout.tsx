@@ -24,7 +24,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   if (isLoading || !user || user.role === "admin") {
     return (
       <div className="arse-surface-bg flex min-h-screen items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-2 border-arse-magenta border-t-transparent" />
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-arse-pink border-t-transparent" />
       </div>
     )
   }

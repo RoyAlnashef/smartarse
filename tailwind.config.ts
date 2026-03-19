@@ -74,7 +74,7 @@ const config: Config = {
         /** Client + login theme (smart A.R.S.E) — keep dashboard on mint/dark + Inter */
         arse: {
           cyan: '#00ffff',
-          magenta: '#ff0099',
+          pink: '#ff00e6',
           black: '#000000',
           white: '#ffffff',
         },

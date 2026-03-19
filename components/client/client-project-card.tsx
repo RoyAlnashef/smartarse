@@ -24,10 +24,10 @@ export function ClientProjectCard({ project }: { project: Project }) {
       href={`/client/projects/${project.id}`}
       className={cn(
         "group flex flex-col overflow-hidden rounded-3xl transition-transform",
-        "hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_var(--arse-magenta)]"
+        "hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_var(--arse-pink)]"
       )}
     >
-      <div className="bg-arse-magenta px-4 py-2 text-center font-arse-title text-xs font-bold uppercase tracking-wider text-white">
+      <div className="bg-arse-pink px-4 py-2 text-center font-arse-title text-xs font-bold uppercase tracking-wider text-white">
         {formatCardDate(project.createdAt)}
       </div>
       <div className="flex flex-1 flex-col items-center text-center bg-arse-cyan px-8 pt-8 pb-16 text-arse-black">

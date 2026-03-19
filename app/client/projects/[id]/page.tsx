@@ -94,10 +94,10 @@ export default function ClientProjectDetailPage() {
   if (!project) {
     return (
       <div className="px-6 py-16 text-center">
-        <p className="font-arse-title text-lg font-bold text-arse-magenta">Project not found</p>
+        <p className="font-arse-title text-lg font-bold text-arse-pink">Project not found</p>
         <Link
           href="/client/projects"
-          className="mt-6 inline-block font-arse-title text-sm font-bold uppercase tracking-wide text-arse-black underline decoration-arse-magenta decoration-2 underline-offset-4 hover:text-arse-magenta"
+          className="mt-6 inline-block font-arse-title text-sm font-bold uppercase tracking-wide text-arse-black underline decoration-arse-pink decoration-2 underline-offset-4 hover:text-arse-pink"
         >
           Back to projects
         </Link>
@@ -109,7 +109,7 @@ export default function ClientProjectDetailPage() {
     <div className="mx-auto max-w-7xl px-4 pb-12 pt-6 sm:px-6 lg:px-8">
       <Link
         href="/client/projects"
-        className="font-arse-body text-sm font-medium text-arse-black/70 hover:text-arse-magenta"
+        className="font-arse-body text-sm font-medium text-arse-black/70 hover:text-arse-pink"
       >
         ← Projects
       </Link>
@@ -125,7 +125,7 @@ export default function ClientProjectDetailPage() {
           <aside className="min-w-0 space-y-6">
             {client ? (
               <section className="w-full overflow-hidden rounded-3xl bg-arse-cyan">
-                <div className="bg-arse-magenta px-4 py-2 text-center font-arse-title text-xs font-bold uppercase tracking-[0.35em] text-arse-white">
+                <div className="bg-arse-pink px-4 py-2 text-center font-arse-title text-xs font-bold uppercase tracking-[0.35em] text-arse-white">
                   CREDITS
                 </div>
                 <div className="px-4 py-4">

@@ -33,7 +33,7 @@ export function PersonasColumn({
   return (
     <div
       className={cn(
-        "flex min-h-0 flex-col overflow-hidden rounded-3xl border-4 border-arse-magenta bg-white",
+        "flex min-h-0 flex-col overflow-hidden rounded-3xl border-4 border-arse-pink bg-white",
         PERSONA_CHAT_SHELL_CLASS
       )}
     >
@@ -42,7 +42,7 @@ export function PersonasColumn({
           <button
             type="button"
             onClick={() => onToggleCollapsed(false)}
-            className="flex min-h-0 flex-1 flex-col items-center gap-2 px-0 py-2 font-arse-title text-[9px] font-bold uppercase tracking-wide text-arse-black transition hover:bg-arse-black/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-magenta focus-visible:ring-inset"
+            className="flex min-h-0 flex-1 flex-col items-center gap-2 px-0 py-2 font-arse-title text-[9px] font-bold uppercase tracking-wide text-arse-black transition hover:bg-arse-black/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink focus-visible:ring-inset"
             aria-label="Expand personas column"
           >
             <ChevronLeft className="h-5 w-5 shrink-0" strokeWidth={2.5} aria-hidden />

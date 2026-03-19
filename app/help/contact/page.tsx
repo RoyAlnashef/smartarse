@@ -11,7 +11,7 @@ export default function PublicContactPage() {
         <p className="mt-2 text-base">
           <a
             href="mailto:support@disrupt-insight.com?subject=smartA.R.S.E.%20Help%20Request"
-            className="font-semibold text-arse-magenta hover:underline"
+            className="font-semibold text-arse-pink hover:underline"
           >
             support@disrupt-insight.com
           </a>

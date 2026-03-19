@@ -96,7 +96,7 @@ export default function ClientSettingsPage() {
             user.role
           }`}
           icon={
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-arse-magenta/10 text-arse-magenta">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-arse-pink/10 text-arse-pink">
               <span className="font-arse-title text-sm font-bold">
                 {profileInitials || <User className="h-4 w-4" />}
               </span>

@@ -62,7 +62,7 @@ export default function PublicPrivacyPage() {
           <h2 className="text-base font-semibold">Contact us</h2>
           <p className="mt-2 text-muted-foreground leading-relaxed">
             For privacy questions, visit{" "}
-            <Link href="/help/contact" className="font-semibold text-arse-magenta hover:underline">
+            <Link href="/help/contact" className="font-semibold text-arse-pink hover:underline">
               Contact the team
             </Link>
             .

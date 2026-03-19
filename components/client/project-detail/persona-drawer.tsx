@@ -185,9 +185,9 @@ function SegmentListCard({
       onClick={onSelect}
       className={cn(
         "w-full rounded-2xl border-2 bg-white p-4 text-left transition",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-magenta focus-visible:ring-offset-2",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink focus-visible:ring-offset-2",
         selected
-          ? "border-arse-magenta shadow-[3px_3px_0_0_var(--arse-magenta)]"
+          ? "border-arse-pink shadow-[3px_3px_0_0_var(--arse-pink)]"
           : "border-arse-black/15 hover:border-arse-black/35"
       )}
     >
@@ -278,7 +278,7 @@ function PersonaDetailCard({
         <Switch
           checked={whatIf}
           onCheckedChange={setWhatIf}
-          className="data-[state=checked]:bg-arse-magenta"
+          className="data-[state=checked]:bg-arse-pink"
           aria-label="Toggle what-if mode"
         />
       </div>
@@ -327,7 +327,7 @@ function PersonaDetailCard({
         <button
           type="button"
           onClick={onEndSession}
-          className="mt-4 w-full rounded-xl border-2 border-arse-black/15 bg-white py-2.5 font-arse-title text-xs font-bold uppercase tracking-wide text-red-600 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-magenta"
+          className="mt-4 w-full rounded-xl border-2 border-arse-black/15 bg-white py-2.5 font-arse-title text-xs font-bold uppercase tracking-wide text-red-600 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink"
         >
           End session
         </button>
@@ -356,7 +356,7 @@ export function PersonaPanel({
   return (
     <aside
       className={cn(
-        "flex min-h-0 h-full w-full min-w-0 flex-col border-l-2 border-arse-black/10 bg-white shadow-[-4px_0_24px_rgba(0,0,0,0.08)]",
+        "flex min-h-0 h-full w-full min-w-0 flex-col  bg-white",
         className
       )}
       aria-label="Persona"
@@ -367,7 +367,7 @@ export function PersonaPanel({
             <button
               type="button"
               onClick={onCollapseToRail}
-              className="mt-0.5 flex h-8 w-6 shrink-0 items-center justify-center rounded-xl border-2 border-arse-black/15 bg-white text-arse-black transition hover:border-arse-magenta hover:bg-arse-black/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-magenta"
+              className="mt-0.5 flex h-8 w-6 shrink-0 items-center justify-center rounded-xl border-2 border-arse-black/15 bg-white text-arse-black transition hover:border-arse-pink hover:bg-arse-black/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink"
               aria-label="Collapse personas column"
             >
               <ChevronRight className="h-4 w-4" strokeWidth={2.5} aria-hidden />
@@ -386,7 +386,7 @@ export function PersonaPanel({
           <button
             type="button"
             onClick={onClose}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-arse-black/15 bg-white text-arse-black transition hover:border-arse-magenta hover:bg-arse-black/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-magenta"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-arse-black/15 bg-white text-arse-black transition hover:border-arse-pink hover:bg-arse-black/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink"
             aria-label="Close persona panel"
           >
             <X className="h-4 w-4" strokeWidth={2.5} />
@@ -406,7 +406,7 @@ export function PersonaPanel({
               <button
                 type="button"
                 onClick={onClearPersona}
-                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-arse-black/50 transition hover:bg-arse-black/10 hover:text-arse-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-magenta"
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-arse-black/50 transition hover:bg-arse-black/10 hover:text-arse-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink"
                 aria-label="End live segment"
               >
                 <X className="h-3 w-3" strokeWidth={2.5} />
@@ -467,7 +467,7 @@ export function PersonaPanel({
                     <button
                       key={q}
                       type="button"
-                      className="rounded-xl border-2 border-arse-black/15 bg-arse-black/[0.02] px-3 py-2 text-left font-arse-body text-xs text-arse-black/80 transition hover:border-arse-magenta/40 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-magenta"
+                      className="rounded-xl border-2 border-arse-black/15 bg-arse-black/[0.02] px-3 py-2 text-left font-arse-body text-xs text-arse-black/80 transition hover:border-arse-pink/40 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink"
                     >
                       {q}
                     </button>

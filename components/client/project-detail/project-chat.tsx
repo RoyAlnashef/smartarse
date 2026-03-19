@@ -72,9 +72,9 @@ function PersonaEventBubble({
       role="status"
       aria-label={`Segment persona activated: ${persona.title} at ${formatEventTimestamp(event.timestamp)}`}
     >
-      <div className="w-full rounded-2xl border-2 border-arse-magenta/35 bg-arse-magenta/[0.07] px-4 py-3 text-sm text-arse-black">
+      <div className="w-full rounded-2xl border-2 border-arse-pink/35 bg-arse-pink/[0.07] px-4 py-3 text-sm text-arse-black">
         <p className="font-arse-body text-xs text-arse-black/80">
-          <span className="mr-1 inline-block h-1.5 w-1.5 translate-y-[-1px] rounded-full bg-arse-magenta" />{" "}
+          <span className="mr-1 inline-block h-1.5 w-1.5 translate-y-[-1px] rounded-full bg-arse-pink" />{" "}
           Speaking as — <span className="font-semibold text-arse-black">{persona.title}</span>
           <span className="ml-2 font-arse-body text-arse-black/50">
             {formatEventTimestamp(event.timestamp)}
@@ -150,7 +150,7 @@ export function ProjectChat({
   return (
     <section
       className={cn(
-        "relative flex flex-col overflow-hidden rounded-3xl border-4 border-arse-magenta bg-white",
+        "relative flex flex-col overflow-hidden rounded-3xl border-4 border-arse-pink bg-white",
         PERSONA_CHAT_SHELL_CLASS
       )}
     >
@@ -158,7 +158,7 @@ export function ProjectChat({
         <button
           type="button"
           onClick={() => onOpenPersonas?.()}
-          className="absolute right-3 top-3 z-10 inline-flex items-center gap-2 rounded-xl border-2 border-arse-black bg-white px-3 py-1.5 font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black shadow-[3px_3px_0_0_var(--arse-magenta)] transition hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--arse-magenta)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-magenta sm:right-4 sm:top-4 lg:hidden"
+          className="absolute right-3 top-3 z-10 inline-flex items-center gap-2 rounded-xl border-2 border-arse-black bg-white px-3 py-1.5 font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black shadow-[3px_3px_0_0_var(--arse-pink)] transition hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--arse-pink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink sm:right-4 sm:top-4 lg:hidden"
         >
           {appliedPersona ? (
             <span className="relative flex h-2 w-2 shrink-0" aria-hidden>
@@ -240,7 +240,7 @@ export function ProjectChat({
             disabled={disabled}
             className={cn(
               "block w-full resize-none rounded-xl border-4 border-arse-black bg-arse-cyan px-4 py-3 font-arse-body text-sm text-arse-black placeholder:text-arse-black/45",
-              "focus:outline-none focus:ring-2 focus:ring-arse-magenta disabled:opacity-50"
+              "focus:outline-none focus:ring-2 focus:ring-arse-pink disabled:opacity-50"
             )}
           />
           <button
@@ -248,8 +248,8 @@ export function ProjectChat({
             disabled={!value.trim() || disabled}
             className={cn(
               "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-4 border-arse-black bg-white text-arse-black",
-              "shadow-[4px_4px_0_0_var(--arse-magenta)] transition hover:translate-x-px hover:translate-y-px hover:shadow-[3px_3px_0_0_var(--arse-magenta)]",
-              "disabled:opacity-40 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[4px_4px_0_0_var(--arse-magenta)]"
+              "shadow-[4px_4px_0_0_var(--arse-pink)] transition hover:translate-x-px hover:translate-y-px hover:shadow-[3px_3px_0_0_var(--arse-pink)]",
+              "disabled:opacity-40 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[4px_4px_0_0_var(--arse-pink)]"
             )}
           >
             <Send className="h-4 w-4" strokeWidth={2.5} />

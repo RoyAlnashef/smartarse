@@ -7,13 +7,13 @@ import { useAuth } from "@/lib/auth-context"
 import { cn } from "@/lib/utils"
 
 const signInPillClass = cn(
-  "rounded-full border-2 border-arse-black bg-arse-magenta px-4 py-2 font-arse-title text-xs font-bold uppercase tracking-wide text-arse-black",
+  "rounded-full border-2 border-arse-black bg-arse-pink px-4 py-2 font-arse-title text-xs font-bold uppercase tracking-wide text-arse-black",
   "shadow-[4px_4px_0_0_var(--arse-cyan)] transition hover:translate-x-px hover:translate-y-px hover:shadow-[3px_3px_0_0_var(--arse-cyan)]"
 )
 
 const clientNameDivClass = cn(
   // Client name wrapper is a visual container (not a button).
-  "rounded-bl-3xl border-2 border-arse-black bg-arse-magenta py-2 pl-5 pr-2 font-arse-title text-lg font-medium uppercase tracking-wide text-arse-black",
+  "rounded-bl-3xl border-2 border-arse-black bg-arse-pink py-2 pl-5 pr-2 font-arse-title text-lg font-medium uppercase tracking-wide text-arse-black",
   "shadow-[-4px_4px_0_0_var(--arse-cyan)]"
 )
 
@@ -59,7 +59,7 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
           {!isProjectListPage && (
             // Mobile brand cluster (desktop brand is centered separately).
             <div className="flex items-center gap-2 lg:hidden">
-              <span className="font-arse-smart text-2xl text-arse-magenta sm:text-3xl">smart</span>
+              <span className="font-arse-smart text-2xl text-arse-pink sm:text-3xl">smart</span>
               <span className="font-arse-title text-xl font-bold tracking-[0.15em] text-arse-black sm:text-2xl">
                 A.R.S.E
               </span>
@@ -84,7 +84,7 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
         {!isProjectListPage && (
           <div className="hidden items-center justify-center lg:flex lg:justify-self-center">
             <span className="flex items-center gap-2">
-              <span className="font-arse-smart text-2xl text-arse-magenta sm:text-3xl">smart</span>
+              <span className="font-arse-smart text-2xl text-arse-pink sm:text-3xl">smart</span>
               <span className="font-arse-title text-xl font-bold tracking-[0.15em] text-arse-black sm:text-2xl">
                 A.R.S.E
               </span>

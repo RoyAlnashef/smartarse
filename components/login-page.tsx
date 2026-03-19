@@ -69,20 +69,20 @@ export function LoginPage() {
           />
 
           <h1 className="mt-6 flex flex-wrap items-end justify-center gap-x-1 gap-y-0 text-4xl sm:text-5xl md:text-6xl">
-            <span className="font-arse-smart text-arse-magenta leading-none">smart</span>
+            <span className="font-arse-smart text-arse-pink leading-none">smart</span>
             <span className="font-arse-title font-bold tracking-[0.12em] text-arse-black">A.R.S.E</span>
           </h1>
           <p className="font-arse-title mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-arse-black sm:text-sm">
             Agentic research search engine
           </p>
 
-          <p className="font-arse-title mt-10 text-sm font-bold uppercase tracking-[0.35em] text-arse-magenta">
+          <p className="font-arse-title mt-10 text-sm font-bold uppercase tracking-[0.35em] text-arse-pink">
             Login
           </p>
 
           <form onSubmit={handleSubmit} className="mt-6 w-80 space-y-4 text-left">
             <div className="flex items-center gap-3">
-              <User className="h-6 w-6 shrink-0 text-arse-magenta" strokeWidth={1.75} aria-hidden />
+              <User className="h-6 w-6 shrink-0 text-arse-pink" strokeWidth={1.75} aria-hidden />
               <input
                 id="email"
                 type="email"
@@ -92,14 +92,14 @@ export function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email or username"
                 className={cn(
-                  "min-h-12 flex-1 rounded-full border-2 border-arse-magenta bg-arse-white/90 px-5 py-3 text-sm text-arse-black",
+                  "min-h-12 flex-1 rounded-full border-2 border-arse-pink bg-arse-white/90 px-5 py-3 text-sm text-arse-black",
                   "placeholder:text-arse-black/40",
                   "focus:border-arse-black focus:outline-none focus:ring-2 focus:ring-arse-black/15"
                 )}
               />
             </div>
             <div className="flex items-center gap-3">
-              <Lock className="h-6 w-6 shrink-0 text-arse-magenta" strokeWidth={1.75} aria-hidden />
+              <Lock className="h-6 w-6 shrink-0 text-arse-pink" strokeWidth={1.75} aria-hidden />
               <input
                 id="password"
                 type="password"
@@ -109,7 +109,7 @@ export function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
                 className={cn(
-                  "min-h-12 flex-1 rounded-full border-2 border-arse-magenta bg-arse-white/90 px-5 py-3 text-sm text-arse-black",
+                  "min-h-12 flex-1 rounded-full border-2 border-arse-pink bg-arse-white/90 px-5 py-3 text-sm text-arse-black",
                   "placeholder:text-arse-black/40",
                   "focus:border-arse-black focus:outline-none focus:ring-2 focus:ring-arse-black/15"
                 )}
@@ -122,7 +122,7 @@ export function LoginPage() {
               <button
                 type="submit"
                 className={cn(
-                  "inline-flex w-full items-center justify-center rounded-full border-2 border-arse-black bg-arse-magenta px-4 py-3.5 text-arse-black",
+                  "inline-flex w-full items-center justify-center rounded-full border-2 border-arse-black bg-arse-pink px-4 py-3.5 text-arse-black",
                   "font-arse-title text-xs font-bold uppercase tracking-wide",
                   "shadow-[4px_4px_0_0_var(--arse-cyan)] transition hover:translate-x-px hover:translate-y-px hover:shadow-[3px_3px_0_0_var(--arse-cyan)]"
                 )}
@@ -150,7 +150,7 @@ export function LoginPage() {
                     onClick={() => handleQuickLogin(item.email)}
                     className={cn(
                       "flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-arse-black/20 bg-arse-white/80 px-4 py-3 text-left",
-                      "transition hover:border-arse-magenta hover:bg-arse-white"
+                      "transition hover:border-arse-pink hover:bg-arse-white"
                     )}
                   >
                     <div>
@@ -169,15 +169,15 @@ export function LoginPage() {
       <footer className="relative z-10 mt-auto flex flex-col items-center justify-between gap-3 px-4 py-6 text-[10px] font-medium uppercase tracking-wider text-arse-black sm:flex-row sm:px-8 sm:text-xs">
         <nav className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
           <span className="text-arse-black/40">|</span>
-          <Link href="/help/faq" className="hover:text-arse-magenta">
+          <Link href="/help/faq" className="hover:text-arse-pink">
             FAQ
           </Link>
           <span className="text-arse-black/40">|</span>
-          <Link href="/help/privacy" className="hover:text-arse-magenta">
+          <Link href="/help/privacy" className="hover:text-arse-pink">
             Privacy policy
           </Link>
           <span className="text-arse-black/40">|</span>
-          <Link href="/help/contact" className="hover:text-arse-magenta">
+          <Link href="/help/contact" className="hover:text-arse-pink">
             Contact the team
           </Link>
         </nav>

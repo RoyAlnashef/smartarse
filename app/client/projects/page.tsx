@@ -29,7 +29,7 @@ export default function ClientProjectsPage() {
         <div className="flex flex-col items-center text-center lg:flex-row lg:justify-center lg:gap-10 lg:text-left">
           <div className="max-w-xl">
             <h1 className="flex flex-wrap items-end justify-center gap-x-2 gap-y-1 text-4xl sm:text-5xl md:text-6xl lg:justify-start">
-              <span className="font-arse-smart text-arse-magenta leading-none">smart</span>
+              <span className="font-arse-smart text-arse-pink leading-none">smart</span>
               <span className="font-arse-title font-bold tracking-[0.12em] text-arse-black">A.R.S.E</span>
             </h1>
             <p className="font-arse-title mt-2 text-xs font-semibold uppercase tracking-[0.25em] text-arse-black sm:text-sm">
@@ -65,7 +65,7 @@ export default function ClientProjectsPage() {
               placeholder="Search projects…"
               className={cn(
                 "w-full rounded-lg border-4 border-arse-black bg-arse-cyan py-3 pl-4 pr-14 font-arse-body text-sm text-arse-black placeholder:text-arse-black/45",
-                "focus:outline-none focus:ring-2 focus:ring-arse-magenta"
+                "focus:outline-none focus:ring-2 focus:ring-arse-pink"
               )}
             />
             <Search className="pointer-events-none absolute right-4 top-1/2 h-6 w-6 -translate-y-1/2 text-arse-black" strokeWidth={2.5} />
