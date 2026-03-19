@@ -7,11 +7,15 @@ import { useParams } from "next/navigation"
 import aiCoin from "@/public/ai-coin.png"
 import { useAuth } from "@/lib/auth-context"
 import { uploadedFiles, conversations as mockConversations } from "@/lib/mock-data"
+import { cn } from "@/lib/utils"
 import type {
   ChatMessage,
   PersonaActivatedEvent,
   PersonaEndedEvent,
 } from "@/lib/types"
+import { MOCK_SEGMENT_PERSONAS } from "@/components/client/project-detail/persona-drawer"
+import { MobilePersonaDrawer } from "@/components/client/project-detail/mobile-persona-drawer"
+import { PersonasColumn } from "@/components/client/project-detail/personas-column"
 import { ProjectDetailCard } from "@/components/client/project-detail/project-detail-card"
 import { SourcesSelector } from "@/components/client/project-detail/sources-selector"
 import { ProjectChat } from "@/components/client/project-detail/project-chat"
@@ -46,6 +50,45 @@ export default function ClientProjectDetailPage() {
   const [personaEvents, setPersonaEvents] = useState<
     (PersonaActivatedEvent | PersonaEndedEvent)[]
   >([])
+  const [appliedPersonaId, setAppliedPersonaId] = useState<string | null>(null)
+  const [personasColumnCollapsed, setPersonasColumnCollapsed] = useState(false)
+  const [mobilePersonasOpen, setMobilePersonasOpen] = useState(false)
+
+  const appliedPersona = useMemo(
+    () =>
+      appliedPersonaId
+        ? (MOCK_SEGMENT_PERSONAS.find((p) => p.id === appliedPersonaId) ?? null)
+        : null,
+    [appliedPersonaId]
+  )
+
+  function handleApplyPersona(personaId: string) {
+    setAppliedPersonaId(personaId)
+    setPersonaEvents((prev) => [
+      ...prev,
+      {
+        id: `persona-${Date.now()}`,
+        type: "persona_activated",
+        timestamp: new Date().toISOString(),
+        personaId,
+      },
+    ])
+  }
+
+  function handleClearPersona() {
+    const id = appliedPersonaId
+    if (!id) return
+    setAppliedPersonaId(null)
+    setPersonaEvents((prev) => [
+      ...prev,
+      {
+        id: `persona-ended-${Date.now()}`,
+        type: "persona_ended",
+        timestamp: new Date().toISOString(),
+        personaId: id,
+      },
+    ])
+  }
 
   if (!project) {
     return (
@@ -70,8 +113,15 @@ export default function ClientProjectDetailPage() {
         ← Projects
       </Link>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[20rem,1fr] lg:gap-8">
-          <aside className="space-y-6">
+      <div
+        className={cn(
+          "mt-6 grid items-start gap-6 lg:gap-8",
+          personasColumnCollapsed
+            ? "lg:grid-cols-[minmax(12rem,1fr)_minmax(0,2fr)_minmax(3rem,3.5rem)]"
+            : "lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)]"
+        )}
+      >
+          <aside className="min-w-0 space-y-6">
             {client ? (
               <section className="w-full overflow-hidden rounded-3xl bg-arse-cyan">
                 <div className="bg-arse-magenta px-4 py-2 text-center font-arse-title text-xs font-bold uppercase tracking-[0.35em] text-arse-white">
@@ -144,6 +194,8 @@ export default function ClientProjectDetailPage() {
             <ProjectChat
               messages={messages}
               personaEvents={personaEvents}
+              appliedPersonaId={appliedPersonaId}
+              onOpenPersonas={() => setMobilePersonasOpen(true)}
               onSend={(content) => {
                 setMessages((prev) => [
                   ...prev,
@@ -157,31 +209,27 @@ export default function ClientProjectDetailPage() {
                   },
                 ])
               }}
-              onPersonaActivated={(personaId) => {
-                setPersonaEvents((prev) => [
-                  ...prev,
-                  {
-                    id: `persona-${Date.now()}`,
-                    type: "persona_activated",
-                    timestamp: new Date().toISOString(),
-                    personaId,
-                  },
-                ])
-              }}
-              onPersonaEnded={(personaId) => {
-                setPersonaEvents((prev) => [
-                  ...prev,
-                  {
-                    id: `persona-ended-${Date.now()}`,
-                    type: "persona_ended",
-                    timestamp: new Date().toISOString(),
-                    personaId,
-                  },
-                ])
-              }}
+            />
+          </div>
+
+          <div className="hidden min-h-0 min-w-0 lg:block">
+            <PersonasColumn
+              collapsed={personasColumnCollapsed}
+              onToggleCollapsed={setPersonasColumnCollapsed}
+              appliedPersonaId={appliedPersonaId}
+              onApplyPersona={handleApplyPersona}
+              onClearPersona={handleClearPersona}
             />
           </div>
         </div>
+
+        <MobilePersonaDrawer
+          open={mobilePersonasOpen}
+          onOpenChange={setMobilePersonasOpen}
+          appliedPersona={appliedPersona}
+          onApply={handleApplyPersona}
+          onClearPersona={handleClearPersona}
+        />
     </div>
   )
 }
