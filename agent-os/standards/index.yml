@@ -8,6 +8,8 @@ css:
 global:
   app-routing-protected-shell:
     description: Next.js route groups, root vs dashboard URLs, client auth gates, redirects, loading UI
+  developer-guide:
+    description: Developer guidelines for the smartA.R.S.E. project.
   domain-data-layer:
     description: lib/types entities, mock-data alignment, relations, Supabase migration notes
   project-conventions:

@@ -2,9 +2,9 @@
 
 ## URLs vs folders
 
-| URL | Folder |
-|-----|--------|
-| `/` | `app/page.tsx` |
+| URL                                          | Folder              |
+| -------------------------------------------- | ------------------- |
+| `/`                                          | `app/page.tsx`      |
 | `/dashboard`, `/upload`, `/projects/[id]`, … | `app/(dashboard)/…` |
 
 `(dashboard)` is a **route group** — it does **not** appear in the path.
@@ -28,7 +28,7 @@
 - Not authenticated → `router.replace("/")` + spinner until redirect.
 - Authenticated → sidebar + header + `<main>{children}</main>`.
 
-**Layout enforces login only**, not roles. Admin/client checks stay on **pages** (or future middleware).
+**Layout enforces login only**, not roles. Admin/client checks stay on **pages** (or future middleware), but API/data access must still be enforced server-side (Supabase session + RLS).
 
 ## Redirects
 
@@ -40,4 +40,4 @@
 
 ## MVP note
 
-- Today, protection is **client-only**. Add **middleware + server session** (e.g. Supabase) for real enforcement; keep this layout UX for hydration.
+- Today, the layout/auth gate is **client-only UX**. Real enforcement must be server-side: API/webhook routes require a valid Supabase session cookie or `Authorization` header, and Supabase RLS scopes all data to the user’s org (`organization_id`/`org_id`). Keep this layout UX for hydration/redirect behavior.

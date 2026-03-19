@@ -7,16 +7,16 @@
 
 ## Entities (summary)
 
-| Type | Key fields / notes |
-|------|-------------------|
-| `User` | `role`, optional `clientId`, `status`, timestamps |
-| `Client` | `projectIds`, `userIds`, org-level credits |
-| `Project` | `clientId`, `clientName` denorm, `assignedUserIds`, `uploadedFileIds`, credits, `status` live/archived |
-| `UploadedFile` | `projectId`, `status` processing/ready/error |
-| `Conversation` | `projectId`, nested `messages[]` (client may normalize to separate table later) |
-| `ChatMessage` | `role` user/assistant, optional `documentIds` for RAG context |
-| `QueryLog` | analytics / credit audit trail |
-| `FAQItem` | static content |
+| Type           | Key fields / notes                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `User`         | `role`, optional `organization_id`, `status`, timestamps                                                            |
+| `Organization` | `projectIds`, `userIds`, org-level credits                                                                          |
+| `Project`      | `organization_id`, `organizationName` denorm, `assignedUserIds`, `uploadedFileIds`, credits, `status` live/archived |
+| `UploadedFile` | `projectId`, `status` processing/ready/error                                                                        |
+| `Conversation` | `projectId`, nested `messages[]` (client may normalize to separate table later)                                     |
+| `ChatMessage`  | `role` user/assistant, optional `documentIds` for RAG context                                                       |
+| `QueryLog`     | analytics / credit audit trail                                                                                      |
+| `FAQItem`      | static content                                                                                                      |
 
 ## IDs
 
@@ -25,8 +25,8 @@
 ## Relations (mental model)
 
 ```
-Client 1—* Project *—* UploadedFile
-Client 1—* User (client | user roles)
+Organization 1—* Project *—* UploadedFile
+Organization 1—* User (admin/client/user roles)
 Project *—* assignedUserIds → User
 ```
 
@@ -38,4 +38,4 @@ Project *—* assignedUserIds → User
 
 ## Chat / credits
 
-- Credits live on **Project** (and summary on **Client** in mock). Server must decrement on AI calls; client display is read-only beyond MVP shell.
+- Credits live on **Project** (and summary on **Organization** in mock). Server must decrement on AI calls; client display is read-only beyond MVP shell.

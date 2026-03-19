@@ -7,7 +7,7 @@
 | Role | Meaning |
 |------|---------|
 | `admin` | Full platform; all projects. |
-| `client` | Org lead; projects where `project.clientId === user.clientId`. |
+| `client` | Org lead; projects where `project.organization_id === user.organization_id`. |
 | `user` | End user; projects in `project.assignedUserIds`. |
 
 ## API surface (`useAuth`)
@@ -17,10 +17,10 @@
 - `logout()` — clears session
 - `switchRole(role)` — **dev/demo only**: swaps to a fixed mock user per role (`roleDefaults`)
 - `getVisibleProjects()` — **single source** for project lists by role
-- `getClientForUser()` — client row for `client`/`user` with `clientId`
+- `getClientForUser()` — org/client row for `client`/`user` with `organization_id` (maps to `users.organization_id` in Supabase)
 
 ## Rules
-
+- `AuthProvider` / `useAuth` are client-side conveniences layered on top of Supabase Auth (no custom auth backend).
 - **`useAuth()`** must run under `AuthProvider` — throws otherwise.
 - **Persist minimal payload**: store `{ id }` only; re-hydrate full `User` from canonical source (today mock `users`; later Supabase).
 - **Session key** (current): `sessionStorage` key `disrupt-user` — **rename to a smartA.R.S.E. key** when moving off mock (e.g. rely on Supabase session; avoid duplicate client-only keys for security-sensitive flows).
