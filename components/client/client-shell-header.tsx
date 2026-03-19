@@ -33,9 +33,14 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
           <Link
             href={homeHref}
             title={showGuestHelp ? "Go to sign in" : "Project list"}
-            className="font-serif text-xl font-bold tracking-tight text-arse-black sm:text-2xl hover:opacity-90"
+              className="flex items-center hover:opacity-90"
           >
-            disrupt
+              <img
+                src="/disrupt-logo-blktxt.png"
+                alt="disrupt"
+                className="block h-[22px] w-auto sm:h-[26px]"
+                draggable={false}
+              />
           </Link>
           <div className="hidden h-10 w-px bg-arse-black/20 sm:block" aria-hidden />
           <div className="flex items-center gap-2">
@@ -43,11 +48,20 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
             <span className="font-arse-title text-xl font-bold tracking-[0.15em] text-arse-black sm:text-2xl">
               A.R.S.E
             </span>
-            {/* Placeholder for hero graphic */}
+            {/* Robot placeholder (small screens) */}
             <span
-              className="ml-1 hidden h-10 w-10 rounded-full bg-gradient-to-br from-arse-magenta/40 to-arse-cyan/60 sm:inline-block"
+              className="ml-1 hidden sm:inline-flex sm:items-center sm:justify-center"
               aria-hidden
-            />
+              title="Robot illustration"
+            >
+              <img
+                src="/robot.png"
+                alt=""
+                aria-hidden
+                draggable={false}
+                className="h-[56px] w-auto translate-y-0"
+              />
+            </span>
           </div>
         </div>
 

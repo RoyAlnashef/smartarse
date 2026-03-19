@@ -60,10 +60,13 @@ export function LoginPage() {
 
       <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6">
         <div className="flex w-full max-w-md flex-col items-center justify-start text-center">
-          {/* disrupt wordmark — placeholder until logo asset */}
-          <p className="font-serif text-2xl font-bold tracking-tight text-arse-black sm:text-3xl">
-            disrupt
-          </p>
+          {/* disrupt wordmark */}
+          <img
+            src="/disrupt-logo-blktxt.png"
+            alt="disrupt"
+            className="mx-auto block h-[26px] w-auto sm:h-[30px]"
+            draggable={false}
+          />
 
           <h1 className="mt-6 flex flex-wrap items-end justify-center gap-x-1 gap-y-0 text-4xl sm:text-5xl md:text-6xl">
             <span className="font-arse-smart text-arse-magenta leading-none">smart</span>

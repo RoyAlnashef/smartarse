@@ -37,10 +37,18 @@ export default function ClientProjectsPage() {
             </p>
           </div>
           <div
-            className="mt-6 hidden h-28 w-28 shrink-0 rounded-2xl bg-gradient-to-br from-arse-magenta/30 via-arse-cyan/50 to-arse-magenta/20 lg:block"
+            className="mt-6 hidden h-36 w-36 shrink-0 lg:flex lg:items-center lg:justify-center"
             aria-hidden
-            title="Illustration placeholder"
-          />
+            title="Robot illustration placeholder"
+          >
+            <img
+              src="/robot.png"
+              alt=""
+              aria-hidden
+              draggable={false}
+              className="h-[132px] w-auto translate-y-[-2px]"
+            />
+          </div>
         </div>
 
         {/* Search */}
