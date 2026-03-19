@@ -161,7 +161,10 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     )
   }
 
-  const visibleTabs = tabs.filter((t) => !t.adminOnly || user.role === "admin")
+  const visibleTabs = tabs.filter((t) => {
+    const adminOnly = "adminOnly" in t ? t.adminOnly : false
+    return !adminOnly || user.role === "admin"
+  })
   const remaining = project.totalCredits - project.usedCredits
 
   return (

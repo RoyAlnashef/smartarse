@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { X } from "lucide-react"
+import { ChevronRight, X } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
@@ -336,43 +336,62 @@ function PersonaDetailCard({
   )
 }
 
-export function PersonaDrawer({
-  open,
-  onClose,
+export function PersonaPanel({
   appliedPersona,
   onApply,
   onClearPersona,
+  /** Mobile overlay only — header dismiss (X). */
+  onClose,
+  /** Desktop column — collapse to narrow rail (no X). */
+  onCollapseToRail,
+  className,
 }: {
-  open: boolean
-  onClose: () => void
   appliedPersona: PersonaMock | null
   onApply: (personaId: string) => void
   onClearPersona?: () => void
+  onClose?: () => void
+  onCollapseToRail?: () => void
+  className?: string
 }) {
-  if (!open) return null
-
   return (
     <aside
-      className="flex min-h-0 h-full w-full flex-col border-l-2 border-arse-black/10 bg-white shadow-[-4px_0_24px_rgba(0,0,0,0.08)]"
+      className={cn(
+        "flex min-h-0 h-full w-full min-w-0 flex-col border-l-2 border-arse-black/10 bg-white shadow-[-4px_0_24px_rgba(0,0,0,0.08)]",
+        className
+      )}
       aria-label="Persona"
     >
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-arse-black/10 px-3 py-3 sm:px-4">
-        <div className="min-w-0">
-          <p className="font-arse-title text-xs font-bold uppercase tracking-wide text-arse-black">
-            Personas
-          </p>
-          <p className="font-arse-body text-[11px] text-arse-black/50">
-            Choose how smartA.R.S.E speaks to you.
-          </p>
+        <div className="flex min-w-0 flex-1 items-start gap-2">
+          {onCollapseToRail ? (
+            <button
+              type="button"
+              onClick={onCollapseToRail}
+              className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-arse-black/15 bg-white text-arse-black transition hover:border-arse-magenta hover:bg-arse-black/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-magenta"
+              aria-label="Collapse personas column"
+            >
+              <ChevronRight className="h-4 w-4" strokeWidth={2.5} aria-hidden />
+            </button>
+          ) : null}
+          <div className="min-w-0">
+            <p className="font-arse-title text-xs font-bold uppercase tracking-wide text-arse-black">
+              Personas
+            </p>
+            <p className="font-arse-body text-[11px] text-arse-black/50">
+              Choose how smartA.R.S.E speaks to you.
+            </p>
+          </div>
         </div>
-        <button
-          type="button"
-          onClick={onClose}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-arse-black/15 bg-white text-arse-black transition hover:border-arse-magenta hover:bg-arse-black/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-magenta"
-          aria-label="Close persona panel"
-        >
-          <X className="h-4 w-4" strokeWidth={2.5} />
-        </button>
+        {onClose ? (
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-arse-black/15 bg-white text-arse-black transition hover:border-arse-magenta hover:bg-arse-black/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-magenta"
+            aria-label="Close persona panel"
+          >
+            <X className="h-4 w-4" strokeWidth={2.5} />
+          </button>
+        ) : null}
       </div>
 
       {appliedPersona ? (
@@ -492,5 +511,32 @@ export function PersonaDrawer({
         </TabsContent>
       </Tabs>
     </aside>
+  )
+}
+
+export function PersonaDrawer({
+  open,
+  onClose,
+  onCollapseToRail,
+  appliedPersona,
+  onApply,
+  onClearPersona,
+}: {
+  open: boolean
+  onClose?: () => void
+  onCollapseToRail?: () => void
+  appliedPersona: PersonaMock | null
+  onApply: (personaId: string) => void
+  onClearPersona?: () => void
+}) {
+  if (!open) return null
+  return (
+    <PersonaPanel
+      appliedPersona={appliedPersona}
+      onApply={onApply}
+      onClearPersona={onClearPersona}
+      onClose={onClose}
+      onCollapseToRail={onCollapseToRail}
+    />
   )
 }
