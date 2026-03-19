@@ -43,8 +43,9 @@ export default function ClientProjectDetailPage() {
     return first?.messages ?? []
   }, [id])
 
-  const [selectedDocs, setSelectedDocs] = useState<Set<string>>(
-    () => new Set(projectFiles.filter((f) => f.status === "ready").map((f) => f.id))
+  const sourceDocumentIds = useMemo(
+    () => projectFiles.filter((f) => f.status === "ready").map((f) => f.id),
+    [projectFiles]
   )
   const [messages, setMessages] = useState<ChatMessage[]>(seededMessages)
   const [personaEvents, setPersonaEvents] = useState<
@@ -176,18 +177,7 @@ export default function ClientProjectDetailPage() {
               </section>
             ) : null}
             <ProjectDetailCard project={project} />
-            <SourcesSelector
-              files={projectFiles}
-              selected={selectedDocs}
-              onToggle={(fileId) => {
-                setSelectedDocs((prev) => {
-                  const next = new Set(prev)
-                  if (next.has(fileId)) next.delete(fileId)
-                  else next.add(fileId)
-                  return next
-                })
-              }}
-            />
+            <SourcesSelector files={projectFiles} />
           </aside>
 
           <div className="min-h-0 min-w-0">
@@ -205,7 +195,7 @@ export default function ClientProjectDetailPage() {
                     role: "user",
                     content,
                     timestamp: new Date().toISOString(),
-                    documentIds: Array.from(selectedDocs),
+                    documentIds: sourceDocumentIds,
                   },
                 ])
               }}
