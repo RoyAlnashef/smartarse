@@ -7,7 +7,7 @@ import { useParams } from "next/navigation"
 import aiCoin from "@/public/ai-coin.png"
 import { useAuth } from "@/lib/auth-context"
 import { uploadedFiles, conversations as mockConversations } from "@/lib/mock-data"
-import type { ChatMessage } from "@/lib/types"
+import type { ChatMessage, PersonaActivatedEvent } from "@/lib/types"
 import { ProjectDetailCard } from "@/components/client/project-detail/project-detail-card"
 import { SourcesSelector } from "@/components/client/project-detail/sources-selector"
 import { ProjectChat } from "@/components/client/project-detail/project-chat"
@@ -39,6 +39,7 @@ export default function ClientProjectDetailPage() {
     () => new Set(projectFiles.filter((f) => f.status === "ready").map((f) => f.id))
   )
   const [messages, setMessages] = useState<ChatMessage[]>(seededMessages)
+  const [personaEvents, setPersonaEvents] = useState<PersonaActivatedEvent[]>([])
 
   if (!project) {
     return (
@@ -55,7 +56,7 @@ export default function ClientProjectDetailPage() {
   }
 
   return (
-    <div className="px-4 pb-12 pt-6 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-7xl px-4 pb-12 pt-6 sm:px-6 lg:px-8">
       <Link
         href="/client/projects"
         className="font-arse-body text-sm font-medium text-arse-black/70 hover:text-arse-magenta"
@@ -136,6 +137,7 @@ export default function ClientProjectDetailPage() {
           <div className="min-h-0 min-w-0">
             <ProjectChat
               messages={messages}
+              personaEvents={personaEvents}
               onSend={(content) => {
                 setMessages((prev) => [
                   ...prev,
@@ -146,6 +148,17 @@ export default function ClientProjectDetailPage() {
                     content,
                     timestamp: new Date().toISOString(),
                     documentIds: Array.from(selectedDocs),
+                  },
+                ])
+              }}
+              onPersonaActivated={(personaId) => {
+                setPersonaEvents((prev) => [
+                  ...prev,
+                  {
+                    id: `persona-${Date.now()}`,
+                    type: "persona_activated",
+                    timestamp: new Date().toISOString(),
+                    personaId,
                   },
                 ])
               }}

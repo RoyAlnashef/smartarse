@@ -353,11 +353,7 @@ export function PersonaDrawer({
 
   return (
     <aside
-      className={cn(
-        "flex min-h-0 w-full flex-1 flex-col border-t-2 border-arse-black/10 bg-white",
-        /* Stacked: share fixed section height with chat. Row: fixed width, stretch to section height */
-        "lg:w-96 lg:flex-none lg:shrink-0 lg:self-stretch lg:border-l-2 lg:border-t-0"
-      )}
+      className="flex min-h-0 h-full w-full flex-col border-l-2 border-arse-black/10 bg-white shadow-[-4px_0_24px_rgba(0,0,0,0.08)]"
       aria-label="Persona"
     >
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-arse-black/10 px-3 py-3 sm:px-4">
@@ -366,7 +362,7 @@ export function PersonaDrawer({
             Persona
           </p>
           <p className="font-arse-body text-[11px] text-arse-black/50">
-            Choose how the assistant speaks
+            Choose how smartA.R.S.E speaks to you.
           </p>
         </div>
         <button

@@ -57,6 +57,23 @@ export interface ChatMessage {
   documentIds?: string[]
 }
 
+/** Inline event when a segment persona is activated in the chat. */
+export interface PersonaActivatedEvent {
+  id: string
+  type: "persona_activated"
+  timestamp: string
+  personaId: string
+}
+
+/** Union of items that appear in the chat timeline (messages + system events). */
+export type ChatTimelineItem = ChatMessage | PersonaActivatedEvent
+
+export function isPersonaActivatedEvent(
+  item: ChatTimelineItem
+): item is PersonaActivatedEvent {
+  return "type" in item && item.type === "persona_activated"
+}
+
 export interface Conversation {
   id: string
   projectId: string

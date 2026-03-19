@@ -2,7 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Send, Users } from "lucide-react"
-import type { ChatMessage } from "@/lib/types"
+import type {
+  ChatMessage,
+  PersonaActivatedEvent,
+  ChatTimelineItem,
+} from "@/lib/types"
+import { isPersonaActivatedEvent } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import {
   MOCK_SEGMENT_PERSONAS,
@@ -38,42 +43,79 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   )
 }
 
-function PersonaPinnedAlert({ persona }: { persona: PersonaMock }) {
+function formatEventTimestamp(iso: string): string {
+  const d = new Date(iso)
+  const now = new Date()
+  const isToday =
+    d.getDate() === now.getDate() &&
+    d.getMonth() === now.getMonth() &&
+    d.getFullYear() === now.getFullYear()
+  if (isToday) {
+    return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
+  }
+  return d.toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  })
+}
+
+function PersonaEventBubble({
+  event,
+  persona,
+}: {
+  event: PersonaActivatedEvent
+  persona: PersonaMock
+}) {
   return (
     <div
-      className="mb-4 rounded-2xl border-2 border-arse-magenta/35 bg-arse-magenta/[0.07] px-4 py-3 text-sm text-arse-black"
+      className="w-full"
       role="status"
+      aria-label={`Segment persona activated: ${persona.title} at ${formatEventTimestamp(event.timestamp)}`}
     >
-      <p className="font-arse-body text-xs text-arse-black/80">
-        <span className="mr-1 inline-block h-1.5 w-1.5 translate-y-[-1px] rounded-full bg-arse-magenta" />{" "}
-        Speaking as — <span className="font-semibold text-arse-black">{persona.title}</span>
-      </p>
-      <p className="mt-2 font-arse-body text-sm leading-relaxed">
-        <span className="font-arse-title font-bold">Segment persona activated.</span> You&apos;re now
-        speaking with a representative voice of{" "}
-        <strong>{persona.title}</strong> (n={persona.surveyN}, {persona.surveyPctLabel}). Average
-        concern: <strong>{persona.avgConcern}</strong>, average sustainable actions:{" "}
-        <strong>{persona.avgActions}</strong>.
-      </p>
-      <p className="mt-2 font-arse-body text-xs text-arse-black/60">
-        Ask about this segment&apos;s views, barriers, or motivations.
-      </p>
+      <div className="w-full rounded-2xl border-2 border-arse-magenta/35 bg-arse-magenta/[0.07] px-4 py-3 text-sm text-arse-black">
+        <p className="font-arse-body text-xs text-arse-black/80">
+          <span className="mr-1 inline-block h-1.5 w-1.5 translate-y-[-1px] rounded-full bg-arse-magenta" />{" "}
+          Speaking as — <span className="font-semibold text-arse-black">{persona.title}</span>
+          <span className="ml-2 font-arse-body text-arse-black/50">
+            {formatEventTimestamp(event.timestamp)}
+          </span>
+        </p>
+        <p className="mt-2 font-arse-body text-sm leading-relaxed">
+          <span className="font-arse-title font-bold">Segment persona activated.</span> You&apos;re
+          now speaking with a representative voice of{" "}
+          <strong>{persona.title}</strong> (n={persona.surveyN}, {persona.surveyPctLabel}). Average
+          concern: <strong>{persona.avgConcern}</strong>, average sustainable actions:{" "}
+          <strong>{persona.avgActions}</strong>.
+        </p>
+        <p className="mt-2 font-arse-body text-xs text-arse-black/60">
+          Ask about this segment&apos;s views, barriers, or motivations.
+        </p>
+      </div>
     </div>
   )
 }
 
 export function ProjectChat({
   messages,
+  personaEvents = [],
   disabled,
   onSend,
+  onPersonaActivated,
 }: {
   messages: ChatMessage[]
+  personaEvents?: PersonaActivatedEvent[]
   disabled?: boolean
   onSend?: (content: string) => void
+  onPersonaActivated?: (personaId: string) => void
 }) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const [value, setValue] = useState("")
-  const [drawerOpen, setDrawerOpen] = useState(true)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [drawerExiting, setDrawerExiting] = useState(false)
+  const [drawerEntering, setDrawerEntering] = useState(true)
+  const drawerExitingRef = useRef(false)
   const [appliedPersonaId, setAppliedPersonaId] = useState<string | null>(null)
 
   const appliedPersona = useMemo(
@@ -84,6 +126,12 @@ export function ProjectChat({
     [appliedPersonaId]
   )
 
+  const timelineItems = useMemo((): ChatTimelineItem[] => {
+    const items: ChatTimelineItem[] = [...messages, ...personaEvents]
+    items.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+    return items
+  }, [messages, personaEvents])
+
   useEffect(() => {
     if (typeof window === "undefined") return
     const isLg = window.matchMedia("(min-width: 1024px)").matches
@@ -91,8 +139,33 @@ export function ProjectChat({
   }, [])
 
   useEffect(() => {
+    if (drawerOpen) {
+      setDrawerExiting(false)
+      setDrawerEntering(true)
+      const t = requestAnimationFrame(() => {
+        requestAnimationFrame(() => setDrawerEntering(false))
+      })
+      return () => cancelAnimationFrame(t)
+    }
+  }, [drawerOpen])
+
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages, appliedPersona])
+  }, [timelineItems])
+
+  function handleDrawerClose() {
+    drawerExitingRef.current = true
+    setDrawerExiting(true)
+  }
+
+  function handleDrawerTransitionEnd(e: React.TransitionEvent) {
+    if (e.target !== e.currentTarget) return
+    if (drawerExitingRef.current) {
+      drawerExitingRef.current = false
+      setDrawerExiting(false)
+      setDrawerOpen(false)
+    }
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -109,15 +182,13 @@ export function ProjectChat({
   return (
     <section
       className={cn(
-        "flex flex-col overflow-hidden rounded-3xl border-4 border-arse-magenta bg-white",
-        /* Fixed viewport-relative height so messages scroll inside; drawer matches this height on lg */
+        "relative flex flex-col overflow-hidden rounded-3xl border-4 border-arse-magenta bg-white",
+        /* Fixed viewport-relative height so messages scroll inside */
         "h-[min(32rem,calc(100dvh-10rem))] max-h-[calc(100dvh-8rem)] min-h-[28rem]",
-        /* Desktop: +160px taller (32rem + 10rem = 42rem) */
-        "lg:h-[min(42rem,calc(100dvh-2rem))] lg:max-h-[calc(100dvh-1rem)]",
-        "lg:flex-row lg:items-stretch"
+        "lg:h-[min(42rem,calc(100dvh-2rem))] lg:max-h-[calc(100dvh-1rem)]"
       )}
     >
-      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
+      <div className="relative flex min-h-0 flex-1 flex-col">
         {!drawerOpen ? (
           <button
             type="button"
@@ -129,23 +200,70 @@ export function ProjectChat({
           </button>
         ) : null}
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
-          {appliedPersona ? <PersonaPinnedAlert persona={appliedPersona} /> : null}
-
-          {messages.length === 0 ? (
-            <div className="max-w-xl">
-              <div className="inline-block rounded-2xl rounded-bl-sm border-2 border-arse-black/20 bg-white px-4 py-3 text-sm text-arse-black">
-                Hi there!
+        <div className="relative min-h-0 flex-1 overflow-hidden">
+          <div className="h-full overflow-y-auto p-4 sm:p-6">
+            {timelineItems.length === 0 ? (
+              <div className="max-w-xl">
+                <div className="inline-block rounded-2xl rounded-bl-sm border-2 border-arse-black/20 bg-white px-4 py-3 text-sm text-arse-black">
+                  Hi there!
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {messages.map((m) => (
-                <MessageBubble key={m.id} message={m} />
-              ))}
-            </div>
-          )}
-          <div ref={bottomRef} />
+            ) : (
+              <div className="space-y-4">
+                {timelineItems.map((item) => {
+                  if (isPersonaActivatedEvent(item)) {
+                    const persona = MOCK_SEGMENT_PERSONAS.find(
+                      (p) => p.id === item.personaId
+                    )
+                    if (!persona) return null
+                    return (
+                      <PersonaEventBubble
+                        key={item.id}
+                        event={item}
+                        persona={persona}
+                      />
+                    )
+                  }
+                  return <MessageBubble key={item.id} message={item} />
+                })}
+              </div>
+            )}
+            <div ref={bottomRef} />
+          </div>
+
+          {(drawerOpen || drawerExiting) ? (
+            <>
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={handleDrawerClose}
+                onKeyDown={(e) => e.key === "Enter" && handleDrawerClose()}
+                className={cn(
+                  "absolute inset-0 z-10 cursor-pointer bg-black/20 transition-opacity duration-200 ease-out",
+                  drawerEntering || drawerExiting ? "opacity-0" : "opacity-100"
+                )}
+                aria-label="Close persona panel"
+              />
+              <div
+                onTransitionEnd={handleDrawerTransitionEnd}
+                className={cn(
+                  "absolute inset-y-0 right-0 z-20 w-full max-w-[85%] transition-transform duration-200 ease-out lg:max-w-96 lg:w-96",
+                  drawerEntering || drawerExiting ? "translate-x-full" : "translate-x-0"
+                )}
+              >
+                <PersonaDrawer
+                  open={true}
+                  onClose={handleDrawerClose}
+                  appliedPersona={appliedPersona}
+                  onApply={(id) => {
+                    setAppliedPersonaId(id)
+                    onPersonaActivated?.(id)
+                  }}
+                  onClearPersona={() => setAppliedPersonaId(null)}
+                />
+              </div>
+            </>
+          ) : null}
         </div>
 
         <form
@@ -187,14 +305,6 @@ export function ProjectChat({
           </button>
         </form>
       </div>
-
-      <PersonaDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
-        appliedPersona={appliedPersona}
-        onApply={(id) => setAppliedPersonaId(id)}
-        onClearPersona={() => setAppliedPersonaId(null)}
-      />
     </section>
   )
 }
