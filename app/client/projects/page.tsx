@@ -84,7 +84,7 @@ export default function ClientProjectsPage() {
               aria-hidden
             />
             <div className="relative flex flex-col gap-2 items-end text-right">
-              <p className="font-arse-title text-4xl font-light uppercase tracking-[0.2em] tracking-wider text-arse-black">
+              <p className="font-arse-title text-4xl font-light uppercase tracking-wider text-arse-black">
                 Projects
               </p>
               <p className="mt-1 max-w-[10rem] text-sm font-bold leading-snug text-arse-black">
