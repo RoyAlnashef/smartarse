@@ -6,9 +6,15 @@ import { LogOut, Settings } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { cn } from "@/lib/utils"
 
-const pillClass = cn(
+const signInPillClass = cn(
   "rounded-full border-2 border-arse-black bg-arse-magenta px-4 py-2 font-arse-title text-xs font-bold uppercase tracking-wide text-arse-black",
   "shadow-[4px_4px_0_0_var(--arse-cyan)] transition hover:translate-x-px hover:translate-y-px hover:shadow-[3px_3px_0_0_var(--arse-cyan)]"
+)
+
+const clientNameDivClass = cn(
+  // Client name wrapper is a visual container (not a button).
+  "rounded-bl-3xl border-2 border-arse-black bg-arse-magenta py-2 pl-5 pr-2 font-arse-title text-lg font-medium uppercase tracking-wide text-arse-black",
+  "shadow-[-4px_4px_0_0_var(--arse-cyan)]"
 )
 
 export function ClientShellHeader({ variant = "client" }: { variant?: "client" | "help" }) {
@@ -28,7 +34,7 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
 
   return (
     <header className="bg-white px-4 py-4 sm:px-6 lg:px-8">
-      <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-center lg:justify-between lg:gap-6">
+      <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
         <div className="flex flex-wrap items-center gap-4 lg:gap-8">
           <Link
             href={homeHref}
@@ -65,7 +71,7 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
           </div>
         </div>
 
-        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:gap-4">
+        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start sm:gap-4">
           <div
             className="flex flex-wrap items-center gap-2 sm:gap-3"
             {...(showGuestHelp ? { "aria-busy": isLoading } : {})}
@@ -76,20 +82,19 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
             {showGuestHelp ? (
               <Link
                 href="/"
-                className={cn(pillClass, "inline-flex items-center justify-center")}
+                className={cn(signInPillClass, "inline-flex items-center justify-center")}
                 title="Sign in"
               >
                 Sign In
               </Link>
             ) : (
-              <>
-                <button type="button" className={pillClass}>
-                  {displayName}
-                </button>
+              <div className={cn(clientNameDivClass, "flex items-center gap-2")}>
+                <span className="inline-flex items-center">{displayName}</span>
                 <Link
                   href="/client/settings"
                   title="Settings"
-                  className="rounded-lg border-2 border-transparent p-2 text-arse-black hover:border-arse-magenta/30"
+                  aria-label="Settings"
+                  className="rounded-lg p-2 text-arse-black transition hover:bg-arse-black/10"
                 >
                   <Settings className="h-5 w-5" strokeWidth={2} />
                 </Link>
@@ -97,11 +102,12 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
                   type="button"
                   onClick={handleLogout}
                   title="Sign out"
-                  className="rounded-lg border-2 border-transparent p-2 text-arse-black hover:border-arse-magenta/30"
+                  aria-label="Sign out"
+                  className="rounded-lg p-2 text-arse-black transition hover:bg-arse-black/10"
                 >
                   <LogOut className="h-5 w-5" strokeWidth={2} />
                 </button>
-              </>
+              </div>
             )}
           </div>
         </div>

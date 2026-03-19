@@ -121,7 +121,11 @@ export function LoginPage() {
             <div className="pt-2">
               <button
                 type="submit"
-                className="w-full rounded-full bg-arse-black py-3.5 text-sm font-semibold uppercase tracking-wider text-arse-white transition hover:bg-arse-black/90"
+                className={cn(
+                  "inline-flex w-full items-center justify-center rounded-full border-2 border-arse-black bg-arse-magenta px-4 py-3.5 text-arse-black",
+                  "font-arse-title text-xs font-bold uppercase tracking-wide",
+                  "shadow-[4px_4px_0_0_var(--arse-cyan)] transition hover:translate-x-px hover:translate-y-px hover:shadow-[3px_3px_0_0_var(--arse-cyan)]"
+                )}
               >
                 Sign in
               </button>
