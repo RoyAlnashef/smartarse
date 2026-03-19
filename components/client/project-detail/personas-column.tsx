@@ -38,11 +38,11 @@ export function PersonasColumn({
       )}
     >
       {collapsed ? (
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col items-stretch border-l-2 border-arse-black/10 bg-white py-3">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col items-stretch border-l-2 border-arse-black/10 bg-white">
           <button
             type="button"
             onClick={() => onToggleCollapsed(false)}
-            className="flex min-h-0 flex-1 flex-col items-center gap-2 px-0.5 pt-1 font-arse-title text-[9px] font-bold uppercase tracking-wide text-arse-black transition hover:bg-arse-black/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-magenta focus-visible:ring-inset"
+            className="flex min-h-0 flex-1 flex-col items-center gap-2 px-0 py-2 font-arse-title text-[9px] font-bold uppercase tracking-wide text-arse-black transition hover:bg-arse-black/[0.04] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-magenta focus-visible:ring-inset"
             aria-label="Expand personas column"
           >
             <ChevronLeft className="h-5 w-5 shrink-0" strokeWidth={2.5} aria-hidden />
