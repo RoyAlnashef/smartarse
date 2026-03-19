@@ -7,7 +7,11 @@ import { useParams } from "next/navigation"
 import aiCoin from "@/public/ai-coin.png"
 import { useAuth } from "@/lib/auth-context"
 import { uploadedFiles, conversations as mockConversations } from "@/lib/mock-data"
-import type { ChatMessage, PersonaActivatedEvent } from "@/lib/types"
+import type {
+  ChatMessage,
+  PersonaActivatedEvent,
+  PersonaEndedEvent,
+} from "@/lib/types"
 import { ProjectDetailCard } from "@/components/client/project-detail/project-detail-card"
 import { SourcesSelector } from "@/components/client/project-detail/sources-selector"
 import { ProjectChat } from "@/components/client/project-detail/project-chat"
@@ -39,7 +43,9 @@ export default function ClientProjectDetailPage() {
     () => new Set(projectFiles.filter((f) => f.status === "ready").map((f) => f.id))
   )
   const [messages, setMessages] = useState<ChatMessage[]>(seededMessages)
-  const [personaEvents, setPersonaEvents] = useState<PersonaActivatedEvent[]>([])
+  const [personaEvents, setPersonaEvents] = useState<
+    (PersonaActivatedEvent | PersonaEndedEvent)[]
+  >([])
 
   if (!project) {
     return (
@@ -157,6 +163,17 @@ export default function ClientProjectDetailPage() {
                   {
                     id: `persona-${Date.now()}`,
                     type: "persona_activated",
+                    timestamp: new Date().toISOString(),
+                    personaId,
+                  },
+                ])
+              }}
+              onPersonaEnded={(personaId) => {
+                setPersonaEvents((prev) => [
+                  ...prev,
+                  {
+                    id: `persona-ended-${Date.now()}`,
+                    type: "persona_ended",
                     timestamp: new Date().toISOString(),
                     personaId,
                   },

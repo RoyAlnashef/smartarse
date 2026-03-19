@@ -5,9 +5,10 @@ import { Send, Users } from "lucide-react"
 import type {
   ChatMessage,
   PersonaActivatedEvent,
+  PersonaEndedEvent,
   ChatTimelineItem,
 } from "@/lib/types"
-import { isPersonaActivatedEvent } from "@/lib/types"
+import { isPersonaActivatedEvent, isPersonaEndedEvent } from "@/lib/types"
 import { cn } from "@/lib/utils"
 import {
   MOCK_SEGMENT_PERSONAS,
@@ -103,12 +104,14 @@ export function ProjectChat({
   disabled,
   onSend,
   onPersonaActivated,
+  onPersonaEnded,
 }: {
   messages: ChatMessage[]
-  personaEvents?: PersonaActivatedEvent[]
+  personaEvents?: (PersonaActivatedEvent | PersonaEndedEvent)[]
   disabled?: boolean
   onSend?: (content: string) => void
   onPersonaActivated?: (personaId: string) => void
+  onPersonaEnded?: (personaId: string) => void
 }) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const [value, setValue] = useState("")
@@ -195,8 +198,14 @@ export function ProjectChat({
             onClick={() => setDrawerOpen(true)}
             className="absolute right-3 top-3 z-10 inline-flex items-center gap-2 rounded-xl border-2 border-arse-black bg-white px-3 py-1.5 font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black shadow-[3px_3px_0_0_var(--arse-magenta)] transition hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--arse-magenta)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-magenta sm:right-4 sm:top-4"
           >
+            {appliedPersona ? (
+              <span className="relative flex h-2 w-2 shrink-0" aria-hidden>
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              </span>
+            ) : null}
             <Users className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
-            Persona panel
+            Personas
           </button>
         ) : null}
 
@@ -222,6 +231,22 @@ export function ProjectChat({
                         event={item}
                         persona={persona}
                       />
+                    )
+                  }
+                  if (isPersonaEndedEvent(item)) {
+                    const persona = MOCK_SEGMENT_PERSONAS.find(
+                      (p) => p.id === item.personaId
+                    )
+                    const personaName = persona?.title ?? "a persona"
+                    return (
+                      <p
+                        key={item.id}
+                        className="py-2 text-center font-arse-body text-sm text-arse-black/55"
+                        role="status"
+                        aria-label={`Persona session ended: ${personaName}`}
+                      >
+                        smartA.R.S.E. is no longer speaking as {personaName}.
+                      </p>
                     )
                   }
                   return <MessageBubble key={item.id} message={item} />
@@ -259,7 +284,10 @@ export function ProjectChat({
                     setAppliedPersonaId(id)
                     onPersonaActivated?.(id)
                   }}
-                  onClearPersona={() => setAppliedPersonaId(null)}
+                  onClearPersona={() => {
+                    if (appliedPersonaId) onPersonaEnded?.(appliedPersonaId)
+                    setAppliedPersonaId(null)
+                  }}
                 />
               </div>
             </>

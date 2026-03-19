@@ -359,7 +359,7 @@ export function PersonaDrawer({
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-arse-black/10 px-3 py-3 sm:px-4">
         <div className="min-w-0">
           <p className="font-arse-title text-xs font-bold uppercase tracking-wide text-arse-black">
-            Persona
+            Personas
           </p>
           <p className="font-arse-body text-[11px] text-arse-black/50">
             Choose how smartA.R.S.E speaks to you.
@@ -377,13 +377,23 @@ export function PersonaDrawer({
 
       {appliedPersona ? (
         <div className="shrink-0 border-b border-arse-black/10 px-3 py-2 sm:px-4">
-          <span className="inline-flex items-center gap-2 rounded-full border border-arse-black/10 bg-arse-black/[0.03] px-2.5 py-1 font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black/70">
-            <span className="relative flex h-2 w-2">
+          <div className="inline-flex items-center gap-2 rounded-full border border-arse-black/10 bg-arse-black/[0.03] pl-2.5 pr-1 py-1 font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black/70">
+            <span className="relative flex h-2 w-2 shrink-0">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
             </span>
-            Segment persona — Live
-          </span>
+            <span>Live segment</span>
+            {onClearPersona ? (
+              <button
+                type="button"
+                onClick={onClearPersona}
+                className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-arse-black/50 transition hover:bg-arse-black/10 hover:text-arse-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-magenta"
+                aria-label="End live segment"
+              >
+                <X className="h-3 w-3" strokeWidth={2.5} />
+              </button>
+            ) : null}
+          </div>
         </div>
       ) : null}
 

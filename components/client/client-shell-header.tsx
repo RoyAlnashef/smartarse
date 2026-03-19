@@ -111,7 +111,7 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
             className="flex flex-wrap items-center gap-2 sm:gap-3"
             {...(showGuestHelp ? { "aria-busy": isLoading } : {})}
           >
-            <span className="font-arse-title text-xs font-semibold uppercase tracking-wider text-arse-black">
+            <span className="font-arse-title text-lg font-normal uppercase tracking-wider text-arse-black">
               Hello
             </span>
             {showGuestHelp ? (

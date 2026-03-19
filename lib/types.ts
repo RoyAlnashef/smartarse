@@ -65,13 +65,27 @@ export interface PersonaActivatedEvent {
   personaId: string
 }
 
+/** Inline event when a persona session is ended. */
+export interface PersonaEndedEvent {
+  id: string
+  type: "persona_ended"
+  timestamp: string
+  personaId: string
+}
+
 /** Union of items that appear in the chat timeline (messages + system events). */
-export type ChatTimelineItem = ChatMessage | PersonaActivatedEvent
+export type ChatTimelineItem = ChatMessage | PersonaActivatedEvent | PersonaEndedEvent
 
 export function isPersonaActivatedEvent(
   item: ChatTimelineItem
 ): item is PersonaActivatedEvent {
   return "type" in item && item.type === "persona_activated"
+}
+
+export function isPersonaEndedEvent(
+  item: ChatTimelineItem
+): item is PersonaEndedEvent {
+  return "type" in item && item.type === "persona_ended"
 }
 
 export interface Conversation {
