@@ -10,11 +10,8 @@ import type {
 } from "@/lib/types"
 import { isPersonaActivatedEvent, isPersonaEndedEvent } from "@/lib/types"
 import { cn } from "@/lib/utils"
-import {
-  MOCK_SEGMENT_PERSONAS,
-  PersonaDrawer,
-  type PersonaMock,
-} from "@/components/client/project-detail/persona-drawer"
+import { PERSONA_CHAT_SHELL_CLASS } from "@/components/client/project-detail/persona-chat-shell-classes"
+import { MOCK_SEGMENT_PERSONAS } from "@/components/client/project-detail/persona-drawer"
 
 function Avatar({ label }: { label: string }) {
   return (
@@ -67,7 +64,7 @@ function PersonaEventBubble({
   persona,
 }: {
   event: PersonaActivatedEvent
-  persona: PersonaMock
+  persona: (typeof MOCK_SEGMENT_PERSONAS)[number]
 }) {
   return (
     <div
@@ -102,24 +99,23 @@ export function ProjectChat({
   messages,
   personaEvents = [],
   disabled,
+  appliedPersonaId,
   onSend,
+  onOpenPersonas,
   onPersonaActivated,
   onPersonaEnded,
 }: {
   messages: ChatMessage[]
   personaEvents?: (PersonaActivatedEvent | PersonaEndedEvent)[]
   disabled?: boolean
+  appliedPersonaId: string | null
   onSend?: (content: string) => void
+  onOpenPersonas?: () => void
   onPersonaActivated?: (personaId: string) => void
   onPersonaEnded?: (personaId: string) => void
 }) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const [value, setValue] = useState("")
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const [drawerExiting, setDrawerExiting] = useState(false)
-  const [drawerEntering, setDrawerEntering] = useState(true)
-  const drawerExitingRef = useRef(false)
-  const [appliedPersonaId, setAppliedPersonaId] = useState<string | null>(null)
 
   const appliedPersona = useMemo(
     () =>
@@ -136,39 +132,8 @@ export function ProjectChat({
   }, [messages, personaEvents])
 
   useEffect(() => {
-    if (typeof window === "undefined") return
-    const isLg = window.matchMedia("(min-width: 1024px)").matches
-    if (!isLg) setDrawerOpen(false)
-  }, [])
-
-  useEffect(() => {
-    if (drawerOpen) {
-      setDrawerExiting(false)
-      setDrawerEntering(true)
-      const t = requestAnimationFrame(() => {
-        requestAnimationFrame(() => setDrawerEntering(false))
-      })
-      return () => cancelAnimationFrame(t)
-    }
-  }, [drawerOpen])
-
-  useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [timelineItems])
-
-  function handleDrawerClose() {
-    drawerExitingRef.current = true
-    setDrawerExiting(true)
-  }
-
-  function handleDrawerTransitionEnd(e: React.TransitionEvent) {
-    if (e.target !== e.currentTarget) return
-    if (drawerExitingRef.current) {
-      drawerExitingRef.current = false
-      setDrawerExiting(false)
-      setDrawerOpen(false)
-    }
-  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -186,28 +151,24 @@ export function ProjectChat({
     <section
       className={cn(
         "relative flex flex-col overflow-hidden rounded-3xl border-4 border-arse-magenta bg-white",
-        /* Fixed viewport-relative height so messages scroll inside */
-        "h-[min(32rem,calc(100dvh-10rem))] max-h-[calc(100dvh-8rem)] min-h-[28rem]",
-        "lg:h-[min(42rem,calc(100dvh-2rem))] lg:max-h-[calc(100dvh-1rem)]"
+        PERSONA_CHAT_SHELL_CLASS
       )}
     >
       <div className="relative flex min-h-0 flex-1 flex-col">
-        {!drawerOpen ? (
-          <button
-            type="button"
-            onClick={() => setDrawerOpen(true)}
-            className="absolute right-3 top-3 z-10 inline-flex items-center gap-2 rounded-xl border-2 border-arse-black bg-white px-3 py-1.5 font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black shadow-[3px_3px_0_0_var(--arse-magenta)] transition hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--arse-magenta)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-magenta sm:right-4 sm:top-4"
-          >
-            {appliedPersona ? (
-              <span className="relative flex h-2 w-2 shrink-0" aria-hidden>
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-              </span>
-            ) : null}
-            <Users className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
-            Personas
-          </button>
-        ) : null}
+        <button
+          type="button"
+          onClick={() => onOpenPersonas?.()}
+          className="absolute right-3 top-3 z-10 inline-flex items-center gap-2 rounded-xl border-2 border-arse-black bg-white px-3 py-1.5 font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black shadow-[3px_3px_0_0_var(--arse-magenta)] transition hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--arse-magenta)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-magenta sm:right-4 sm:top-4 lg:hidden"
+        >
+          {appliedPersona ? (
+            <span className="relative flex h-2 w-2 shrink-0" aria-hidden>
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            </span>
+          ) : null}
+          <Users className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
+          Personas
+        </button>
 
         <div className="relative min-h-0 flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto p-4 sm:p-6">
@@ -255,43 +216,6 @@ export function ProjectChat({
             )}
             <div ref={bottomRef} />
           </div>
-
-          {(drawerOpen || drawerExiting) ? (
-            <>
-              <div
-                role="button"
-                tabIndex={0}
-                onClick={handleDrawerClose}
-                onKeyDown={(e) => e.key === "Enter" && handleDrawerClose()}
-                className={cn(
-                  "absolute inset-0 z-10 cursor-pointer bg-black/20 transition-opacity duration-200 ease-out",
-                  drawerEntering || drawerExiting ? "opacity-0" : "opacity-100"
-                )}
-                aria-label="Close persona panel"
-              />
-              <div
-                onTransitionEnd={handleDrawerTransitionEnd}
-                className={cn(
-                  "absolute inset-y-0 right-0 z-20 w-full max-w-[85%] transition-transform duration-200 ease-out lg:max-w-96 lg:w-96",
-                  drawerEntering || drawerExiting ? "translate-x-full" : "translate-x-0"
-                )}
-              >
-                <PersonaDrawer
-                  open={true}
-                  onClose={handleDrawerClose}
-                  appliedPersona={appliedPersona}
-                  onApply={(id) => {
-                    setAppliedPersonaId(id)
-                    onPersonaActivated?.(id)
-                  }}
-                  onClearPersona={() => {
-                    if (appliedPersonaId) onPersonaEnded?.(appliedPersonaId)
-                    setAppliedPersonaId(null)
-                  }}
-                />
-              </div>
-            </>
-          ) : null}
         </div>
 
         <form
@@ -336,4 +260,3 @@ export function ProjectChat({
     </section>
   )
 }
-
