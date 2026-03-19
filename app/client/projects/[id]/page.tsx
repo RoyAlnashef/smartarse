@@ -133,7 +133,7 @@ export default function ClientProjectDetailPage() {
             />
           </aside>
 
-          <div className="min-w-0">
+          <div className="min-h-0 min-w-0">
             <ProjectChat
               messages={messages}
               onSend={(content) => {

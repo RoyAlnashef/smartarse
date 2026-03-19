@@ -1,9 +1,14 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import { Send } from "lucide-react"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { Send, Users } from "lucide-react"
 import type { ChatMessage } from "@/lib/types"
 import { cn } from "@/lib/utils"
+import {
+  MOCK_SEGMENT_PERSONAS,
+  PersonaDrawer,
+  type PersonaMock,
+} from "@/components/client/project-detail/persona-drawer"
 
 function Avatar({ label }: { label: string }) {
   return (
@@ -33,6 +38,30 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   )
 }
 
+function PersonaPinnedAlert({ persona }: { persona: PersonaMock }) {
+  return (
+    <div
+      className="mb-4 rounded-2xl border-2 border-arse-magenta/35 bg-arse-magenta/[0.07] px-4 py-3 text-sm text-arse-black"
+      role="status"
+    >
+      <p className="font-arse-body text-xs text-arse-black/80">
+        <span className="mr-1 inline-block h-1.5 w-1.5 translate-y-[-1px] rounded-full bg-arse-magenta" />{" "}
+        Speaking as — <span className="font-semibold text-arse-black">{persona.title}</span>
+      </p>
+      <p className="mt-2 font-arse-body text-sm leading-relaxed">
+        <span className="font-arse-title font-bold">Segment persona activated.</span> You&apos;re now
+        speaking with a representative voice of{" "}
+        <strong>{persona.title}</strong> (n={persona.surveyN}, {persona.surveyPctLabel}). Average
+        concern: <strong>{persona.avgConcern}</strong>, average sustainable actions:{" "}
+        <strong>{persona.avgActions}</strong>.
+      </p>
+      <p className="mt-2 font-arse-body text-xs text-arse-black/60">
+        Ask about this segment&apos;s views, barriers, or motivations.
+      </p>
+    </div>
+  )
+}
+
 export function ProjectChat({
   messages,
   disabled,
@@ -44,10 +73,26 @@ export function ProjectChat({
 }) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const [value, setValue] = useState("")
+  const [drawerOpen, setDrawerOpen] = useState(true)
+  const [appliedPersonaId, setAppliedPersonaId] = useState<string | null>(null)
+
+  const appliedPersona = useMemo(
+    () =>
+      appliedPersonaId
+        ? (MOCK_SEGMENT_PERSONAS.find((p) => p.id === appliedPersonaId) ?? null)
+        : null,
+    [appliedPersonaId]
+  )
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const isLg = window.matchMedia("(min-width: 1024px)").matches
+    if (!isLg) setDrawerOpen(false)
+  }, [])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
+  }, [messages, appliedPersona])
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -57,63 +102,99 @@ export function ProjectChat({
     setValue("")
   }
 
+  const inputPlaceholder = appliedPersona
+    ? `Ask about ${appliedPersona.title}…`
+    : "Ask me anything…"
+
   return (
-    <section className="flex min-h-[28rem] flex-1 flex-col overflow-hidden rounded-3xl border-4 border-arse-magenta bg-white">
-      <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-        {messages.length === 0 ? (
-          <div className="max-w-xl">
-            <div className="inline-block rounded-2xl rounded-bl-sm border-2 border-arse-black/20 bg-white px-4 py-3 text-sm text-arse-black">
-              Hi there!
+    <section
+      className={cn(
+        "flex flex-col overflow-hidden rounded-3xl border-4 border-arse-magenta bg-white",
+        /* Fixed viewport-relative height so messages scroll inside; drawer matches this height on lg */
+        "h-[min(32rem,calc(100dvh-10rem))] max-h-[calc(100dvh-8rem)] min-h-[28rem]",
+        /* Desktop: +160px taller (32rem + 10rem = 42rem) */
+        "lg:h-[min(42rem,calc(100dvh-2rem))] lg:max-h-[calc(100dvh-1rem)]",
+        "lg:flex-row lg:items-stretch"
+      )}
+    >
+      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
+        {!drawerOpen ? (
+          <button
+            type="button"
+            onClick={() => setDrawerOpen(true)}
+            className="absolute right-3 top-3 z-10 inline-flex items-center gap-2 rounded-xl border-2 border-arse-black bg-white px-3 py-1.5 font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black shadow-[3px_3px_0_0_var(--arse-magenta)] transition hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--arse-magenta)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-magenta sm:right-4 sm:top-4"
+          >
+            <Users className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
+            Persona panel
+          </button>
+        ) : null}
+
+        <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-6">
+          {appliedPersona ? <PersonaPinnedAlert persona={appliedPersona} /> : null}
+
+          {messages.length === 0 ? (
+            <div className="max-w-xl">
+              <div className="inline-block rounded-2xl rounded-bl-sm border-2 border-arse-black/20 bg-white px-4 py-3 text-sm text-arse-black">
+                Hi there!
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {messages.map((m) => (
-              <MessageBubble key={m.id} message={m} />
-            ))}
-          </div>
-        )}
-        <div ref={bottomRef} />
+          ) : (
+            <div className="space-y-4">
+              {messages.map((m) => (
+                <MessageBubble key={m.id} message={m} />
+              ))}
+            </div>
+          )}
+          <div ref={bottomRef} />
+        </div>
+
+        <form
+          onSubmit={handleSubmit}
+          className="flex items-end gap-3 border-t-2 border-arse-black/10 bg-white p-4 sm:p-5"
+        >
+          <label className="sr-only" htmlFor="project-chat-input">
+            Ask a question
+          </label>
+          <textarea
+            id="project-chat-input"
+            rows={1}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault()
+                handleSubmit(e)
+              }
+            }}
+            placeholder={inputPlaceholder}
+            disabled={disabled}
+            className={cn(
+              "block w-full resize-none rounded-xl border-4 border-arse-black bg-arse-cyan px-4 py-3 font-arse-body text-sm text-arse-black placeholder:text-arse-black/45",
+              "focus:outline-none focus:ring-2 focus:ring-arse-magenta disabled:opacity-50"
+            )}
+          />
+          <button
+            type="submit"
+            disabled={!value.trim() || disabled}
+            className={cn(
+              "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-4 border-arse-black bg-white text-arse-black",
+              "shadow-[4px_4px_0_0_var(--arse-magenta)] transition hover:translate-x-px hover:translate-y-px hover:shadow-[3px_3px_0_0_var(--arse-magenta)]",
+              "disabled:opacity-40 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[4px_4px_0_0_var(--arse-magenta)]"
+            )}
+          >
+            <Send className="h-4 w-4" strokeWidth={2.5} />
+            <span className="sr-only">Send message</span>
+          </button>
+        </form>
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="flex items-end gap-3 border-t-2 border-arse-black/10 bg-white p-4 sm:p-5"
-      >
-        <label className="sr-only" htmlFor="project-chat-input">
-          Ask a question
-        </label>
-        <textarea
-          id="project-chat-input"
-          rows={1}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault()
-              handleSubmit(e)
-            }
-          }}
-          placeholder="Ask me anything…"
-          disabled={disabled}
-          className={cn(
-            "block w-full resize-none rounded-xl border-4 border-arse-black bg-arse-cyan px-4 py-3 font-arse-body text-sm text-arse-black placeholder:text-arse-black/45",
-            "focus:outline-none focus:ring-2 focus:ring-arse-magenta disabled:opacity-50"
-          )}
-        />
-        <button
-          type="submit"
-          disabled={!value.trim() || disabled}
-          className={cn(
-            "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-4 border-arse-black bg-white text-arse-black",
-            "shadow-[4px_4px_0_0_var(--arse-magenta)] transition hover:translate-x-px hover:translate-y-px hover:shadow-[3px_3px_0_0_var(--arse-magenta)]",
-            "disabled:opacity-40 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-[4px_4px_0_0_var(--arse-magenta)]"
-          )}
-        >
-          <Send className="h-4 w-4" strokeWidth={2.5} />
-          <span className="sr-only">Send message</span>
-        </button>
-      </form>
+      <PersonaDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        appliedPersona={appliedPersona}
+        onApply={(id) => setAppliedPersonaId(id)}
+        onClearPersona={() => setAppliedPersonaId(null)}
+      />
     </section>
   )
 }
