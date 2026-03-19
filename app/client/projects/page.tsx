@@ -73,8 +73,8 @@ export default function ClientProjectsPage() {
         </div>
 
         {/* Projects grid + side label */}
-        <div className="relative mt-14 flex gap-6 lg:gap-10">
-          <aside className="relative hidden w-28 shrink-0 lg:block">
+        <div className="relative mt-14 grid grid-cols-1 gap-6 lg:grid-cols-4 lg:gap-10">
+          <aside className="relative hidden lg:block lg:col-span-1">
             <div
               className="absolute -left-4 top-8 h-40 w-40 rounded-full opacity-40"
               style={{
@@ -83,23 +83,22 @@ export default function ClientProjectsPage() {
               }}
               aria-hidden
             />
-            <p
-              className="font-arse-title absolute left-0 top-24 origin-left -rotate-90 whitespace-nowrap text-4xl font-light uppercase tracking-[0.35em] text-arse-black"
-              style={{ letterSpacing: "0.2em" }}
-            >
-              Projects
-            </p>
-            <p className="absolute left-8 top-[14rem] max-w-[10rem] text-xs leading-snug text-arse-black/50">
-              Space for secondary copy if needed.
-            </p>
+            <div className="relative flex flex-col gap-2 items-end text-right">
+              <p className="font-arse-title text-4xl font-light uppercase tracking-[0.2em] tracking-wider text-arse-black">
+                Projects
+              </p>
+              <p className="mt-1 max-w-[10rem] text-sm font-bold leading-snug text-arse-black">
+                Space for secondary copy if needed.
+              </p>
+            </div>
           </aside>
 
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 lg:col-span-3">
             <p className="mb-6 font-arse-title text-2xl font-light uppercase tracking-[0.2em] text-arse-black lg:hidden">
               Projects
             </p>
             {filtered.length > 0 ? (
-              <div className="grid gap-6 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {filtered.map((project) => (
                   <ClientProjectCard key={project.id} project={project} />
                 ))}
