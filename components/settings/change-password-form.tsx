@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input"
 import { SettingsBlock } from "@/components/settings/settings-block"
 
 export type ChangePasswordValues = {
-  currentPassword: string
   newPassword: string
   confirmPassword: string
 }
@@ -23,7 +22,6 @@ export function ChangePasswordForm({
   savingLabel?: string
   onSave?: (values: ChangePasswordValues) => Promise<void> | void
 }) {
-  const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
@@ -32,12 +30,11 @@ export function ChangePasswordForm({
 
   const canSubmit = useMemo(() => {
     return (
-      currentPassword.trim().length > 0 &&
       newPassword.trim().length > 0 &&
       confirmPassword.trim().length > 0 &&
       !isSaving
     )
-  }, [confirmPassword, currentPassword, isSaving, newPassword])
+  }, [confirmPassword, isSaving, newPassword])
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -45,7 +42,6 @@ export function ChangePasswordForm({
     setSuccess(null)
 
     const values: ChangePasswordValues = {
-      currentPassword,
       newPassword,
       confirmPassword,
     }
@@ -63,7 +59,6 @@ export function ChangePasswordForm({
     try {
       await onSave?.(values)
       setSuccess("Password updated successfully (mock).")
-      setCurrentPassword("")
       setNewPassword("")
       setConfirmPassword("")
     } catch (err) {
@@ -81,17 +76,6 @@ export function ChangePasswordForm({
       icon={<Lock className="h-5 w-5 text-muted-foreground" />}
     >
       <form className="space-y-4" onSubmit={handleSubmit}>
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium">Current password</label>
-          <Input
-            type="password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            placeholder="Enter current password"
-            autoComplete="current-password"
-          />
-        </div>
-
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <label className="text-sm font-medium">New password</label>
