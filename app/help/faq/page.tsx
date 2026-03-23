@@ -1,5 +1,3 @@
-import Link from "next/link"
-
 export default function PublicFaqPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-16 font-sans text-foreground">
@@ -53,9 +51,14 @@ export default function PublicFaqPage() {
           <h2 className="text-base font-semibold">How do I get help?</h2>
           <p className="mt-2 text-muted-foreground leading-relaxed">
             Email the team at{" "}
-            <Link href="/help/contact" className="font-semibold text-arse-pink hover:underline">
+            <a
+              href="https://mail.google.com/mail/?view=cm&fs=1&to=smart-arse@disrupt-insight.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-arse-pink hover:underline"
+            >
               Contact the team
-            </Link>
+            </a>
             .
           </p>
         </section>

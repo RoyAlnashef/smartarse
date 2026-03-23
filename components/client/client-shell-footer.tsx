@@ -13,9 +13,14 @@ export function ClientShellFooter() {
           Privacy policy
         </Link>
         <span className="text-arse-black/40">|</span>
-        <Link href="/help/contact" className="hover:text-arse-pink">
+        <a
+          href="https://mail.google.com/mail/?view=cm&fs=1&to=smart-arse@disrupt-insight.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:text-arse-pink"
+        >
           Contact the team
-        </Link>
+        </a>
       </nav>
       <p className="shrink-0 text-arse-black/70">
         © Disrupt Insight {new Date().getFullYear()}

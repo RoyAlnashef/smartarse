@@ -1,5 +1,3 @@
-import Link from "next/link"
-
 export default function PublicPrivacyPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-16 font-sans text-foreground">
@@ -62,9 +60,14 @@ export default function PublicPrivacyPage() {
           <h2 className="text-base font-semibold">Contact us</h2>
           <p className="mt-2 text-muted-foreground leading-relaxed">
             For privacy questions, visit{" "}
-            <Link href="/help/contact" className="font-semibold text-arse-pink hover:underline">
+            <a
+              href="https://mail.google.com/mail/?view=cm&fs=1&to=smart-arse@disrupt-insight.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-arse-pink hover:underline"
+            >
               Contact the team
-            </Link>
+            </a>
             .
           </p>
           <p className="mt-3 text-xs text-muted-foreground">
