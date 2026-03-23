@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Lock, User } from "lucide-react"
+import { Eye, EyeOff, Lock, User } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
@@ -22,6 +22,7 @@ export function LoginPage() {
   const [resetStatus, setResetStatus] = useState<string | null>(null)
   const [isResetting, setIsResetting] = useState(false)
   const [mode, setMode] = useState<LoginFormMode>("signin")
+  const [showPassword, setShowPassword] = useState(false)
   const { login } = useAuth()
   const router = useRouter()
 
@@ -139,20 +140,35 @@ export function LoginPage() {
               </div>
               <div className="flex items-center gap-3">
                 <Lock className="h-6 w-6 shrink-0 text-arse-pink" strokeWidth={1.75} aria-hidden />
-                <input
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password"
-                  className={cn(
-                    "min-h-12 flex-1 rounded-full border-2 border-arse-pink bg-arse-white/90 px-5 py-3 text-sm text-arse-black",
-                    "placeholder:text-arse-black/40",
-                    "focus:border-arse-black focus:outline-none focus:ring-2 focus:ring-arse-black/15"
-                  )}
-                />
+                <div className="relative min-w-0 flex-1">
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Password"
+                    className={cn(
+                      "min-h-12 w-full rounded-full border-2 border-arse-pink bg-arse-white/90 py-3 pl-5 pr-12 text-sm text-arse-black",
+                      "placeholder:text-arse-black/40",
+                      "focus:border-arse-black focus:outline-none focus:ring-2 focus:ring-arse-black/15"
+                    )}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 rounded-full p-2 text-arse-pink outline-none transition hover:bg-arse-black/5 focus-visible:ring-2 focus-visible:ring-arse-black/25"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+                    ) : (
+                      <Eye className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+                    )}
+                  </button>
+                </div>
               </div>
 
               {error ? <p className="text-center text-sm text-red-700">{error}</p> : null}
