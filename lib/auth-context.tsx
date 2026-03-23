@@ -11,6 +11,7 @@ import {
 import type { User, UserRole } from "./types"
 import { users, clients, projects } from "./mock-data"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { fetchPublicUserRow, type PublicUserRow } from "@/lib/supabase/fetch-user-profile"
 
 interface AuthContextValue {
   user: User | null
@@ -40,32 +41,55 @@ function getMockUserByEmail(email: string) {
   return users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase()) ?? null
 }
 
-function deriveUserFromSupabase(sessionUser: {
+type SessionUserShape = {
   id: string
   email?: string
   user_metadata?: Record<string, unknown>
   app_metadata?: Record<string, unknown>
-}): User {
-  const email = sessionUser.email ?? ""
+}
+
+function buildUserFromSession(sessionUser: SessionUserShape, dbRow: PublicUserRow | null): User {
+  const email = sessionUser.email ?? dbRow?.email ?? ""
   const matchedMock = getMockUserByEmail(email)
-  const appRole = sessionUser.app_metadata?.role
-  const userRole = sessionUser.user_metadata?.role
-  const role = toSupportedRole(appRole ?? userRole ?? matchedMock?.role)
+
+  const role = dbRow
+    ? toSupportedRole(dbRow.role)
+    : toSupportedRole(
+        sessionUser.app_metadata?.role ??
+          sessionUser.user_metadata?.role ??
+          matchedMock?.role
+      )
+
+  const clientId =
+    dbRow?.organization_id ??
+    (typeof sessionUser.user_metadata?.clientId === "string"
+      ? (sessionUser.user_metadata.clientId as string)
+      : undefined) ??
+    matchedMock?.clientId
 
   return {
     id: matchedMock?.id ?? sessionUser.id,
-    name: matchedMock?.name ?? (sessionUser.user_metadata?.full_name as string) ?? email.split("@")[0] ?? "User",
+    name:
+      matchedMock?.name ??
+      (sessionUser.user_metadata?.full_name as string) ??
+      email.split("@")[0] ??
+      "User",
     email,
     role,
-    clientId:
-      (typeof sessionUser.user_metadata?.clientId === "string"
-        ? (sessionUser.user_metadata.clientId as string)
-        : undefined) ?? matchedMock?.clientId,
+    clientId,
     avatarUrl: matchedMock?.avatarUrl,
     status: matchedMock?.status ?? "active",
     lastLogin: new Date().toISOString(),
-    createdAt: matchedMock?.createdAt ?? new Date().toISOString(),
+    createdAt: dbRow?.created_at ?? matchedMock?.createdAt ?? new Date().toISOString(),
   }
+}
+
+async function resolveUser(
+  supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>,
+  sessionUser: SessionUserShape
+): Promise<User> {
+  const dbRow = await fetchPublicUserRow(supabase, sessionUser.id)
+  return buildUserFromSession(sessionUser, dbRow)
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -81,22 +105,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return
     }
 
-    supabase.auth
-      .getUser()
-      .then(({ data }) => {
-        if (!isMounted) return
-        setCurrentUser(data.user ? deriveUserFromSupabase(data.user) : null)
-      })
-      .finally(() => {
-        if (isMounted) setIsLoading(false)
-      })
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (!isMounted) return
-      setCurrentUser(session?.user ? deriveUserFromSupabase(session.user) : null)
-      setIsLoading(false)
+      // Defer async work: awaiting inside this callback can deadlock Supabase Auth's
+      // internal lock (session never settles, isLoading stays true forever).
+      queueMicrotask(() => {
+        void (async () => {
+          if (!isMounted) return
+          try {
+            if (!session?.user) {
+              setCurrentUser(null)
+              return
+            }
+            const user = await resolveUser(supabase, session.user)
+            if (isMounted) setCurrentUser(user)
+          } catch {
+            if (isMounted && session?.user) {
+              setCurrentUser(buildUserFromSession(session.user, null))
+            }
+          } finally {
+            if (isMounted) setIsLoading(false)
+          }
+        })()
+      })
     })
 
     return () => {
@@ -110,7 +142,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (supabase) {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error || !data.user) return null
-      const mapped = deriveUserFromSupabase(data.user)
+      const mapped = await resolveUser(supabase, data.user)
       setCurrentUser(mapped)
       return mapped
     }

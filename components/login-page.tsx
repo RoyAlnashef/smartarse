@@ -9,11 +9,6 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
 import type { UserRole } from "@/lib/types"
 
-const quickLogins: { role: UserRole; label: string; email: string; description: string }[] = [
-  { role: "admin", label: "Admin", email: "sarah@disrupt-insight.com", description: "Full system access" },
-  { role: "client", label: "Client", email: "marcus@acmeretail.com", description: "Client project view" },
-]
-
 function postLoginPath(role: UserRole) {
   return role === "admin" ? "/dashboard" : "/client/projects"
 }
@@ -40,13 +35,6 @@ export function LoginPage() {
     } else {
       setError("Sign in failed. Check your credentials and try again.")
     }
-  }
-
-  function handleQuickLogin(emailAddr: string) {
-    setEmail(emailAddr)
-    setError("")
-    setResetStatus(null)
-    setMode("signin")
   }
 
   async function handleForgotPasswordSubmit(e: React.FormEvent) {
@@ -237,42 +225,6 @@ export function LoginPage() {
               </div>
             </form>
           )}
-
-          {mode === "signin" ? (
-            <div className="mt-10">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-arse-black/15" />
-                </div>
-                <p className="relative mx-auto inline-block bg-[#b8f7f7] px-3 text-xs font-medium uppercase tracking-wider text-arse-black/60">
-                  Quick demo access
-                </p>
-              </div>
-              <ul className="mt-4 space-y-2">
-                {quickLogins.map((item) => (
-                  <li key={item.role}>
-                    <button
-                      type="button"
-                      onClick={() => handleQuickLogin(item.email)}
-                      className={cn(
-                        "flex w-full items-center justify-between gap-3 rounded-2xl border-2 border-arse-black/20 bg-arse-white/80 px-4 py-3 text-left",
-                        "transition hover:border-arse-pink hover:bg-arse-white"
-                      )}
-                    >
-                      <div>
-                        <p className="font-arse-title text-sm font-bold text-arse-black">{item.label}</p>
-                        <p className="text-xs text-arse-black/55">{item.description}</p>
-                      </div>
-                      <span className="max-w-[48%] truncate text-xs text-arse-black/50">{item.email}</span>
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-3 text-center text-xs text-arse-black/55">
-                Select an email above, then enter password to sign in.
-              </p>
-            </div>
-          ) : null}
         </div>
       </main>
 
