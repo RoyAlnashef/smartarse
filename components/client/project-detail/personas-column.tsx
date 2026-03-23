@@ -38,7 +38,7 @@ export function PersonasColumn({
       )}
     >
       {collapsed ? (
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col items-stretch border-l-2 border-arse-black/10 bg-white">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col items-stretch bg-white">
           <button
             type="button"
             onClick={() => onToggleCollapsed(false)}
