@@ -18,6 +18,7 @@ import { ACTIVE_USER_ROLES, type UserRole } from "@/lib/types"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["admin", "client"] },
+  { name: "Projects", href: "/projects", icon: FolderOpen, roles: ["admin", "client"] },
   { name: "Upload", href: "/upload", icon: Upload, roles: ["admin"] },
   { name: "Users", href: "/users", icon: Users, roles: ["admin"] },
   { name: "Analytics", href: "/analytics", icon: BarChart3, roles: ["admin"] },

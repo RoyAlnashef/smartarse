@@ -173,7 +173,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
       <div className="flex flex-col gap-3 border-b border-border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between lg:px-6">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => router.push("/dashboard")}
+            onClick={() => router.push("/projects")}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
