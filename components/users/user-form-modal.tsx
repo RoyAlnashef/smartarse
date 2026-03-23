@@ -94,7 +94,7 @@ export function UserFormModal({
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-foreground">Client</label>
+                <label className="block text-sm font-medium text-foreground">Organization</label>
                 <select
                   value={clientId}
                   onChange={(e) => setClientId(e.target.value)}

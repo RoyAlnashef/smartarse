@@ -38,7 +38,7 @@ export function UserTable({
             <tr className="border-b border-border bg-muted/50">
               <th className="px-4 py-3 font-medium text-muted-foreground">User</th>
               <th className="hidden px-4 py-3 font-medium text-muted-foreground sm:table-cell">Role</th>
-              <th className="hidden px-4 py-3 font-medium text-muted-foreground md:table-cell">Client</th>
+              <th className="hidden px-4 py-3 font-medium text-muted-foreground md:table-cell">Organization</th>
               <th className="hidden px-4 py-3 font-medium text-muted-foreground lg:table-cell">Last Login</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">
