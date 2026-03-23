@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import { X } from "lucide-react"
 import type { User, UserRole } from "@/lib/types"
 import { clients } from "@/lib/mock-data"
@@ -35,15 +36,13 @@ export function UserFormModal({
 
   if (!open) return null
 
-  return (
+  return createPortal(
     <>
-      {/* Backdrop */}
       <div
-        className="fixed inset-0 z-50 bg-black/50"
+        className="fixed inset-0 z-[100] bg-black/50"
         onClick={onClose}
       />
-      {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
         <div
           className="w-full max-w-md rounded-xl border border-border bg-card shadow-xl"
           onClick={(e) => e.stopPropagation()}
@@ -129,6 +128,7 @@ export function UserFormModal({
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body
   )
 }

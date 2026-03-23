@@ -5,13 +5,13 @@ import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
   FolderOpen,
+  Building2,
   Upload,
   Users,
   BarChart3,
   HelpCircle,
   Shield,
   Settings,
-  ChevronDown,
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { ACTIVE_USER_ROLES, type UserRole } from "@/lib/types"
@@ -19,8 +19,9 @@ import { ACTIVE_USER_ROLES, type UserRole } from "@/lib/types"
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["admin", "client"] },
   { name: "Projects", href: "/projects", icon: FolderOpen, roles: ["admin", "client"] },
-  { name: "Upload", href: "/upload", icon: Upload, roles: ["admin"] },
   { name: "Users", href: "/users", icon: Users, roles: ["admin"] },
+  { name: "Organizations", href: "/organizations", icon: Building2, roles: ["admin"] },
+  { name: "Upload", href: "/upload", icon: Upload, roles: ["admin"] },
   { name: "Analytics", href: "/analytics", icon: BarChart3, roles: ["admin"] },
   { name: "FAQ", href: "/faq", icon: HelpCircle, roles: ["admin", "client"] },
   { name: "Privacy", href: "/privacy", icon: Shield, roles: ["admin", "client"] },

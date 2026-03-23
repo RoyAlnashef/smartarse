@@ -31,6 +31,17 @@ export interface Client {
   userIds: string[]
 }
 
+export interface Organization {
+  id: string
+  name: string
+  projectIds: string[]
+  userIds: string[]
+  /** Matches Supabase `organizations.credit_balance` */
+  creditBalance: number
+  status: "active" | "inactive"
+  createdAt: string
+}
+
 export interface Project {
   id: string
   name: string

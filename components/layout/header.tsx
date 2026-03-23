@@ -17,6 +17,7 @@ import { clients } from "@/lib/mock-data"
 const pageTitles: Record<string, string> = {
   "/dashboard": "Dashboard",
   "/projects": "Projects",
+  "/organizations": "Organizations",
   "/upload": "Upload Management",
   "/users": "User Management",
   "/analytics": "Analytics",

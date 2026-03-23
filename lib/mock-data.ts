@@ -1,6 +1,7 @@
 import type {
   User,
   Client,
+  Organization,
   Project,
   UploadedFile,
   Conversation,
@@ -116,6 +117,37 @@ export const clients: Client[] = [
     usedCredits: 341,
     projectIds: ["p6", "p7", "p8"],
     userIds: ["u8"],
+  },
+]
+
+// ── Organizations (dashboard admin; correlate projects + users) ──
+export const organizations: Organization[] = [
+  {
+    id: "o1",
+    name: "Acme Retail",
+    projectIds: ["p1", "p2", "p3"],
+    userIds: ["u3", "u5", "u6"],
+    creditBalance: 313,
+    status: "active",
+    createdAt: "2025-01-10T00:00:00Z",
+  },
+  {
+    id: "o2",
+    name: "Greenleaf Foods",
+    projectIds: ["p4", "p5"],
+    userIds: ["u4", "u7"],
+    creditBalance: 208,
+    status: "active",
+    createdAt: "2025-02-01T00:00:00Z",
+  },
+  {
+    id: "o3",
+    name: "NovaTech",
+    projectIds: ["p6", "p7", "p8"],
+    userIds: ["u8"],
+    creditBalance: 409,
+    status: "inactive",
+    createdAt: "2025-03-15T00:00:00Z",
   },
 ]
 
