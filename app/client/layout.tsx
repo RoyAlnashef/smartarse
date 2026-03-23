@@ -18,10 +18,14 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     }
     if (user.role === "admin") {
       router.replace("/dashboard")
+      return
+    }
+    if (user.role !== "client") {
+      router.replace("/")
     }
   }, [user, isLoading, router])
 
-  if (isLoading || !user || user.role === "admin") {
+  if (isLoading || !user || user.role !== "client") {
     return (
       <div className="arse-surface-bg flex min-h-screen items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-2 border-arse-pink border-t-transparent" />

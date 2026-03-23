@@ -14,16 +14,16 @@ import {
   ChevronDown,
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
-import type { UserRole } from "@/lib/types"
+import { ACTIVE_USER_ROLES, type UserRole } from "@/lib/types"
 
 const navigation = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["admin", "client", "user"] },
+  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["admin", "client"] },
   { name: "Upload", href: "/upload", icon: Upload, roles: ["admin"] },
   { name: "Users", href: "/users", icon: Users, roles: ["admin"] },
   { name: "Analytics", href: "/analytics", icon: BarChart3, roles: ["admin"] },
-  { name: "FAQ", href: "/faq", icon: HelpCircle, roles: ["admin", "client", "user"] },
-  { name: "Privacy", href: "/privacy", icon: Shield, roles: ["admin", "client", "user"] },
-  { name: "Settings", href: "/settings", icon: Settings, roles: ["admin", "client", "user"] },
+  { name: "FAQ", href: "/faq", icon: HelpCircle, roles: ["admin", "client"] },
+  { name: "Privacy", href: "/privacy", icon: Shield, roles: ["admin", "client"] },
+  { name: "Settings", href: "/settings", icon: Settings, roles: ["admin", "client"] },
 ]
 
 const roleBadgeColors: Record<UserRole, string> = {
@@ -82,7 +82,7 @@ export function Sidebar() {
           Demo Role
         </p>
         <div className="flex gap-1">
-          {(["admin", "client", "user"] as UserRole[]).map((role) => (
+          {ACTIVE_USER_ROLES.map((role) => (
             <button
               key={role}
               onClick={() => switchRole(role)}

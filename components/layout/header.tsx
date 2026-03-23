@@ -126,10 +126,10 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
               Settings
             </button>
             <button
-              onClick={() => {
+              onClick={async () => {
                 setDropdownOpen(false)
-                logout()
-                router.push("/")
+                await logout()
+                router.replace("/")
               }}
               className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-muted"
             >

@@ -1,12 +1,33 @@
 "use client"
 
+import { useMemo, useState } from "react"
+import { Bell, User } from "lucide-react"
+import { ChangePasswordForm, type ChangePasswordValues } from "@/components/settings/change-password-form"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { useAuth } from "@/lib/auth-context"
-import { Bell, Lock, User } from "lucide-react"
 
 export default function SettingsPage() {
   const { user } = useAuth()
+  const [lastSavedAt, setLastSavedAt] = useState<string | null>(null)
 
   if (!user) return null
+
+  const profileInitials = useMemo(() => {
+    return user.name
+      .split(" ")
+      .map((n) => n.trim()[0])
+      .filter(Boolean)
+      .join("")
+      .toUpperCase()
+  }, [user.name])
+
+  async function handleSavePassword(values: ChangePasswordValues) {
+    const supabase = getSupabaseBrowserClient()
+    if (!supabase) throw new Error("Supabase unavailable")
+    const { error } = await supabase.auth.updateUser({ password: values.newPassword })
+    if (error) throw error
+    setLastSavedAt(new Date().toISOString())
+  }
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
@@ -26,10 +47,7 @@ export default function SettingsPage() {
         <div className="space-y-4 rounded-xl border border-border bg-card p-6">
           <div className="flex items-center gap-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-dark-100 text-xl font-semibold text-dark-600">
-              {user.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")}
+              {profileInitials}
             </div>
             <div>
               <p className="font-medium text-foreground">{user.name}</p>
@@ -64,47 +82,7 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      {/* Password */}
-      <section className="space-y-4">
-        <div className="flex items-center gap-2">
-          <Lock className="h-5 w-5 text-muted-foreground" />
-          <h2 className="text-lg font-semibold text-foreground">Change Password</h2>
-        </div>
-        <div className="space-y-4 rounded-xl border border-border bg-card p-6">
-          <div>
-            <label className="block text-sm font-medium text-foreground">
-              Current Password
-            </label>
-            <input
-              type="password"
-              placeholder="Enter current password"
-              className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder-muted-foreground focus:border-mint-400 focus:outline-none focus:ring-2 focus:ring-mint-300/20"
-            />
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="block text-sm font-medium text-foreground">
-                New Password
-              </label>
-              <input
-                type="password"
-                placeholder="Enter new password"
-                className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder-muted-foreground focus:border-mint-400 focus:outline-none focus:ring-2 focus:ring-mint-300/20"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-foreground">
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                placeholder="Confirm new password"
-                className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder-muted-foreground focus:border-mint-400 focus:outline-none focus:ring-2 focus:ring-mint-300/20"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
+      <ChangePasswordForm onSave={handleSavePassword} />
 
       {/* Notifications */}
       <section className="space-y-4">
@@ -142,6 +120,11 @@ export default function SettingsPage() {
           Save Changes
         </button>
       </div>
+      {lastSavedAt ? (
+        <p className="text-center text-xs text-muted-foreground">
+          Password updated at {new Date(lastSavedAt).toLocaleTimeString()}
+        </p>
+      ) : null}
     </div>
   )
 }

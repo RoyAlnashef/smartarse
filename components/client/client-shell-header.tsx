@@ -29,8 +29,8 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
 
   const homeHref = isHelp && showGuestHelp ? "/" : "/client/projects"
 
-  function handleLogout() {
-    logout()
+  async function handleLogout() {
+    await logout()
     router.replace("/")
   }
 

@@ -17,9 +17,11 @@ export function ChangePasswordForm({
   onSave,
   savingLabel = "Saving…",
   className,
+  successMessage = "Password updated successfully.",
 }: {
   className?: string
   savingLabel?: string
+  successMessage?: string
   onSave?: (values: ChangePasswordValues) => Promise<void> | void
 }) {
   const [newPassword, setNewPassword] = useState("")
@@ -58,7 +60,7 @@ export function ChangePasswordForm({
     setIsSaving(true)
     try {
       await onSave?.(values)
-      setSuccess("Password updated successfully (mock).")
+      setSuccess(successMessage)
       setNewPassword("")
       setConfirmPassword("")
     } catch (err) {

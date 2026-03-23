@@ -10,13 +10,14 @@ import {
 } from "react"
 import type { User, UserRole } from "./types"
 import { users, clients, projects } from "./mock-data"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 
 interface AuthContextValue {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
-  login: (email: string) => User | null
-  logout: () => void
+  login: (email: string, password: string) => Promise<User | null>
+  logout: () => Promise<void>
   switchRole: (role: UserRole) => void
   getVisibleProjects: () => typeof projects
   getClientForUser: () => (typeof clients)[0] | null
@@ -30,25 +31,40 @@ const roleDefaults: Record<UserRole, string> = {
   user: "u5",
 }
 
-function getUserFromStorage(): User | null {
-  if (typeof window === "undefined") return null
-  try {
-    const stored = sessionStorage.getItem("disrupt-user")
-    if (!stored) return null
-    const parsed = JSON.parse(stored)
-    // Re-hydrate against mock data to ensure full object
-    return users.find((u) => u.id === parsed.id) ?? null
-  } catch {
-    return null
-  }
+function toSupportedRole(role: unknown): UserRole {
+  if (role === "admin" || role === "client" || role === "user") return role
+  return "client"
 }
 
-function setUserToStorage(user: User | null) {
-  if (typeof window === "undefined") return
-  if (user) {
-    sessionStorage.setItem("disrupt-user", JSON.stringify({ id: user.id }))
-  } else {
-    sessionStorage.removeItem("disrupt-user")
+function getMockUserByEmail(email: string) {
+  return users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase()) ?? null
+}
+
+function deriveUserFromSupabase(sessionUser: {
+  id: string
+  email?: string
+  user_metadata?: Record<string, unknown>
+  app_metadata?: Record<string, unknown>
+}): User {
+  const email = sessionUser.email ?? ""
+  const matchedMock = getMockUserByEmail(email)
+  const appRole = sessionUser.app_metadata?.role
+  const userRole = sessionUser.user_metadata?.role
+  const role = toSupportedRole(appRole ?? userRole ?? matchedMock?.role)
+
+  return {
+    id: matchedMock?.id ?? sessionUser.id,
+    name: matchedMock?.name ?? (sessionUser.user_metadata?.full_name as string) ?? email.split("@")[0] ?? "User",
+    email,
+    role,
+    clientId:
+      (typeof sessionUser.user_metadata?.clientId === "string"
+        ? (sessionUser.user_metadata.clientId as string)
+        : undefined) ?? matchedMock?.clientId,
+    avatarUrl: matchedMock?.avatarUrl,
+    status: matchedMock?.status ?? "active",
+    lastLogin: new Date().toISOString(),
+    createdAt: matchedMock?.createdAt ?? new Date().toISOString(),
   }
 }
 
@@ -56,28 +72,62 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Hydrate from sessionStorage on mount
   useEffect(() => {
-    const stored = getUserFromStorage()
-    if (stored) {
-      setCurrentUser(stored)
+    let isMounted = true
+    const supabase = getSupabaseBrowserClient()
+
+    if (!supabase) {
+      setIsLoading(false)
+      return
     }
-    setIsLoading(false)
+
+    supabase.auth
+      .getUser()
+      .then(({ data }) => {
+        if (!isMounted) return
+        setCurrentUser(data.user ? deriveUserFromSupabase(data.user) : null)
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false)
+      })
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!isMounted) return
+      setCurrentUser(session?.user ? deriveUserFromSupabase(session.user) : null)
+      setIsLoading(false)
+    })
+
+    return () => {
+      isMounted = false
+      subscription.unsubscribe()
+    }
   }, [])
 
-  const login = useCallback((email: string) => {
-    const found = users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase())
-    if (found) {
-      setCurrentUser(found)
-      setUserToStorage(found)
-      return found
+  const login = useCallback(async (email: string, password: string) => {
+    const supabase = getSupabaseBrowserClient()
+    if (supabase) {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error || !data.user) return null
+      const mapped = deriveUserFromSupabase(data.user)
+      setCurrentUser(mapped)
+      return mapped
     }
-    return null
+
+    // Compatibility fallback while env keys or auth setup are incomplete.
+    const found = getMockUserByEmail(email)
+    if (!found) return null
+    setCurrentUser(found)
+    return found
   }, [])
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    const supabase = getSupabaseBrowserClient()
+    if (supabase) {
+      await supabase.auth.signOut()
+    }
     setCurrentUser(null)
-    setUserToStorage(null)
   }, [])
 
   const switchRole = useCallback((role: UserRole) => {
@@ -85,7 +135,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const found = users.find((u) => u.id === userId)
     if (found) {
       setCurrentUser(found)
-      setUserToStorage(found)
     }
   }, [])
 

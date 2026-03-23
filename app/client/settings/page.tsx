@@ -11,6 +11,7 @@ import {
 import { PrivacyDataExportSection } from "@/components/settings/privacy-data-export-section"
 import { SettingsBlock } from "@/components/settings/settings-block"
 import { useAuth } from "@/lib/auth-context"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 
 function getSettingsStorageKey(userId: string) {
   // Mock-only persistence for the current browser session.
@@ -29,9 +30,14 @@ export default function ClientSettingsPage() {
   // Kept as internal mock persistence for password updates only.
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null)
 
-  async function handleSavePassword(_values: ChangePasswordValues) {
-    // Mock persistence: never store passwords; only simulate latency/success.
-    await new Promise((r) => setTimeout(r, 400))
+  async function handleSavePassword(values: ChangePasswordValues) {
+    const supabase = getSupabaseBrowserClient()
+    if (!supabase) throw new Error("Supabase unavailable")
+
+    const { error } = await supabase.auth.updateUser({
+      password: values.newPassword,
+    })
+    if (error) throw error
 
     if (!user || !storageKey) return
 

@@ -1,4 +1,13 @@
 export type UserRole = "admin" | "client" | "user"
+export type ActiveUserRole = "admin" | "client"
+export type UserRoleLabel = "disrupt" | "researcher"
+
+export const ACTIVE_USER_ROLES: ActiveUserRole[] = ["admin", "client"]
+
+export const USER_ROLE_LABELS: Record<ActiveUserRole, UserRoleLabel> = {
+  admin: "disrupt",
+  client: "researcher",
+}
 
 export interface User {
   id: string
