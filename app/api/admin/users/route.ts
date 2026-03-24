@@ -133,6 +133,7 @@ export async function POST(request: Request) {
       name: payload.name,
       role: payload.role,
       organization_id: payload.organizationId,
+      status: "active",
     },
     { onConflict: "id" }
   )

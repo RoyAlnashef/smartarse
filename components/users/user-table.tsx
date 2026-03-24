@@ -86,7 +86,7 @@ export function UserTable({
                       <div className="inline-flex items-center gap-2">
                         <span>{org.name}</span>
                         {org.status === "inactive" && (
-                          <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                          <span className="inline-flex items-center rounded-full bg-dark-100 px-2 py-0.5 text-xs font-medium text-dark-500">
                             Inactive
                           </span>
                         )}

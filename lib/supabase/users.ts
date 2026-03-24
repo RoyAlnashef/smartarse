@@ -8,6 +8,7 @@ type UserRow = {
   email: string | null
   role: string | null
   organization_id: string | null
+  status: string | null
   created_at: string | null
   name: string | null
 }
@@ -26,13 +27,16 @@ function rowToUser(row: UserRow): User {
 
   const created = row.created_at ?? new Date().toISOString()
 
+  const normalizedStatus =
+    row.status === "inactive" || !row.organization_id ? "inactive" : "active"
+
   return {
     id: row.id,
     name: displayName,
     email,
     role: mapRole(row.role),
     clientId: row.organization_id ?? undefined,
-    status: "active",
+    status: normalizedStatus,
     lastLogin: created,
     createdAt: created,
   }
@@ -44,7 +48,7 @@ export async function listUsersForDashboard(): Promise<User[]> {
 
   const { data, error } = await supabase
     .from("users")
-    .select("id,email,role,organization_id,created_at,name")
+    .select("id,email,role,organization_id,status,created_at,name")
     .order("created_at", { ascending: false })
 
   if (error) throw new Error(error.message)
@@ -73,6 +77,7 @@ export async function updateUserAdmin(input: {
       name: nameTrimmed || null,
       role: input.role,
       organization_id: organizationId,
+      status: "active",
     })
     .eq("id", input.id)
 

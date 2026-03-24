@@ -61,14 +61,24 @@ export default function UsersPage() {
   }, [])
 
   const filtered = useMemo(() => {
-    return users.filter((u) => {
+    const organizationStatusById = new Map(organizations.map((o) => [o.id, o.status]))
+    const effectiveUsers = users.map((u) => {
+      const orgStatus = u.clientId ? organizationStatusById.get(u.clientId) : undefined
+      const shouldBeInactive = !u.clientId || orgStatus === "inactive"
+      if (shouldBeInactive && u.status !== "inactive") {
+        return { ...u, status: "inactive" as const }
+      }
+      return u
+    })
+
+    return effectiveUsers.filter((u) => {
       const matchSearch =
         u.name.toLowerCase().includes(search.toLowerCase()) ||
         u.email.toLowerCase().includes(search.toLowerCase())
       const matchRole = roleFilter === "all" || u.role === roleFilter
       return matchSearch && matchRole
     })
-  }, [users, search, roleFilter])
+  }, [users, organizations, search, roleFilter])
 
   const organizationOptions = useMemo(
     () => organizations.map((o) => ({ id: o.id, name: o.name })),
