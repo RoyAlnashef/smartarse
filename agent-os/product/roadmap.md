@@ -2,6 +2,17 @@
 
 **Phasing:** Canva+Figma-aligned prototype on staging first, then feature build with Supabase + AI integration, then production hardening.
 
+## Current Status Snapshot (Mar 2026)
+
+- **Completed recently:**
+  - Supabase-backed organizations dashboard flows (create/edit/deactivate)
+  - User-to-organization assignment from dashboard users surface
+  - Admin-only user creation flow via `POST /api/admin/users`
+  - Supabase SQL migrations for admin RLS and active-entity org constraints
+- **In progress:**
+  - End-to-end verification across local and hosted Supabase environments
+  - Hardening lint/build tooling and deployment readiness checks
+
 ## MVP
 
 ### Design & prototype gate

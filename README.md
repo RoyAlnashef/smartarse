@@ -8,14 +8,31 @@ smartA.R.S.E. is a full-stack web application that lets research teams and their
 
 ### Key Features
 
-- **Multi-role access**: Admin and Client roles with role-based routing and permissions
-- **Admin dashboard**: Project management, user management, file uploads, analytics, settings, FAQ, and privacy
-- **Client portal**: Branded client experience with project search, project detail, and AI chat
-- **Supabase auth + session**: Sign in/out and session hydration via Supabase Auth
-- **Forgot password flow**: Send reset email from sign-in, recover session from email link, and land on settings to update password
-- **AI chat with personas**: Apply segment personas (e.g., "The Muddled Middle", "Do Their Bit") to tailor responses to specific audience segments
-- **Document-based queries**: Upload PDF, CSV, and Excel files; select which documents to include in each query
-- **Credit system**: Per-client credit allocation and usage tracking
+Status legend: ✅ built, 🟡 partial/in progress, ⚪ planned/not built yet
+
+- ✅ **Multi-role access**: Admin and Client roles with role-based routing and permissions
+- 🟡 **Admin dashboard**: Project management, user management, file uploads, analytics, settings, FAQ, and privacy
+- 🟡 **Client portal**: Branded client experience with project search, project detail, and AI chat
+- ✅ **Supabase auth + session**: Sign in/out and session hydration via Supabase Auth
+- ✅ **Supabase organizations management**: Admin can create, update, and deactivate organizations from the dashboard
+- ✅ **Admin user provisioning API**: Admin can create users with temporary passwords via secure server route
+- ✅ **RLS-backed admin workflows**: Policies and constraints enforce role checks and org-safe data relationships
+- ✅ **Forgot password flow**: Send reset email from sign-in, recover session from email link, and land on settings to update password
+- 🟡 **AI chat with personas**: Persona UX is implemented; full AI/RAG integration is still evolving
+- 🟡 **Document-based queries**: Upload and selection UX exists; production document-grounded query backend is still evolving
+- 🟡 **Credit system**: Balance and management surfaces exist; end-to-end consumption lifecycle is still evolving
+
+## Current Progress Snapshot
+
+- **Implemented in app + Supabase**:
+  - Auth/session routing with admin/client role-aware redirects
+  - Organizations dashboard wired to Supabase (create/update/soft delete via status)
+  - Users dashboard wired to Supabase for org assignment and admin-only user creation
+  - Server route for admin user creation: `POST /api/admin/users`
+  - Supabase migrations for admin RLS and active-with-organization constraints
+- **Still evolving**:
+  - Full AI/RAG backend integration and credit consumption lifecycle
+  - Expanded analytics beyond current shell/reporting surfaces
 
 ## Tech Stack
 
@@ -89,6 +106,8 @@ The sign-in form includes a `Forgot password?` flow:
 │   │   └── projects/[id]/    # Client project detail (chat + personas)
 │   ├── auth/
 │   │   └── reset-password/   # Supabase recovery callback + redirect to settings
+│   ├── api/
+│   │   └── admin/users/      # Admin-only user creation endpoint
 │   ├── help/                 # Public help pages (FAQ, privacy, contact)
 │   ├── layout.tsx            # Root layout, fonts, AuthProvider
 │   └── page.tsx              # Login / redirect
@@ -104,9 +123,15 @@ The sign-in form includes a `Forgot password?` flow:
 │   ├── mock-data.ts          # Users, clients, projects, files, conversations
 │   ├── supabase/
 │   │   ├── client.ts         # Browser Supabase client
+│   │   ├── organizations.ts  # Organizations dashboard data/mutations
+│   │   ├── users.ts          # Users dashboard data/mutations
+│   │   ├── server.ts         # Server-side Supabase client from cookies
+│   │   └── admin.ts          # Service-role Supabase admin client
 │   │   └── fetch-user-profile.ts  # Load `public.users` row after auth
 │   ├── types.ts              # Shared TypeScript types
 │   └── utils.ts              # Utilities (cn, etc.)
+├── supabase/
+│   └── migrations/           # SQL migrations (RLS policies, constraints)
 └── public/                   # Static assets
 ```
 
@@ -125,12 +150,12 @@ When a persona is applied, the AI responds as a representative of that segment. 
 
 ## Scripts
 
-| Command   | Description                    |
-|-----------|--------------------------------|
-| `pnpm dev`   | Start dev server (Turbopack)   |
-| `pnpm build` | Production build               |
-| `pnpm start` | Start production server        |
-| `pnpm lint`  | Run ESLint                     |
+| Command      | Description                  |
+| ------------ | ---------------------------- |
+| `pnpm dev`   | Start dev server (Turbopack) |
+| `pnpm build` | Production build             |
+| `pnpm start` | Start production server      |
+| `pnpm lint`  | Run ESLint                   |
 
 ## Environment
 
@@ -151,7 +176,9 @@ N8N_WEBHOOK_URL=your_n8n_webhook_url
 Important notes:
 
 - `NEXT_PUBLIC_*` variables are required for browser auth flows (sign in, forgot password, password update).
+- `SUPABASE_SERVICE_ROLE_KEY` is required for `POST /api/admin/users` (admin user provisioning).
 - **Row-level security on `public.users`:** enable a policy so each signed-in user can **read their own profile row** (for example `USING (auth.uid() = id)` on `SELECT`). If `SELECT` is denied, the app falls back to JWT metadata or mock email matching, and **routing may not match the row you see in the Table Editor**.
+- Apply project migrations in `supabase/migrations/` so admin RLS and active-with-organization constraints are enforced consistently.
 - In Supabase Auth settings, allow these redirect URLs:
   - `http://localhost:3000/auth/reset-password`
   - `https://<your-production-domain>/auth/reset-password`
