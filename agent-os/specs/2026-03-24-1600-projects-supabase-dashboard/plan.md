@@ -89,9 +89,12 @@ Created `agent-os/specs/2026-03-24-1600-projects-supabase-dashboard/` with:
 
 ---
 
-## Task 8: Organization aggregate (optional, same PR or follow-up)
+## ✅ Task 8: Organization aggregate — **DONE**
 
-- When listing organizations, optionally populate `Organization.projectIds` from a count or id list query so the dashboard org view stays truthful.
+**Delivered:** [`lib/supabase/organizations.ts`](../../../lib/supabase/organizations.ts) · `Organization.projectIds` JSDoc in [`lib/types.ts`](../../../lib/types.ts)
+
+- [x] `listOrganizationsForDashboard()` runs a parallel `projects` select (`id`, `organization_id`), groups ids by org, and passes them into `rowToOrganization`; new orgs from `createOrganization()` still get `projectIds: []`.
+- [x] Dashboard org table project counts (`org.projectIds.length`) match RLS-visible rows for the current session.
 
 ---
 

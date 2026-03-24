@@ -42,7 +42,7 @@ export interface Organization {
   id: string
   name: string
   /**
-   * Mock-era project links; empty for Supabase-backed org rows until projects are wired to `organization_id`.
+   * Project ids for this org; populated from `projects.organization_id` when listing via Supabase.
    */
   projectIds: string[]
   /**

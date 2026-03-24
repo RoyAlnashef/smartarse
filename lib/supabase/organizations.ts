@@ -18,6 +18,11 @@ type UserOrgRow = {
   organization_id: string | null
 }
 
+type ProjectOrgRow = {
+  id: string
+  organization_id: string
+}
+
 function normalizeOrgStatus(value: string | null | undefined): Organization["status"] {
   return value === "inactive" ? "inactive" : "active"
 }
@@ -33,11 +38,15 @@ function slugFromName(name: string): string {
   return `${base}-${suffix}`
 }
 
-function rowToOrganization(row: OrganizationRow, userCount: number): Organization {
+function rowToOrganization(
+  row: OrganizationRow,
+  userCount: number,
+  projectIds: string[]
+): Organization {
   return {
     id: row.id,
     name: row.name,
-    projectIds: [],
+    projectIds,
     userIds: Array.from({ length: userCount }, (_, idx) => `${row.id}-${idx}`),
     creditBalance: row.credit_balance ?? 0,
     status: normalizeOrgStatus(row.status),
@@ -49,16 +58,20 @@ export async function listOrganizationsForDashboard(): Promise<Organization[]> {
   const supabase = getSupabaseBrowserClient()
   if (!supabase) return []
 
-  const [orgsResult, usersResult] = await Promise.all([
+  const [orgsResult, usersResult, projectsResult] = await Promise.all([
     supabase
       .from("organizations")
       .select("id,name,slug,created_at,updated_at,credit_balance,status")
       .order("created_at", { ascending: false }),
     supabase.from("users").select("id,organization_id"),
+    supabase.from("projects").select("id,organization_id").order("created_at", { ascending: true }),
   ])
 
   if (orgsResult.error) {
     throw new Error(orgsResult.error.message)
+  }
+  if (projectsResult.error) {
+    throw new Error(projectsResult.error.message)
   }
 
   const userCountsByOrg = new Map<string, number>()
@@ -69,9 +82,16 @@ export async function listOrganizationsForDashboard(): Promise<Organization[]> {
     })
   }
 
+  const projectIdsByOrg = new Map<string, string[]>()
+  for (const project of (projectsResult.data as ProjectOrgRow[] | null) ?? []) {
+    const list = projectIdsByOrg.get(project.organization_id) ?? []
+    list.push(project.id)
+    projectIdsByOrg.set(project.organization_id, list)
+  }
+
   const rows = (orgsResult.data ?? []) as OrganizationRow[]
   return rows.map((row) =>
-    rowToOrganization(row, userCountsByOrg.get(row.id) ?? 0)
+    rowToOrganization(row, userCountsByOrg.get(row.id) ?? 0, projectIdsByOrg.get(row.id) ?? [])
   )
 }
 
@@ -96,7 +116,7 @@ export async function createOrganization(name: string): Promise<Organization> {
       .single()
 
     if (!error && data) {
-      return rowToOrganization(data as OrganizationRow, 0)
+      return rowToOrganization(data as OrganizationRow, 0, [])
     }
 
     lastError = new Error(error?.message ?? "Failed to create organization.")
