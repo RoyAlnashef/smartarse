@@ -64,6 +64,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   )
   const [isTyping, setIsTyping] = useState(false)
   const [showConvSidebar, setShowConvSidebar] = useState(true)
+  const isChatReadOnly = user?.role === "admin"
 
   const activeConversation = useMemo(
     () => conversations.find((c) => c.id === activeConversationId) ?? null,
@@ -78,20 +79,6 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
       return next
     })
   }, [])
-
-  const handleNewConversation = useCallback(() => {
-    const newConv: Conversation = {
-      id: `conv-new-${Date.now()}`,
-      projectId: id,
-      title: "New conversation",
-      createdAt: new Date().toISOString(),
-      lastMessageAt: new Date().toISOString(),
-      messageCount: 0,
-      messages: [],
-    }
-    setConversations((prev) => [newConv, ...prev])
-    setActiveConversationId(newConv.id)
-  }, [id])
 
   const handleSendMessage = useCallback(
     (content: string) => {
@@ -236,6 +223,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
               files={projectFiles}
               selected={selectedDocs}
               onToggle={toggleDoc}
+              disabled={isChatReadOnly}
             />
           </div>
 
@@ -245,7 +233,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
               messages={activeConversation?.messages ?? []}
               isTyping={isTyping}
             />
-            <ChatInput onSend={handleSendMessage} disabled={isTyping} />
+            <ChatInput onSend={handleSendMessage} disabled={isTyping || isChatReadOnly} />
           </div>
 
           {/* Conversation history (right) */}
@@ -255,7 +243,6 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                 conversations={conversations}
                 activeId={activeConversationId}
                 onSelect={setActiveConversationId}
-                onNew={handleNewConversation}
               />
             </div>
           )}

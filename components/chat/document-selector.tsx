@@ -13,10 +13,12 @@ export function DocumentSelector({
   files,
   selected,
   onToggle,
+  disabled = false,
 }: {
   files: UploadedFile[]
   selected: Set<string>
   onToggle: (id: string) => void
+  disabled?: boolean
 }) {
   return (
     <div className="flex flex-col">
@@ -33,12 +35,12 @@ export function DocumentSelector({
             <button
               key={file.id}
               onClick={() => onToggle(file.id)}
-              disabled={file.status !== "ready"}
+              disabled={disabled || file.status !== "ready"}
               className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
                 isSelected
                   ? "bg-mint-50 ring-1 ring-mint-300"
                   : "hover:bg-muted"
-              } ${file.status !== "ready" ? "opacity-50" : ""}`}
+              } ${disabled || file.status !== "ready" ? "opacity-50" : ""}`}
             >
               <div
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
