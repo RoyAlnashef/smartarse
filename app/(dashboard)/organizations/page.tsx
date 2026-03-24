@@ -105,6 +105,20 @@ export default function OrganizationsPage() {
     }
   }
 
+  async function handleActivate(org: Organization) {
+    if (!window.confirm(`Activate “${org.name}”? It will be marked active.`)) {
+      return
+    }
+    try {
+      await setOrganizationStatus(org.id, "active")
+      await refreshOrganizations()
+      toast.success("Organization activated.")
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Could not activate organization."
+      toast.error(message)
+    }
+  }
+
   if (currentUser?.role !== "admin") {
     return (
       <div className="flex flex-col items-center justify-center py-20">
@@ -180,6 +194,7 @@ export default function OrganizationsPage() {
               setEditingOrg(o)
               setModalOpen(true)
             }}
+            onActivate={handleActivate}
             onDeactivate={handleDeactivate}
           />
           {filtered.length === 0 && (

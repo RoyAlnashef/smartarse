@@ -1,6 +1,6 @@
 "use client"
 
-import { Ban, Coins, Edit, MoreHorizontal } from "lucide-react"
+import { Ban, Coins, Edit, MoreHorizontal, RefreshCcw } from "lucide-react"
 import type { Organization } from "@/lib/types"
 import {
   DropdownMenu,
@@ -33,10 +33,12 @@ function orgInitials(name: string) {
 export function OrganizationTable({
   organizations,
   onEdit,
+  onActivate,
   onDeactivate,
 }: {
   organizations: Organization[]
   onEdit: (org: Organization) => void
+  onActivate?: (org: Organization) => void
   onDeactivate?: (org: Organization) => void
 }) {
   return (
@@ -117,10 +119,17 @@ export function OrganizationTable({
                       </button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => onEdit(org)}>
-                        <Edit className="h-4 w-4" />
-                        Edit
-                      </DropdownMenuItem>
+                      {org.status === "inactive" && onActivate ? (
+                        <DropdownMenuItem onClick={() => onActivate(org)}>
+                          <RefreshCcw className="h-4 w-4" />
+                          Activate
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem onClick={() => onEdit(org)}>
+                          <Edit className="h-4 w-4" />
+                          Edit
+                        </DropdownMenuItem>
+                      )}
                       {onDeactivate && org.status === "active" && (
                         <DropdownMenuItem
                           onClick={() => onDeactivate(org)}
