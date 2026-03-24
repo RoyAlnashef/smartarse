@@ -1,7 +1,13 @@
 "use client"
 
-import { FileText, FileSpreadsheet, File, Trash2 } from "lucide-react"
+import { FileText, FileSpreadsheet, File, MoreHorizontal, Trash2 } from "lucide-react"
 import type { UploadedFile } from "@/lib/types"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const fileIcons: Record<string, typeof FileText> = {
   pdf: FileText,
@@ -91,10 +97,23 @@ export function FileList({
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <button className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-red-500">
-                    <Trash2 className="h-4 w-4" />
-                    <span className="sr-only">Delete {file.name}</span>
-                  </button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Open actions for {file.name}</span>
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem className="text-red-500 focus:text-red-500">
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </td>
               </tr>
             )

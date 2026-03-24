@@ -1,7 +1,13 @@
 "use client"
 
-import { Ban, Coins, Edit } from "lucide-react"
+import { Ban, Coins, Edit, MoreHorizontal } from "lucide-react"
 import type { Organization } from "@/lib/types"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 const statusColors: Record<string, string> = {
   active: "bg-mint-100 text-mint-700",
@@ -100,27 +106,32 @@ export function OrganizationTable({
                   </span>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <div className="flex items-center justify-end gap-1">
-                    {onDeactivate && org.status === "active" && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
                       <button
                         type="button"
-                        onClick={() => onDeactivate(org)}
-                        className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-amber-700"
-                        title="Deactivate organization"
+                        className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                       >
-                        <Ban className="h-4 w-4" />
-                        <span className="sr-only">Deactivate {org.name}</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                        <span className="sr-only">Open actions for {org.name}</span>
                       </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => onEdit(org)}
-                      className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                    >
-                      <Edit className="h-4 w-4" />
-                      <span className="sr-only">Edit {org.name}</span>
-                    </button>
-                  </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => onEdit(org)}>
+                        <Edit className="h-4 w-4" />
+                        Edit
+                      </DropdownMenuItem>
+                      {onDeactivate && org.status === "active" && (
+                        <DropdownMenuItem
+                          onClick={() => onDeactivate(org)}
+                          className="text-amber-700 focus:text-amber-700"
+                        >
+                          <Ban className="h-4 w-4" />
+                          Deactivate
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </td>
               </tr>
             ))}
