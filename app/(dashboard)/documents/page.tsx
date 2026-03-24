@@ -13,6 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { ProjectFilterCombobox } from "@/components/documents/project-filter-combobox"
 
 export default function DocumentsPage() {
   const { user } = useAuth()
@@ -72,18 +73,16 @@ export default function DocumentsPage() {
             className="w-full rounded-lg border border-border bg-card py-2 pl-9 pr-3 text-sm text-foreground placeholder-muted-foreground focus:border-mint-400 focus:outline-none focus:ring-2 focus:ring-mint-300/20"
           />
         </div>
-        <select
-          value={projectFilter}
-          onChange={(e) => setProjectFilter(e.target.value)}
-          className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-mint-400 focus:outline-none focus:ring-2 focus:ring-mint-300/20 sm:w-auto"
-        >
-          <option value="all">All Projects</option>
-          {projects.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
+        <div className="shrink-0 sm:w-auto">
+          <label className="sr-only" htmlFor="documents-project-combobox">
+            Filter by project
+          </label>
+          <ProjectFilterCombobox
+            projects={projects}
+            value={projectFilter}
+            onValueChange={setProjectFilter}
+          />
+        </div>
       </div>
 
       <FileList files={filtered} projectNameById={projectNameById} />
