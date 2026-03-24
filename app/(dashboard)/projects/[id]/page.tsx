@@ -165,7 +165,6 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     const adminOnly = "adminOnly" in t ? t.adminOnly : false
     return !adminOnly || user.role === "admin"
   })
-  const remaining = project.totalCredits - project.usedCredits
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -196,8 +195,8 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5 rounded-lg bg-muted px-3 py-1.5 text-sm">
             <Coins className="h-4 w-4 text-mint-500" />
-            <span className="font-medium text-foreground">{remaining}</span>
-            <span className="text-muted-foreground">credits</span>
+            <span className="font-medium text-foreground">{project.usedCredits}</span>
+            <span className="text-muted-foreground">credits spent</span>
           </div>
         </div>
       </div>
@@ -330,37 +329,6 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                       <option value="archived">Archived</option>
                     </select>
                   </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Credits */}
-            <section className="space-y-4">
-              <h2 className="text-lg font-semibold text-foreground">Credit Allocation</h2>
-              <div className="rounded-xl border border-border bg-card p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total credits</p>
-                    <p className="text-2xl font-semibold text-foreground">{project.totalCredits}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Used</p>
-                    <p className="text-2xl font-semibold text-foreground">{project.usedCredits}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Remaining</p>
-                    <p className="text-2xl font-semibold text-mint-600">{remaining}</p>
-                  </div>
-                </div>
-                <div className="mt-4 h-2 overflow-hidden rounded-full bg-muted">
-                  <div
-                    className="h-full rounded-full bg-mint-400"
-                    style={{
-                      width: `${Math.round(
-                        (project.usedCredits / project.totalCredits) * 100
-                      )}%`,
-                    }}
-                  />
                 </div>
               </div>
             </section>

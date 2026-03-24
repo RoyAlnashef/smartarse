@@ -9,11 +9,6 @@ const fileIcons: Record<string, typeof FileText> = {
   xlsx: FileSpreadsheet,
 }
 
-function formatSize(bytes: number) {
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-}
-
 export function DocumentSelector({
   files,
   selected,
@@ -29,9 +24,6 @@ export function DocumentSelector({
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Documents
         </h3>
-        <p className="mt-0.5 text-xs text-muted-foreground">
-          Select which files to query
-        </p>
       </div>
       <div className="flex-1 space-y-1 overflow-y-auto p-2">
         {files.map((file) => {
@@ -63,12 +55,9 @@ export function DocumentSelector({
                 <p className="truncate text-sm font-medium text-foreground">
                   {file.name}
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  {formatSize(file.size)}
-                  {file.status !== "ready" && (
-                    <span className="ml-1 text-amber-500">({file.status})</span>
-                  )}
-                </p>
+                {file.status !== "ready" && (
+                  <p className="text-xs text-amber-500">({file.status})</p>
+                )}
               </div>
               <div
                 className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
