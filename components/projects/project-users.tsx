@@ -82,19 +82,18 @@ export function ProjectUsers({ project, allUsers }: ProjectUsersProps) {
       <h2 className="text-lg font-semibold text-foreground">
         Project members
       </h2>
+      <p className="text-sm text-muted-foreground">
+        Only people in{" "}
+        <span className="font-medium text-foreground">{project.clientName}</span>{" "}
+        can be assigned to this project. Changes here are not saved yet (demo).
+      </p>
       <div className="rounded-xl border border-border bg-card p-6">
-        <p className="text-sm text-muted-foreground">
-          Only people in{" "}
-          <span className="font-medium text-foreground">{project.clientName}</span>{" "}
-          can be assigned to this project. Changes here are not saved yet (demo).
-        </p>
-
         {eligibleUsers.length === 0 ? (
-          <div className="mt-6 rounded-xl border border-dashed border-border bg-muted/30 px-6 py-10 text-center text-sm text-muted-foreground">
+          <div className="rounded-xl border border-dashed border-border bg-muted/30 px-6 py-10 text-center text-sm text-muted-foreground">
             No members in this organization yet.
           </div>
         ) : (
-          <ul className="mt-6 divide-y divide-border border-t border-border pt-6">
+          <ul className="divide-y divide-border">
           {sorted.map((user) => {
             const isAssigned = assignedIds.has(user.id)
             const blockNewAssign = user.status === "inactive" && !isAssigned
