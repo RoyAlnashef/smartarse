@@ -31,7 +31,7 @@ import type { ChatMessage, Conversation } from "@/lib/types"
 const tabs = [
   { id: "chat", label: "Chat", icon: MessageSquare },
   { id: "uploads", label: "Documents", icon: FileText, adminOnly: true },
-  { id: "users", label: "Users", icon: Users, adminOnly: true },
+  { id: "members", label: "Members", icon: Users, adminOnly: true },
   { id: "settings", label: "Settings", icon: Settings },
 ] as const
 
@@ -267,20 +267,31 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         )}
 
         {activeTab === "uploads" && (
-          <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-4 lg:p-6">
-            <FileDropzone onUpload={() => {}} />
-            <FileList
-              files={projectFiles}
-              projectNameById={
-                project ? { [project.id]: project.name } : undefined
-              }
-            />
+          <div className="min-h-0 flex-1 overflow-y-auto p-4 lg:p-6">
+            <div className="mx-auto max-w-2xl space-y-8">
+              <section className="space-y-4">
+                <h2 className="text-lg font-semibold text-foreground">
+                  Documents
+                </h2>
+                <div className="space-y-6 rounded-xl border border-border bg-card p-6">
+                  <FileDropzone onUpload={() => {}} />
+                  <FileList
+                    files={projectFiles}
+                    projectNameById={
+                      project ? { [project.id]: project.name } : undefined
+                    }
+                  />
+                </div>
+              </section>
+            </div>
           </div>
         )}
 
-        {activeTab === "users" && (
+        {activeTab === "members" && (
           <div className="min-h-0 flex-1 overflow-y-auto p-4 lg:p-6">
-            <ProjectUsers project={project} allUsers={users} />
+            <div className="mx-auto max-w-2xl">
+              <ProjectUsers project={project} allUsers={users} />
+            </div>
           </div>
         )}
 
