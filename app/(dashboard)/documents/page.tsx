@@ -20,11 +20,6 @@ export default function DocumentsPage() {
     })
   }, [search, projectFilter])
 
-  const projectNameById = useMemo(
-    () => Object.fromEntries(projects.map((p) => [p.id, p.name])),
-    []
-  )
-
   if (user?.role !== "admin") {
     return (
       <div className="flex flex-col items-center justify-center py-20">
@@ -66,7 +61,7 @@ export default function DocumentsPage() {
         </div>
       </div>
 
-      <FileList files={filtered} projectNameById={projectNameById} />
+      <FileList files={filtered} />
     </div>
   )
 }

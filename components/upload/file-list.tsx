@@ -26,22 +26,7 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  })
-}
-
-export function FileList({
-  files,
-  projectNameById,
-}: {
-  files: UploadedFile[]
-  /** Map of project id → display name; used for the Project column */
-  projectNameById?: Record<string, string>
-}) {
+export function FileList({ files }: { files: UploadedFile[] }) {
   if (files.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-12">
@@ -58,11 +43,6 @@ export function FileList({
         <thead>
           <tr className="border-b border-border bg-muted/50">
             <th className="px-4 py-3 font-medium text-muted-foreground">Name</th>
-            <th className="hidden px-4 py-3 font-medium text-muted-foreground sm:table-cell">
-              Project
-            </th>
-            <th className="hidden px-4 py-3 font-medium text-muted-foreground sm:table-cell">Size</th>
-            <th className="hidden px-4 py-3 font-medium text-muted-foreground md:table-cell">Uploaded</th>
             <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
             <th className="px-4 py-3 font-medium text-muted-foreground">
               <span className="sr-only">Actions</span>
@@ -72,24 +52,18 @@ export function FileList({
         <tbody className="divide-y divide-border">
           {files.map((file) => {
             const Icon = fileIcons[file.type] ?? File
-            const projectLabel =
-              projectNameById?.[file.projectId] ?? file.projectId
             return (
               <tr key={file.id} className="transition-colors hover:bg-muted/30">
                 <td className="px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
-                    <span className="truncate font-medium text-foreground">{file.name}</span>
+                  <div className="flex items-start gap-3">
+                    <Icon className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-medium text-foreground">{file.name}</div>
+                      <div className="mt-0.5 text-xs text-muted-foreground">
+                        {formatSize(file.size)}
+                      </div>
+                    </div>
                   </div>
-                </td>
-                <td className="hidden max-w-[12rem] truncate px-4 py-3 text-muted-foreground sm:table-cell">
-                  {projectLabel}
-                </td>
-                <td className="hidden px-4 py-3 text-muted-foreground sm:table-cell">
-                  {formatSize(file.size)}
-                </td>
-                <td className="hidden px-4 py-3 text-muted-foreground md:table-cell">
-                  {formatDate(file.uploadedAt)}
                 </td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${statusColors[file.status]}`}>

@@ -273,14 +273,9 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                 <h2 className="text-lg font-semibold text-foreground">
                   Documents
                 </h2>
-                <div className="space-y-6 rounded-xl border border-border bg-card p-6">
+                <div className="space-y-6">
                   <FileDropzone onUpload={() => {}} />
-                  <FileList
-                    files={projectFiles}
-                    projectNameById={
-                      project ? { [project.id]: project.name } : undefined
-                    }
-                  />
+                  <FileList files={projectFiles} />
                 </div>
               </section>
             </div>
