@@ -1,26 +1,16 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { Plus, Search } from "lucide-react"
+import { Search } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { uploadedFiles, projects } from "@/lib/mock-data"
-import { FileDropzone } from "@/components/upload/file-dropzone"
-import { FILE_UPLOAD_TYPES_DESCRIPTION } from "@/components/upload/upload-config"
 import { FileList } from "@/components/upload/file-list"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { ProjectFilterCombobox } from "@/components/documents/project-filter-combobox"
 
 export default function DocumentsPage() {
   const { user } = useAuth()
   const [search, setSearch] = useState("")
   const [projectFilter, setProjectFilter] = useState("all")
-  const [uploadOpen, setUploadOpen] = useState(false)
 
   const filtered = useMemo(() => {
     return uploadedFiles.filter((f) => {
@@ -46,21 +36,11 @@ export default function DocumentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground">Documents</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Browse and manage research documents across all projects
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => setUploadOpen(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-dark-950 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-dark-800"
-        >
-          <Plus className="h-4 w-4" />
-          Upload Docs
-        </button>
+      <div>
+        <h1 className="text-2xl font-semibold text-foreground">Documents</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Browse and manage research documents across all projects
+        </p>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
@@ -87,22 +67,6 @@ export default function DocumentsPage() {
       </div>
 
       <FileList files={filtered} projectNameById={projectNameById} />
-
-      <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
-        <DialogContent className="max-w-xl">
-          <DialogHeader>
-            <DialogTitle>Upload documents</DialogTitle>
-            <DialogDescription>
-              {FILE_UPLOAD_TYPES_DESCRIPTION}. Documents are linked to projects after upload.
-            </DialogDescription>
-          </DialogHeader>
-          <FileDropzone
-            onUpload={() => {
-              setUploadOpen(false)
-            }}
-          />
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
