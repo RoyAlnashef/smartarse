@@ -10,8 +10,14 @@ export function ProjectsWorkspace() {
   const { user, getVisibleProjects } = useAuth()
   const [search, setSearch] = useState("")
   const [status, setStatus] = useState("all")
+  const [clientFilter, setClientFilter] = useState<string | null>(null)
 
   const allProjects = getVisibleProjects()
+
+  const clients = useMemo(() => {
+    const names = [...new Set(allProjects.map((p) => p.clientName))]
+    return names.sort((a, b) => a.localeCompare(b))
+  }, [allProjects])
 
   const filtered = useMemo(() => {
     return allProjects.filter((p) => {
@@ -19,9 +25,11 @@ export function ProjectsWorkspace() {
         p.name.toLowerCase().includes(search.toLowerCase()) ||
         p.clientName.toLowerCase().includes(search.toLowerCase())
       const matchStatus = status === "all" || p.status === status
-      return matchSearch && matchStatus
+      const matchClient =
+        clientFilter === null || p.clientName === clientFilter
+      return matchSearch && matchStatus && matchClient
     })
-  }, [allProjects, search, status])
+  }, [allProjects, search, status, clientFilter])
 
   if (!user) return null
 
@@ -52,6 +60,9 @@ export function ProjectsWorkspace() {
         onSearchChange={setSearch}
         status={status}
         onStatusChange={setStatus}
+        clients={clients}
+        clientFilter={clientFilter}
+        onClientFilterChange={setClientFilter}
       />
 
       {filtered.length > 0 ? (
