@@ -1,12 +1,11 @@
 "use client"
 
 import { useState, useMemo } from "react"
-import { Search, Upload } from "lucide-react"
+import { Plus, Search } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { uploadedFiles, projects } from "@/lib/mock-data"
 import { FileDropzone } from "@/components/upload/file-dropzone"
 import { FileList } from "@/components/upload/file-list"
-import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
@@ -45,22 +44,24 @@ export default function FilesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-foreground">Files</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Browse and manage research documents across all projects
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-foreground">Files</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Browse and manage research documents across all projects
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setUploadOpen(true)}
+          className="inline-flex items-center gap-2 rounded-lg bg-dark-950 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-dark-800"
+        >
+          <Plus className="h-4 w-4" />
+          Upload
+        </button>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-        <Button
-          type="button"
-          className="w-full bg-dark-950 text-white hover:bg-dark-800 sm:w-auto"
-          onClick={() => setUploadOpen(true)}
-        >
-          <Upload />
-          Upload
-        </Button>
         <div className="relative min-w-0 max-w-sm flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
