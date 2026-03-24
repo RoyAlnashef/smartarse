@@ -168,7 +168,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const remaining = project.totalCredits - project.usedCredits
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col">
+    <div className="flex min-h-0 flex-1 flex-col">
       {/* Project header */}
       <div className="flex flex-col gap-3 border-b border-border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between lg:px-6">
         <div className="flex items-center gap-3">

@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { Menu } from "lucide-react"
 import { Sidebar } from "@/components/layout/sidebar"
-import { Header } from "@/components/layout/header"
 import { MobileSidebar } from "@/components/layout/mobile-sidebar"
 import { useAuth } from "@/lib/auth-context"
 
@@ -65,9 +65,18 @@ export default function DashboardLayout({
       <MobileSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">{children}</main>
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setSidebarOpen(true)}
+          className="fixed left-4 top-4 z-30 rounded-lg border border-border bg-card p-2 text-dark-400 shadow-sm hover:bg-muted hover:text-foreground lg:hidden"
+          aria-label="Open sidebar"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+        <main className="flex min-h-0 flex-1 flex-col overflow-y-auto p-4 pt-14 lg:p-6">
+          {children}
+        </main>
       </div>
     </div>
   )
