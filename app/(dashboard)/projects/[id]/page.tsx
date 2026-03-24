@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import {
   ArrowLeft,
   MessageSquare,
-  Upload,
+  FileText,
   Settings,
   Coins,
   Download,
@@ -24,7 +24,7 @@ import type { ChatMessage, Conversation } from "@/lib/types"
 
 const tabs = [
   { id: "chat", label: "Chat", icon: MessageSquare },
-  { id: "uploads", label: "Uploads", icon: Upload, adminOnly: true },
+  { id: "uploads", label: "Documents", icon: FileText, adminOnly: true },
   { id: "settings", label: "Settings", icon: Settings },
 ] as const
 
