@@ -62,7 +62,10 @@ export async function updateUserAdmin(input: {
   if (!supabase) throw new Error("Supabase is not configured.")
 
   const nameTrimmed = input.name.trim()
-  const organizationId = input.role === "admin" ? null : input.organizationId
+  const organizationId = input.organizationId?.trim() ?? ""
+  if (!organizationId) {
+    throw new Error("Organization is required.")
+  }
 
   const { error } = await supabase
     .from("users")

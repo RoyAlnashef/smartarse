@@ -5,10 +5,12 @@ import { toast } from "sonner"
 import { Plus, Search } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { listOrganizationsForDashboard } from "@/lib/supabase/organizations"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { listUsersForDashboard, updateUserAdmin } from "@/lib/supabase/users"
 import { UserTable } from "@/components/users/user-table"
 import {
   UserFormModal,
+  type UserCreatePayload,
   type UserSavePayload,
 } from "@/components/users/user-form-modal"
 import type { Organization, User } from "@/lib/types"
@@ -72,6 +74,10 @@ export default function UsersPage() {
     () => organizations.map((o) => ({ id: o.id, name: o.name })),
     [organizations]
   )
+  const organizationRows = useMemo(
+    () => organizations.map((o) => ({ id: o.id, name: o.name, status: o.status })),
+    [organizations]
+  )
 
   async function handleSaveUser(payload: UserSavePayload) {
     try {
@@ -87,7 +93,45 @@ export default function UsersPage() {
       const message =
         error instanceof Error ? error.message : "Could not save user."
       toast.error(message)
-      throw error
+    }
+  }
+
+  async function handleCreateUser(payload: UserCreatePayload) {
+    try {
+      const supabase = getSupabaseBrowserClient()
+      if (!supabase) throw new Error("Supabase is not configured.")
+
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession()
+
+      if (sessionError || !session?.access_token) {
+        throw new Error("You must be signed in to create users.")
+      }
+
+      const response = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!response.ok) {
+        const body = (await response.json().catch(() => null)) as
+          | { error?: string }
+          | null
+        throw new Error(body?.error ?? "Could not create user.")
+      }
+
+      await refreshData()
+      toast.success("User created.")
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Could not create user."
+      toast.error(message)
     }
   }
 
@@ -162,7 +206,7 @@ export default function UsersPage() {
         <>
           <UserTable
             users={filtered}
-            organizations={organizationOptions}
+            organizations={organizationRows}
             onEdit={(u) => {
               setEditingUser(u)
               setModalOpen(true)
@@ -180,6 +224,7 @@ export default function UsersPage() {
         organizations={organizationOptions}
         onClose={() => setModalOpen(false)}
         onSave={handleSaveUser}
+        onCreate={handleCreateUser}
       />
     </div>
   )

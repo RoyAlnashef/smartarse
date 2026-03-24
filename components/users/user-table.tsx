@@ -34,7 +34,7 @@ export function UserTable({
   onEdit,
 }: {
   users: User[]
-  organizations: { id: string; name: string }[]
+  organizations: { id: string; name: string; status: "active" | "inactive" }[]
   onEdit: (user: User) => void
 }) {
   return (
@@ -82,7 +82,18 @@ export function UserTable({
                     </span>
                   </td>
                   <td className="hidden px-4 py-3 text-muted-foreground md:table-cell">
-                    {org?.name ?? "---"}
+                    {org ? (
+                      <div className="inline-flex items-center gap-2">
+                        <span>{org.name}</span>
+                        {org.status === "inactive" && (
+                          <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                            Inactive
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      "---"
+                    )}
                   </td>
                   <td className="hidden px-4 py-3 text-muted-foreground lg:table-cell">
                     {formatDate(user.lastLogin)}
