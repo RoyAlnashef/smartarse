@@ -26,6 +26,7 @@ import { DocumentSelector } from "@/components/chat/document-selector"
 import { FileDropzone } from "@/components/upload/file-dropzone"
 import { FileList } from "@/components/upload/file-list"
 import { ProjectUsers } from "@/components/projects/project-users"
+import { Badge } from "@/components/ui/badge"
 import type { ChatMessage, Conversation } from "@/lib/types"
 
 const tabs = [
@@ -187,11 +188,14 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 rounded-lg bg-muted px-3 py-1.5 text-sm">
+          <Badge
+            variant="outline"
+            className="gap-1.5 rounded-lg px-3 py-1.5 text-sm font-normal bg-white"
+          >
             <Coins className="h-4 w-4 text-mint-500" />
             <span className="font-medium text-foreground">{project.usedCredits}</span>
             <span className="text-muted-foreground">credits spent</span>
-          </div>
+          </Badge>
         </div>
       </div>
 
