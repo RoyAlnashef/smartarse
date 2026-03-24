@@ -28,7 +28,14 @@ function formatDate(iso: string) {
   })
 }
 
-export function FileList({ files }: { files: UploadedFile[] }) {
+export function FileList({
+  files,
+  projectNameById,
+}: {
+  files: UploadedFile[]
+  /** Map of project id → display name; used for the Project column */
+  projectNameById?: Record<string, string>
+}) {
   if (files.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-12">
@@ -45,6 +52,9 @@ export function FileList({ files }: { files: UploadedFile[] }) {
         <thead>
           <tr className="border-b border-border bg-muted/50">
             <th className="px-4 py-3 font-medium text-muted-foreground">Name</th>
+            <th className="hidden px-4 py-3 font-medium text-muted-foreground sm:table-cell">
+              Project
+            </th>
             <th className="hidden px-4 py-3 font-medium text-muted-foreground sm:table-cell">Size</th>
             <th className="hidden px-4 py-3 font-medium text-muted-foreground md:table-cell">Uploaded</th>
             <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
@@ -56,6 +66,8 @@ export function FileList({ files }: { files: UploadedFile[] }) {
         <tbody className="divide-y divide-border">
           {files.map((file) => {
             const Icon = fileIcons[file.type] ?? File
+            const projectLabel =
+              projectNameById?.[file.projectId] ?? file.projectId
             return (
               <tr key={file.id} className="transition-colors hover:bg-muted/30">
                 <td className="px-4 py-3">
@@ -63,6 +75,9 @@ export function FileList({ files }: { files: UploadedFile[] }) {
                     <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
                     <span className="truncate font-medium text-foreground">{file.name}</span>
                   </div>
+                </td>
+                <td className="hidden max-w-[12rem] truncate px-4 py-3 text-muted-foreground sm:table-cell">
+                  {projectLabel}
                 </td>
                 <td className="hidden px-4 py-3 text-muted-foreground sm:table-cell">
                   {formatSize(file.size)}

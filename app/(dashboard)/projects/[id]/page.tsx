@@ -270,7 +270,12 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
       {activeTab === "uploads" && (
         <div className="flex-1 space-y-6 overflow-y-auto p-4 lg:p-6">
           <FileDropzone onUpload={() => {}} />
-          <FileList files={projectFiles} />
+          <FileList
+            files={projectFiles}
+            projectNameById={
+              project ? { [project.id]: project.name } : undefined
+            }
+          />
         </div>
       )}
 
