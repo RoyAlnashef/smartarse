@@ -14,12 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
-const roleBadgeColors: Record<string, string> = {
-  admin: "bg-purple-100 text-purple-700",
-  client: "bg-blue-100 text-blue-700",
-  user: "bg-amber-100 text-amber-700",
-}
+import { userRoleBadgeClassName } from "@/lib/user-role-badge"
 
 const statusColors: Record<string, string> = {
   active: "bg-mint-100 text-mint-700",
@@ -93,9 +88,7 @@ export function UserTable({
                       </div>
                     </td>
                     <td className="hidden px-4 py-3 sm:table-cell">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${roleBadgeColors[user.role]}`}
-                      >
+                      <span className={userRoleBadgeClassName(user.role)}>
                         {user.role}
                       </span>
                     </td>

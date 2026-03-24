@@ -61,12 +61,20 @@ export interface Project {
   id: string
   name: string
   description: string
+  /** Maps to Supabase `projects.organization_id`. */
   clientId: string
+  /** From joined `organizations.name` when loaded via Supabase. */
   clientName: string
   status: "live" | "archived"
+  /** Maps to Supabase `projects.created_at`. */
   createdAt: string
+  /** Maps to `projects.last_activity`, else `updated_at` / `created_at`. */
   lastActivity: string
+  /**
+   * Not stored on `projects`; when using Supabase, set from `organizations.credit_balance` for UI (e.g. progress vs used).
+   */
   totalCredits: number
+  /** Maps to Supabase `projects.used_credits`. */
   usedCredits: number
   assignedUserIds: string[]
   uploadedFileIds: string[]

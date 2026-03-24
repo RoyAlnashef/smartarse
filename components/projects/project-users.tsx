@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Popover,
@@ -11,17 +10,12 @@ import {
 } from "@/components/ui/popover"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
+import { userRoleBadgeClassName } from "@/lib/user-role-badge"
 import type { Project, User } from "@/lib/types"
 
 export interface ProjectUsersProps {
   project: Project
   allUsers: User[]
-}
-
-function roleLabel(role: User["role"]): string {
-  if (role === "client") return "Client"
-  if (role === "user") return "User"
-  return role
 }
 
 type PendingToggle = { user: User; assign: boolean }
@@ -36,7 +30,7 @@ export function ProjectUsers({ project, allUsers }: ProjectUsersProps) {
 
   useEffect(() => {
     setAssignedIds(new Set(project.assignedUserIds))
-  }, [project.id])
+  }, [project.id, project.assignedUserIds.join("\0")])
 
   const eligibleUsers = useMemo(
     () =>
@@ -85,7 +79,8 @@ export function ProjectUsers({ project, allUsers }: ProjectUsersProps) {
       <p className="text-sm text-muted-foreground">
         Only people in{" "}
         <span className="font-medium text-foreground">{project.clientName}</span>{" "}
-        can be assigned to this project. Changes here are not saved yet (demo).
+        can be assigned to this project. Switches reflect current assignments from the
+        database; saving changes to Supabase is not wired yet.
       </p>
       <div className="rounded-xl border border-border bg-card p-6">
         {eligibleUsers.length === 0 ? (
@@ -118,13 +113,13 @@ export function ProjectUsers({ project, allUsers }: ProjectUsersProps) {
                     >
                       {user.name}
                     </span>
-                    <Badge variant="secondary" className="font-normal">
-                      {roleLabel(user.role)}
-                    </Badge>
+                    <span className={userRoleBadgeClassName(user.role)}>
+                      {user.role}
+                    </span>
                     {user.status === "inactive" ? (
-                      <Badge variant="outline" className="font-normal text-muted-foreground">
-                        Inactive
-                      </Badge>
+                      <span className="inline-flex items-center rounded-full bg-dark-100 px-2 py-0.5 text-xs font-medium capitalize text-dark-500">
+                        inactive
+                      </span>
                     ) : null}
                   </div>
                   <p className="mt-0.5 truncate text-sm text-muted-foreground">

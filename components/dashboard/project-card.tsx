@@ -1,8 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { Calendar, Coins, MessageSquare } from "lucide-react"
+import { Calendar, Coins, FileText } from "lucide-react"
 import type { Project } from "@/lib/types"
+import { Skeleton } from "@/components/ui/skeleton"
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-GB", {
@@ -12,15 +13,11 @@ function formatDate(iso: string) {
   })
 }
 
-function formatFileSize(credits: number, total: number) {
-  const pct = total > 0 ? Math.round((credits / total) * 100) : 0
-  return pct
+function creditsUsedLabel(n: number) {
+  return `${n} credit${n === 1 ? "" : "s"} used`
 }
 
 export function ProjectCard({ project }: { project: Project }) {
-  const creditPct = formatFileSize(project.usedCredits, project.totalCredits)
-  const remaining = project.totalCredits - project.usedCredits
-
   return (
     <Link
       href={`/projects/${project.id}`}
@@ -58,28 +55,53 @@ export function ProjectCard({ project }: { project: Project }) {
             {formatDate(project.lastActivity)}
           </span>
           <span className="flex items-center gap-1">
-            <MessageSquare className="h-3.5 w-3.5" />
-            {project.uploadedFileIds.length} files
+            <FileText className="h-3.5 w-3.5" aria-hidden />
+            {project.uploadedFileIds.length} docs
           </span>
         </div>
       </div>
 
-      {/* Credit bar */}
+      {/* Credits used — matches project detail mint coin treatment */}
       <div className="border-t border-border px-5 py-3">
-        <div className="flex items-center justify-between text-xs">
-          <span className="flex items-center gap-1 text-muted-foreground">
-            <Coins className="h-3.5 w-3.5" />
-            {remaining} credits left
+        <span className="flex items-center gap-1.5 text-xs">
+          <Coins className="h-3.5 w-3.5 shrink-0 text-mint-500" aria-hidden />
+          <span className="font-medium text-foreground">
+            {creditsUsedLabel(project.usedCredits)}
           </span>
-          <span className="font-medium text-foreground">{creditPct}% used</span>
-        </div>
-        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full rounded-full bg-mint-400 transition-all"
-            style={{ width: `${creditPct}%` }}
-          />
-        </div>
+        </span>
       </div>
     </Link>
+  )
+}
+
+/** Placeholder layout aligned with `ProjectCard` (see [shadcn Skeleton](https://ui.shadcn.com/docs/components/radix/skeleton)). */
+export function ProjectCardSkeleton() {
+  return (
+    <div
+      className="flex flex-col rounded-xl border border-border bg-card"
+      aria-busy
+      aria-label="Loading project"
+    >
+      <div className="flex flex-1 flex-col p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className="h-4 w-[min(100%,14rem)]" />
+            <Skeleton className="h-3 w-24" />
+          </div>
+          <Skeleton className="h-5 w-14 shrink-0 rounded-full" />
+        </div>
+        <div className="mt-3 space-y-2">
+          <Skeleton className="h-3.5 w-full" />
+          <Skeleton className="h-3.5 w-[92%]" />
+        </div>
+        <div className="mt-auto flex items-center gap-4 pt-4">
+          <Skeleton className="h-3.5 w-24" />
+          <Skeleton className="h-3.5 w-20" />
+        </div>
+      </div>
+      <div className="border-t border-border px-5 py-3">
+        <Skeleton className="h-4 w-36" />
+      </div>
+    </div>
   )
 }
