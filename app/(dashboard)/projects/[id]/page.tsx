@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   MessageSquare,
   FileText,
+  Users,
   Settings,
   Coins,
   Download,
@@ -13,18 +14,25 @@ import {
   PanelRightClose,
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
-import { projects, uploadedFiles, conversations as mockConversations } from "@/lib/mock-data"
+import {
+  projects,
+  uploadedFiles,
+  users,
+  conversations as mockConversations,
+} from "@/lib/mock-data"
 import { ChatWindow } from "@/components/chat/chat-window"
 import { ChatInput } from "@/components/chat/chat-input"
 import { ChatSidebar } from "@/components/chat/chat-sidebar"
 import { DocumentSelector } from "@/components/chat/document-selector"
 import { FileDropzone } from "@/components/upload/file-dropzone"
 import { FileList } from "@/components/upload/file-list"
+import { ProjectUsers } from "@/components/projects/project-users"
 import type { ChatMessage, Conversation } from "@/lib/types"
 
 const tabs = [
   { id: "chat", label: "Chat", icon: MessageSquare },
   { id: "uploads", label: "Documents", icon: FileText, adminOnly: true },
+  { id: "users", label: "Users", icon: Users, adminOnly: true },
   { id: "settings", label: "Settings", icon: Settings },
 ] as const
 
@@ -275,6 +283,12 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
               project ? { [project.id]: project.name } : undefined
             }
           />
+        </div>
+      )}
+
+      {activeTab === "users" && (
+        <div className="flex-1 overflow-y-auto p-4 lg:p-6">
+          <ProjectUsers project={project} allUsers={users} />
         </div>
       )}
 
