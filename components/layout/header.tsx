@@ -1,16 +1,7 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
-import { usePathname, useRouter } from "next/navigation"
-import {
-  Menu,
-  Search,
-  Coins,
-  ChevronDown,
-  Settings,
-  LogOut,
-  User as UserIcon,
-} from "lucide-react"
+import { usePathname } from "next/navigation"
+import { Menu, Coins } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { clients } from "@/lib/mock-data"
 
@@ -28,20 +19,7 @@ const pageTitles: Record<string, string> = {
 
 export function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const pathname = usePathname()
-  const router = useRouter()
-  const { user, logout } = useAuth()
-  const [dropdownOpen, setDropdownOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false)
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
+  const { user } = useAuth()
 
   if (!user) return null
 
@@ -90,56 +68,6 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
           {totalCredits - usedCredits}
         </span>
         <span className="text-sm text-muted-foreground">credits</span>
-      </div>
-
-      {/* User dropdown */}
-      <div ref={dropdownRef} className="relative">
-        <button
-          type="button"
-          onClick={() => setDropdownOpen((o) => !o)}
-          className="flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-muted"
-        >
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-dark-950 text-sm font-medium text-white">
-            {user.name
-              .split(" ")
-              .map((n) => n[0])
-              .join("")}
-          </div>
-          <span className="hidden text-sm font-medium text-foreground md:block">
-            {user.name}
-          </span>
-          <ChevronDown className="hidden h-4 w-4 text-muted-foreground md:block" />
-        </button>
-
-        {dropdownOpen && (
-          <div className="absolute right-0 top-full mt-1 w-56 rounded-lg border border-border bg-card py-1 shadow-lg">
-            <div className="border-b border-border px-4 py-3">
-              <p className="text-sm font-medium text-foreground">{user.name}</p>
-              <p className="text-xs text-muted-foreground">{user.email}</p>
-            </div>
-            <button
-              onClick={() => {
-                setDropdownOpen(false)
-                router.push("/settings")
-              }}
-              className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-foreground hover:bg-muted"
-            >
-              <Settings className="h-4 w-4" />
-              Settings
-            </button>
-            <button
-              onClick={async () => {
-                setDropdownOpen(false)
-                await logout()
-                router.replace("/")
-              }}
-              className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-red-600 hover:bg-muted"
-            >
-              <LogOut className="h-4 w-4" />
-              Sign out
-            </button>
-          </div>
-        )}
       </div>
     </header>
   )
