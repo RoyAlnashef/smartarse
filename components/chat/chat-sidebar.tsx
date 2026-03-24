@@ -2,6 +2,29 @@
 
 import { MessageSquare } from "lucide-react"
 import type { Conversation } from "@/lib/types"
+import { Skeleton } from "@/components/ui/skeleton"
+
+function ChatSidebarEmptySkeleton() {
+  const rows = [0, 1, 2, 3] as const
+  const titleWidths = ["w-[min(100%,11rem)]", "w-[min(100%,9rem)]", "w-[min(100%,12rem)]", "w-[min(100%,8rem)]"] as const
+  return (
+    <>
+      {rows.map((i) => (
+        <div
+          key={i}
+          className="flex w-full flex-col gap-1 rounded-lg px-3 py-2.5"
+          aria-hidden
+        >
+          <Skeleton className={`h-4 max-w-full ${titleWidths[i]}`} />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-3 w-[4.25rem]" />
+            <Skeleton className="h-3 w-11" />
+          </div>
+        </div>
+      ))}
+    </>
+  )
+}
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-GB", {
@@ -14,10 +37,12 @@ export function ChatSidebar({
   conversations,
   activeId,
   onSelect,
+  emptyState = "default",
 }: {
   conversations: Conversation[]
   activeId: string | null
   onSelect: (id: string) => void
+  emptyState?: "default" | "skeleton"
 }) {
   return (
     <div className="flex flex-col">
@@ -27,13 +52,16 @@ export function ChatSidebar({
         </h3>
       </div>
       <div className="flex-1 space-y-1 overflow-y-auto p-2">
-        {conversations.length === 0 && (
-          <div className="px-3 py-8 text-center">
-            <MessageSquare className="mx-auto h-8 w-8 text-muted-foreground/40" />
-            <p className="mt-2 text-sm text-muted-foreground">No chat history yet</p>
-            <p className="text-xs text-muted-foreground">Start by asking a question</p>
-          </div>
-        )}
+        {conversations.length === 0 &&
+          (emptyState === "skeleton" ? (
+            <ChatSidebarEmptySkeleton />
+          ) : (
+            <div className="px-3 py-8 text-center">
+              <MessageSquare className="mx-auto h-8 w-8 text-muted-foreground/40" />
+              <p className="mt-2 text-sm text-muted-foreground">No chat history yet</p>
+              <p className="text-xs text-muted-foreground">Start by asking a question</p>
+            </div>
+          ))}
         {conversations.map((conv) => (
           <button
             key={conv.id}

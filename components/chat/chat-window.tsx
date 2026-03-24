@@ -3,14 +3,28 @@
 import { useRef, useEffect } from "react"
 import { MessageSquare } from "lucide-react"
 import type { ChatMessage } from "@/lib/types"
+import { Skeleton } from "@/components/ui/skeleton"
 import { MessageBubble } from "./message-bubble"
+
+function ChatWindowEmptySkeleton() {
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center bg-white p-8">
+      <Skeleton className="h-16 w-16 shrink-0 rounded-2xl" />
+      <Skeleton className="mt-4 h-6 w-[min(100%,14rem)] max-w-sm" />
+      <Skeleton className="mt-2 h-4 w-full max-w-sm" />
+      <Skeleton className="mt-2 h-4 w-[min(100%,18rem)] max-w-sm" />
+    </div>
+  )
+}
 
 export function ChatWindow({
   messages,
   isTyping,
+  emptyState = "default",
 }: {
   messages: ChatMessage[]
   isTyping?: boolean
+  emptyState?: "default" | "skeleton"
 }) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -19,6 +33,9 @@ export function ChatWindow({
   }, [messages, isTyping])
 
   if (messages.length === 0) {
+    if (emptyState === "skeleton") {
+      return <ChatWindowEmptySkeleton />
+    }
     return (
       <div className="flex flex-1 flex-col items-center justify-center bg-white p-8">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">

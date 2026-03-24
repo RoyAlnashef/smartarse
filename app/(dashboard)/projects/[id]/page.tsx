@@ -308,6 +308,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
               <ChatWindow
                 messages={activeConversation?.messages ?? []}
                 isTyping={isTyping}
+                emptyState={isChatReadOnly ? "skeleton" : "default"}
               />
               {!isChatReadOnly && (
                 <ChatInput onSend={handleSendMessage} disabled={isTyping} />
@@ -321,6 +322,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                   conversations={conversations}
                   activeId={activeConversationId}
                   onSelect={setActiveConversationId}
+                  emptyState={isChatReadOnly ? "skeleton" : "default"}
                 />
               </div>
             )}
