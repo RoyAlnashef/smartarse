@@ -8,12 +8,9 @@ import { MessageBubble } from "./message-bubble"
 export function ChatWindow({
   messages,
   isTyping,
-  readOnly = false,
 }: {
   messages: ChatMessage[]
   isTyping?: boolean
-  /** When true, message area uses page background (var(--background)) for a view-only admin preview. */
-  readOnly?: boolean
 }) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -23,9 +20,7 @@ export function ChatWindow({
 
   if (messages.length === 0) {
     return (
-      <div
-        className={`flex flex-1 flex-col items-center justify-center p-8 ${readOnly ? "bg-background" : ""}`}
-      >
+      <div className="flex flex-1 flex-col items-center justify-center bg-white p-8">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
           <MessageSquare className="h-8 w-8 text-muted-foreground/50" />
         </div>
@@ -38,9 +33,7 @@ export function ChatWindow({
   }
 
   return (
-    <div
-      className={`flex-1 space-y-6 overflow-y-auto p-4 lg:p-6 ${readOnly ? "bg-background" : ""}`}
-    >
+    <div className="flex-1 space-y-6 overflow-y-auto bg-white p-4 lg:p-6">
       {messages.map((msg) => (
         <MessageBubble key={msg.id} message={msg} />
       ))}
@@ -51,7 +44,7 @@ export function ChatWindow({
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-dark-950 text-xs font-bold text-mint-300">
             D
           </div>
-          <div className="rounded-2xl rounded-bl-md border border-border bg-card px-4 py-3">
+          <div className="rounded-2xl rounded-bl-md bg-background px-4 py-3">
             <div className="flex gap-1">
               <span className="h-2 w-2 animate-bounce rounded-full bg-dark-300" style={{ animationDelay: "0ms" }} />
               <span className="h-2 w-2 animate-bounce rounded-full bg-dark-300" style={{ animationDelay: "150ms" }} />

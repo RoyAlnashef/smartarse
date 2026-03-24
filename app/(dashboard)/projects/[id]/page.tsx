@@ -221,7 +221,6 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
               <ChatWindow
                 messages={activeConversation?.messages ?? []}
                 isTyping={isTyping}
-                readOnly={isChatReadOnly}
               />
               {!isChatReadOnly && (
                 <ChatInput onSend={handleSendMessage} disabled={isTyping} />
