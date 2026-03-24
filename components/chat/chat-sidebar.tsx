@@ -1,28 +1,39 @@
 "use client"
 
-import { MessageSquare } from "lucide-react"
+import { Info, MessageSquare } from "lucide-react"
 import type { Conversation } from "@/lib/types"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Skeleton } from "@/components/ui/skeleton"
 
 function ChatSidebarEmptySkeleton() {
   const rows = [0, 1, 2, 3] as const
   const titleWidths = ["w-[min(100%,11rem)]", "w-[min(100%,9rem)]", "w-[min(100%,12rem)]", "w-[min(100%,8rem)]"] as const
   return (
-    <>
-      {rows.map((i) => (
-        <div
-          key={i}
-          className="flex w-full flex-col gap-1 rounded-lg px-3 py-2.5"
-          aria-hidden
-        >
-          <Skeleton className={`h-4 max-w-full ${titleWidths[i]}`} />
-          <div className="flex items-center gap-2">
-            <Skeleton className="h-3 w-[4.25rem]" />
-            <Skeleton className="h-3 w-11" />
+    <div className="flex flex-col gap-3">
+      <Alert
+        className="border-cyan-200 bg-cyan-50/90 py-3 pl-3 pr-2 [&>svg]:left-3 [&>svg]:top-3.5 [&>svg]:text-cyan-700 [&>svg~*]:pl-6"
+        role="status"
+      >
+        <Info className="h-4 w-4 shrink-0" aria-hidden />
+        <AlertDescription className="text-xs leading-snug text-foreground/90">
+          Your client hasn&apos;t started talking to smartARSE yet.
+        </AlertDescription>
+      </Alert>
+      <div className="space-y-1" aria-hidden>
+        {rows.map((i) => (
+          <div
+            key={i}
+            className="flex w-full flex-col gap-1 rounded-lg px-3 py-2.5"
+          >
+            <Skeleton className={`h-4 max-w-full ${titleWidths[i]}`} />
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-3 w-[4.25rem]" />
+              <Skeleton className="h-3 w-11" />
+            </div>
           </div>
-        </div>
-      ))}
-    </>
+        ))}
+      </div>
+    </div>
   )
 }
 
