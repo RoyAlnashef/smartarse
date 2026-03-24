@@ -23,10 +23,11 @@ export function OrganizationFormModal({
   organization: Organization | null
   open: boolean
   onClose: () => void
-  onSave: (payload: OrganizationSavePayload) => void
+  onSave: (payload: OrganizationSavePayload) => void | Promise<void>
 }) {
   const [name, setName] = useState("")
   const [status, setStatus] = useState<"active" | "inactive">("active")
+  const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
     if (organization) {
@@ -38,18 +39,29 @@ export function OrganizationFormModal({
     }
   }, [organization, open])
 
-  function handleSubmit() {
+  useEffect(() => {
+    if (!open) setIsSaving(false)
+  }, [open])
+
+  async function handleSubmit() {
     const trimmed = name.trim()
-    if (!trimmed) return
-    onSave({
-      id: organization?.id,
-      name: trimmed,
-      projectIds: organization?.projectIds ?? [],
-      userIds: organization?.userIds ?? [],
-      status,
-      createdAt: organization?.createdAt,
-    })
-    onClose()
+    if (!trimmed || isSaving) return
+    setIsSaving(true)
+    try {
+      await Promise.resolve(
+        onSave({
+          id: organization?.id,
+          name: trimmed,
+          projectIds: organization?.projectIds ?? [],
+          userIds: organization?.userIds ?? [],
+          status,
+          createdAt: organization?.createdAt,
+        })
+      )
+      onClose()
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   if (!open) return null
@@ -120,11 +132,11 @@ export function OrganizationFormModal({
             </button>
             <button
               type="button"
-              onClick={handleSubmit}
-              disabled={!name.trim()}
+              onClick={() => void handleSubmit()}
+              disabled={!name.trim() || isSaving}
               className="rounded-lg bg-dark-950 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-dark-800 disabled:pointer-events-none disabled:opacity-50"
             >
-              {isEdit ? "Save Changes" : "Create Organization"}
+              {isSaving ? "Saving…" : isEdit ? "Save Changes" : "Create Organization"}
             </button>
           </div>
         </div>

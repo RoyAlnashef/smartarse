@@ -1,8 +1,7 @@
 "use client"
 
-import { Edit, MoreVertical, UserX, UserCheck } from "lucide-react"
+import { Edit } from "lucide-react"
 import type { User } from "@/lib/types"
-import { clients } from "@/lib/mock-data"
 
 const roleBadgeColors: Record<string, string> = {
   admin: "bg-purple-100 text-purple-700",
@@ -25,9 +24,11 @@ function formatDate(iso: string) {
 
 export function UserTable({
   users,
+  organizations,
   onEdit,
 }: {
   users: User[]
+  organizations: { id: string; name: string }[]
   onEdit: (user: User) => void
 }) {
   return (
@@ -48,8 +49,8 @@ export function UserTable({
           </thead>
           <tbody className="divide-y divide-border">
             {users.map((user) => {
-              const client = user.clientId
-                ? clients.find((c) => c.id === user.clientId)
+              const org = user.clientId
+                ? organizations.find((o) => o.id === user.clientId)
                 : null
               return (
                 <tr key={user.id} className="transition-colors hover:bg-muted/30">
@@ -75,7 +76,7 @@ export function UserTable({
                     </span>
                   </td>
                   <td className="hidden px-4 py-3 text-muted-foreground md:table-cell">
-                    {client?.name ?? "---"}
+                    {org?.name ?? "---"}
                   </td>
                   <td className="hidden px-4 py-3 text-muted-foreground lg:table-cell">
                     {formatDate(user.lastLogin)}

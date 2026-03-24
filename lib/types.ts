@@ -11,13 +11,20 @@ export const USER_ROLE_LABELS: Record<ActiveUserRole, UserRoleLabel> = {
 
 export interface User {
   id: string
+  /** Display name; maps to Supabase `users.name` when present. */
   name: string
   email: string
   role: UserRole
+  /**
+   * Organization membership; maps to Supabase `users.organization_id` (UUID).
+   * Legacy field name `clientId` is retained for mock data and UI compatibility.
+   */
   clientId?: string
   avatarUrl?: string
   status: "active" | "inactive"
+  /** UI-only until `users.last_login` (or similar) exists in Supabase. */
   lastLogin: string
+  /** Maps to Supabase `users.created_at`. */
   createdAt: string
 }
 
@@ -34,11 +41,19 @@ export interface Client {
 export interface Organization {
   id: string
   name: string
+  /**
+   * Mock-era project links; empty for Supabase-backed org rows until projects are wired to `organization_id`.
+   */
   projectIds: string[]
+  /**
+   * Synthetic id list whose length matches member count from `users.organization_id` in the admin dashboard.
+   */
   userIds: string[]
-  /** Matches Supabase `organizations.credit_balance` */
+  /** Maps to Supabase `organizations.credit_balance`. */
   creditBalance: number
+  /** Maps to Supabase `organizations.status` when present (`active` | `inactive`). */
   status: "active" | "inactive"
+  /** Maps to Supabase `organizations.created_at`. */
   createdAt: string
 }
 

@@ -1,9 +1,15 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { toast } from "sonner"
 import { Plus, Search } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
-import { organizations as seedOrganizations } from "@/lib/mock-data"
+import {
+  createOrganization,
+  listOrganizationsForDashboard,
+  setOrganizationStatus,
+  updateOrganization,
+} from "@/lib/supabase/organizations"
 import { OrganizationTable } from "@/components/organizations/organization-table"
 import {
   OrganizationFormModal,
@@ -13,11 +19,37 @@ import type { Organization } from "@/lib/types"
 
 export default function OrganizationsPage() {
   const { user: currentUser } = useAuth()
-  const [organizations, setOrganizations] = useState<Organization[]>(seedOrganizations)
+  const [organizations, setOrganizations] = useState<Organization[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all")
   const [editingOrg, setEditingOrg] = useState<Organization | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
+
+  useEffect(() => {
+    let isCancelled = false
+
+    async function loadOrganizations() {
+      setIsLoading(true)
+      setLoadError(null)
+      try {
+        const rows = await listOrganizationsForDashboard()
+        if (!isCancelled) setOrganizations(rows)
+      } catch (error) {
+        if (!isCancelled) {
+          setLoadError(error instanceof Error ? error.message : "Failed to load organizations.")
+        }
+      } finally {
+        if (!isCancelled) setIsLoading(false)
+      }
+    }
+
+    void loadOrganizations()
+    return () => {
+      isCancelled = true
+    }
+  }, [])
 
   const filtered = useMemo(() => {
     return organizations.filter((o) => {
@@ -27,33 +59,50 @@ export default function OrganizationsPage() {
     })
   }, [organizations, search, statusFilter])
 
-  function handleSave(payload: OrganizationSavePayload) {
-    if (payload.id) {
-      setOrganizations((prev) =>
-        prev.map((o) =>
-          o.id === payload.id
-            ? {
-                ...o,
-                name: payload.name,
-                projectIds: payload.projectIds,
-                userIds: payload.userIds,
-                status: payload.status,
-              }
-            : o
-        )
+  async function refreshOrganizations() {
+    const rows = await listOrganizationsForDashboard()
+    setOrganizations(rows)
+  }
+
+  async function handleSave(payload: OrganizationSavePayload) {
+    try {
+      if (payload.id) {
+        await updateOrganization({
+          id: payload.id,
+          name: payload.name,
+          status: payload.status,
+        })
+        toast.success("Organization updated.")
+      } else {
+        await createOrganization(payload.name)
+        toast.success("Organization created.")
+      }
+      await refreshOrganizations()
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Something went wrong. Please try again."
+      toast.error(message)
+      throw error
+    }
+  }
+
+  async function handleDeactivate(org: Organization) {
+    if (
+      !window.confirm(
+        `Deactivate “${org.name}”? It will be marked inactive (not deleted from the database).`
       )
+    ) {
       return
     }
-    const newOrg: Organization = {
-      id: `o-${Date.now()}`,
-      name: payload.name,
-      projectIds: payload.projectIds,
-      userIds: payload.userIds,
-      creditBalance: 0,
-      status: "active",
-      createdAt: new Date().toISOString(),
+    try {
+      await setOrganizationStatus(org.id, "inactive")
+      await refreshOrganizations()
+      toast.success("Organization deactivated.")
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Could not deactivate organization."
+      toast.error(message)
     }
-    setOrganizations((prev) => [...prev, newOrg])
   }
 
   if (currentUser?.role !== "admin") {
@@ -116,13 +165,28 @@ export default function OrganizationsPage() {
         </div>
       </div>
 
-      <OrganizationTable
-        organizations={filtered}
-        onEdit={(o) => {
-          setEditingOrg(o)
-          setModalOpen(true)
-        }}
-      />
+      {isLoading && (
+        <p className="text-sm text-muted-foreground">Loading organizations...</p>
+      )}
+      {loadError && (
+        <p className="text-sm text-red-600">Could not load organizations: {loadError}</p>
+      )}
+
+      {!isLoading && !loadError && (
+        <>
+          <OrganizationTable
+            organizations={filtered}
+            onEdit={(o) => {
+              setEditingOrg(o)
+              setModalOpen(true)
+            }}
+            onDeactivate={handleDeactivate}
+          />
+          {filtered.length === 0 && (
+            <p className="text-sm text-muted-foreground">No organizations match your filters.</p>
+          )}
+        </>
+      )}
 
       <OrganizationFormModal
         organization={editingOrg}

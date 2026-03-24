@@ -1,19 +1,62 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useEffect, useMemo, useState } from "react"
+import { toast } from "sonner"
 import { Plus, Search } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
-import { users } from "@/lib/mock-data"
+import { listOrganizationsForDashboard } from "@/lib/supabase/organizations"
+import { listUsersForDashboard, updateUserAdmin } from "@/lib/supabase/users"
 import { UserTable } from "@/components/users/user-table"
-import { UserFormModal } from "@/components/users/user-form-modal"
-import type { User } from "@/lib/types"
+import {
+  UserFormModal,
+  type UserSavePayload,
+} from "@/components/users/user-form-modal"
+import type { Organization, User } from "@/lib/types"
 
 export default function UsersPage() {
   const { user: currentUser } = useAuth()
+  const [users, setUsers] = useState<User[]>([])
+  const [organizations, setOrganizations] = useState<Organization[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [search, setSearch] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
+
+  async function refreshData() {
+    const [userRows, orgRows] = await Promise.all([
+      listUsersForDashboard(),
+      listOrganizationsForDashboard(),
+    ])
+    setUsers(userRows)
+    setOrganizations(orgRows)
+  }
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function load() {
+      setIsLoading(true)
+      setLoadError(null)
+      try {
+        await refreshData()
+      } catch (error) {
+        if (!cancelled) {
+          setLoadError(
+            error instanceof Error ? error.message : "Failed to load users."
+          )
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
+    }
+
+    void load()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const filtered = useMemo(() => {
     return users.filter((u) => {
@@ -23,7 +66,30 @@ export default function UsersPage() {
       const matchRole = roleFilter === "all" || u.role === roleFilter
       return matchSearch && matchRole
     })
-  }, [search, roleFilter])
+  }, [users, search, roleFilter])
+
+  const organizationOptions = useMemo(
+    () => organizations.map((o) => ({ id: o.id, name: o.name })),
+    [organizations]
+  )
+
+  async function handleSaveUser(payload: UserSavePayload) {
+    try {
+      await updateUserAdmin({
+        id: payload.id,
+        name: payload.name,
+        role: payload.role,
+        organizationId: payload.organizationId,
+      })
+      await refreshData()
+      toast.success("User updated.")
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Could not save user."
+      toast.error(message)
+      throw error
+    }
+  }
 
   if (currentUser?.role !== "admin") {
     return (
@@ -44,6 +110,7 @@ export default function UsersPage() {
           </p>
         </div>
         <button
+          type="button"
           onClick={() => {
             setEditingUser(null)
             setModalOpen(true)
@@ -55,7 +122,6 @@ export default function UsersPage() {
         </button>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative max-w-sm flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -71,6 +137,7 @@ export default function UsersPage() {
           {["all", "admin", "client", "user"].map((r) => (
             <button
               key={r}
+              type="button"
               onClick={() => setRoleFilter(r)}
               className={`rounded-md px-3 py-1.5 text-xs font-medium capitalize transition-colors ${
                 roleFilter === r
@@ -84,20 +151,35 @@ export default function UsersPage() {
         </div>
       </div>
 
-      {/* Table */}
-      <UserTable
-        users={filtered}
-        onEdit={(u) => {
-          setEditingUser(u)
-          setModalOpen(true)
-        }}
-      />
+      {isLoading && (
+        <p className="text-sm text-muted-foreground">Loading users...</p>
+      )}
+      {loadError && (
+        <p className="text-sm text-red-600">Could not load data: {loadError}</p>
+      )}
 
-      {/* Modal */}
+      {!isLoading && !loadError && (
+        <>
+          <UserTable
+            users={filtered}
+            organizations={organizationOptions}
+            onEdit={(u) => {
+              setEditingUser(u)
+              setModalOpen(true)
+            }}
+          />
+          {filtered.length === 0 && (
+            <p className="text-sm text-muted-foreground">No users match your filters.</p>
+          )}
+        </>
+      )}
+
       <UserFormModal
         user={editingUser}
         open={modalOpen}
+        organizations={organizationOptions}
         onClose={() => setModalOpen(false)}
+        onSave={handleSaveUser}
       />
     </div>
   )

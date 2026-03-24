@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next"
 import localFont from "next/font/local"
 import { DM_Sans, DM_Serif_Display, Inter, Raleway } from "next/font/google"
-import { AuthProvider } from "@/lib/auth-context"
+import { AppProviders } from "@/components/app-providers"
 import "./globals.css"
 
 const inter = Inter({
@@ -56,10 +56,11 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`${inter.variable} ${dmSerif.variable} ${vintageGoods.variable} ${raleway.variable} ${dmSans.variable}`}
     >
       <body className="font-sans antialiased">
-        <AuthProvider>{children}</AuthProvider>
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   )

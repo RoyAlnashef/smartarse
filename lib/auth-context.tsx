@@ -33,7 +33,11 @@ const roleDefaults: Record<UserRole, string> = {
 }
 
 function toSupportedRole(role: unknown): UserRole {
-  if (role === "admin" || role === "client" || role === "user") return role
+  if (typeof role !== "string") return "client"
+  const normalized = role.trim().toLowerCase()
+  if (normalized === "admin" || normalized === "client" || normalized === "user") {
+    return normalized
+  }
   return "client"
 }
 
@@ -68,7 +72,8 @@ function buildUserFromSession(sessionUser: SessionUserShape, dbRow: PublicUserRo
     matchedMock?.clientId
 
   return {
-    id: matchedMock?.id ?? sessionUser.id,
+    // Prefer the auth user id when we have a real profile row; mock id only when using mock login fallback.
+    id: dbRow ? sessionUser.id : (matchedMock?.id ?? sessionUser.id),
     name:
       matchedMock?.name ??
       (sessionUser.user_metadata?.full_name as string) ??
