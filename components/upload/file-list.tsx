@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Skeleton } from "@/components/ui/skeleton"
 
 const fileIcons: Record<string, typeof FileText> = {
   pdf: FileText,
@@ -26,15 +27,51 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
+function FileListEmptySkeleton() {
+  const rows = [0, 1, 2]
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <table className="w-full text-left text-sm">
+        <thead>
+          <tr className="border-b border-border bg-muted/50">
+            <th className="px-4 py-3 font-medium text-muted-foreground">Name</th>
+            <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
+            <th className="px-4 py-3 font-medium text-muted-foreground">
+              <span className="sr-only">Actions</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-border">
+          {rows.map((i) => (
+            <tr key={i} className="hover:bg-transparent">
+              <td className="px-4 py-3">
+                <div className="flex items-start gap-3">
+                  <Skeleton className="mt-0.5 h-5 w-5 shrink-0 rounded-sm" />
+                  <div className="min-w-0 flex-1 space-y-2 py-0.5">
+                    <Skeleton
+                      className={`h-4 max-w-[min(100%,14rem)] ${i === 0 ? "w-[85%]" : i === 1 ? "w-[72%]" : "w-[90%]"}`}
+                    />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                </div>
+              </td>
+              <td className="px-4 py-3 align-middle">
+                <Skeleton className="h-5 w-20 rounded-full" />
+              </td>
+              <td className="px-4 py-3 text-right align-middle">
+                <Skeleton className="ml-auto h-7 w-7 rounded-md" />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
 export function FileList({ files }: { files: UploadedFile[] }) {
   if (files.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-12">
-        <FileText className="h-10 w-10 text-muted-foreground/30" />
-        <p className="mt-3 text-sm font-medium text-foreground">No files uploaded</p>
-        <p className="text-sm text-muted-foreground">Upload research documents to get started</p>
-      </div>
-    )
+    return <FileListEmptySkeleton />
   }
 
   return (
