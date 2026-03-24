@@ -5,6 +5,7 @@ import { Plus, Search } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { uploadedFiles, projects } from "@/lib/mock-data"
 import { FileDropzone } from "@/components/upload/file-dropzone"
+import { FILE_UPLOAD_TYPES_DESCRIPTION } from "@/components/upload/upload-config"
 import { FileList } from "@/components/upload/file-list"
 import {
   Dialog,
@@ -92,7 +93,7 @@ export default function DocumentsPage() {
           <DialogHeader>
             <DialogTitle>Upload documents</DialogTitle>
             <DialogDescription>
-              PDF, CSV, and XLSX up to 50MB. Documents are linked to projects after upload.
+              {FILE_UPLOAD_TYPES_DESCRIPTION}. Documents are linked to projects after upload.
             </DialogDescription>
           </DialogHeader>
           <FileDropzone

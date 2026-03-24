@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { Upload, FileText } from "lucide-react"
+import { Upload } from "lucide-react"
+import { FILE_UPLOAD_ACCEPT, FILE_UPLOAD_TYPES_DESCRIPTION } from "./upload-config"
 
 export function FileDropzone({
   onUpload,
@@ -46,18 +47,16 @@ export function FileDropzone({
         <Upload className={`h-6 w-6 ${isDragOver ? "text-mint-500" : "text-muted-foreground"}`} />
       </div>
       <p className="mt-4 text-sm font-medium text-foreground">
-        Drop files here or click to upload
+        Drop files here
       </p>
-      <p className="mt-1 text-xs text-muted-foreground">
-        PDF, CSV, and XLSX files up to 50MB
-      </p>
+      <p className="mt-1 text-xs text-muted-foreground">{FILE_UPLOAD_TYPES_DESCRIPTION}</p>
       <label className="mt-4 cursor-pointer rounded-lg bg-dark-950 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-dark-800">
         Choose files
         <input
           type="file"
           className="sr-only"
           multiple
-          accept=".pdf,.csv,.xlsx"
+          accept={FILE_UPLOAD_ACCEPT}
           onChange={handleChange}
         />
       </label>
