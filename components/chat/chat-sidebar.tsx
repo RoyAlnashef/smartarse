@@ -25,21 +25,21 @@ export function ChatSidebar({
     <div className="flex flex-col">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Conversations
+          Chat History
         </h3>
         <button
           onClick={onNew}
           className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <Plus className="h-4 w-4" />
-          <span className="sr-only">New conversation</span>
+          <span className="sr-only">New chat history item</span>
         </button>
       </div>
       <div className="flex-1 space-y-1 overflow-y-auto p-2">
         {conversations.length === 0 && (
           <div className="px-3 py-8 text-center">
             <MessageSquare className="mx-auto h-8 w-8 text-muted-foreground/40" />
-            <p className="mt-2 text-sm text-muted-foreground">No conversations yet</p>
+            <p className="mt-2 text-sm text-muted-foreground">No chat history yet</p>
             <p className="text-xs text-muted-foreground">Start by asking a question</p>
           </div>
         )}
