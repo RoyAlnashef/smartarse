@@ -31,7 +31,7 @@ export function ChatWindow({
         </div>
         <h3 className="mt-4 text-lg font-semibold text-foreground">Start a conversation</h3>
         <p className="mt-1 max-w-sm text-center text-sm text-muted-foreground">
-          Select documents from the panel and ask questions about your research data. The AI will analyse the selected files to provide answers.
+          Ask questions about your project research data. The AI will use your project documents to provide answers.
         </p>
       </div>
     )

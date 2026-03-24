@@ -22,7 +22,6 @@ import {
 import { ChatWindow } from "@/components/chat/chat-window"
 import { ChatInput } from "@/components/chat/chat-input"
 import { ChatSidebar } from "@/components/chat/chat-sidebar"
-import { DocumentSelector } from "@/components/chat/document-selector"
 import { FileDropzone } from "@/components/upload/file-dropzone"
 import { FileList } from "@/components/upload/file-list"
 import { ProjectUsers } from "@/components/projects/project-users"
@@ -59,9 +58,6 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const [activeConversationId, setActiveConversationId] = useState<string | null>(
     projectConversations[0]?.id ?? null
   )
-  const [selectedDocs, setSelectedDocs] = useState<Set<string>>(
-    new Set(projectFiles.filter((f) => f.status === "ready").map((f) => f.id))
-  )
   const [isTyping, setIsTyping] = useState(false)
   const [showConvSidebar, setShowConvSidebar] = useState(true)
   const isChatReadOnly = user?.role === "admin"
@@ -71,14 +67,13 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     [conversations, activeConversationId]
   )
 
-  const toggleDoc = useCallback((id: string) => {
-    setSelectedDocs((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }, [])
+  const readyDocumentIds = useMemo(
+    () =>
+      uploadedFiles
+        .filter((f) => f.projectId === id && f.status === "ready")
+        .map((f) => f.id),
+    [id]
+  )
 
   const handleSendMessage = useCallback(
     (content: string) => {
@@ -88,7 +83,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         role: "user",
         content,
         timestamp: new Date().toISOString(),
-        documentIds: Array.from(selectedDocs),
+        documentIds: readyDocumentIds,
       }
 
       // If no active conversation, create one
@@ -145,7 +140,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         setIsTyping(false)
       }, 1500)
     },
-    [activeConversationId, id, selectedDocs]
+    [activeConversationId, id, readyDocumentIds]
   )
 
   if (!project || !user) {
@@ -222,17 +217,6 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {activeTab === "chat" && (
           <div className="relative flex min-h-0 flex-1 overflow-hidden">
-            {/* Document selector (left) */}
-            <div className="hidden w-64 shrink-0 border-r border-border bg-muted/50 lg:block">
-              <DocumentSelector
-                files={projectFiles}
-                selected={selectedDocs}
-                onToggle={toggleDoc}
-                disabled={isChatReadOnly}
-              />
-            </div>
-
-            {/* Chat area (center) */}
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-card">
               <ChatWindow
                 messages={activeConversation?.messages ?? []}
