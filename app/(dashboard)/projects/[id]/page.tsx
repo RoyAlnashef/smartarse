@@ -9,7 +9,6 @@ import {
   Users,
   Settings,
   Coins,
-  Download,
   PanelRightOpen,
   PanelRightClose,
 } from "lucide-react"
@@ -164,7 +163,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Project header */}
-      <div className="flex flex-col gap-3 border-b border-border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between lg:px-6">
+      <div className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push("/projects")}
@@ -196,92 +195,98 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex items-center gap-1 border-b border-border bg-card px-4 lg:px-6">
-        {visibleTabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors ${
-              activeTab === tab.id
-                ? "border-dark-950 text-foreground"
-                : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
-            }`}
-          >
-            <tab.icon className="h-4 w-4" />
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      {/* Workspace card — tabs + tab content share one white surface */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
+        <div className="flex shrink-0 flex-wrap items-center gap-1 border-b border-border px-4 lg:px-6">
+          {visibleTabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors ${
+                activeTab === tab.id
+                  ? "border-dark-950 text-foreground"
+                  : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
+              }`}
+            >
+              <tab.icon className="h-4 w-4" />
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
-      {/* Tab content */}
-      {activeTab === "chat" && (
-        <div className="flex flex-1 overflow-hidden">
-          {/* Document selector (left) */}
-          <div className="hidden w-64 shrink-0 border-r border-border bg-card lg:block">
-            <DocumentSelector
-              files={projectFiles}
-              selected={selectedDocs}
-              onToggle={toggleDoc}
-              disabled={isChatReadOnly}
-            />
-          </div>
-
-          {/* Chat area (center) */}
-          <div className="flex flex-1 flex-col overflow-hidden">
-            <ChatWindow
-              messages={activeConversation?.messages ?? []}
-              isTyping={isTyping}
-            />
-            <ChatInput onSend={handleSendMessage} disabled={isTyping || isChatReadOnly} />
-          </div>
-
-          {/* Conversation history (right) */}
-          {showConvSidebar && (
-            <div className="hidden w-72 shrink-0 border-l border-border bg-card xl:block">
-              <ChatSidebar
-                conversations={conversations}
-                activeId={activeConversationId}
-                onSelect={setActiveConversationId}
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        {activeTab === "chat" && (
+          <div className="relative flex min-h-0 flex-1 overflow-hidden">
+            {/* Document selector (left) */}
+            <div className="hidden w-64 shrink-0 border-r border-border bg-muted/50 lg:block">
+              <DocumentSelector
+                files={projectFiles}
+                selected={selectedDocs}
+                onToggle={toggleDoc}
+                disabled={isChatReadOnly}
               />
             </div>
-          )}
 
-          {/* Toggle sidebar button */}
-          <button
-            onClick={() => setShowConvSidebar((o) => !o)}
-            className="absolute right-4 top-[calc(theme(spacing.16)+theme(spacing.24)+0.5rem)] z-10 hidden rounded-md border border-border bg-card p-1.5 text-muted-foreground shadow-sm transition-colors hover:bg-muted xl:block"
-          >
-            {showConvSidebar ? (
-              <PanelRightClose className="h-4 w-4" />
-            ) : (
-              <PanelRightOpen className="h-4 w-4" />
+            {/* Chat area (center) */}
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-card">
+              <ChatWindow
+                messages={activeConversation?.messages ?? []}
+                isTyping={isTyping}
+                readOnly={isChatReadOnly}
+              />
+              {!isChatReadOnly && (
+                <ChatInput onSend={handleSendMessage} disabled={isTyping} />
+              )}
+            </div>
+
+            {/* Conversation history (right) */}
+            {showConvSidebar && (
+              <div className="hidden w-72 shrink-0 border-l border-border bg-muted/50 xl:block">
+                <ChatSidebar
+                  conversations={conversations}
+                  activeId={activeConversationId}
+                  onSelect={setActiveConversationId}
+                />
+              </div>
             )}
-          </button>
-        </div>
-      )}
 
-      {activeTab === "uploads" && (
-        <div className="flex-1 space-y-6 overflow-y-auto p-4 lg:p-6">
-          <FileDropzone onUpload={() => {}} />
-          <FileList
-            files={projectFiles}
-            projectNameById={
-              project ? { [project.id]: project.name } : undefined
-            }
-          />
-        </div>
-      )}
+            {/* Toggle sidebar button */}
+            <button
+              type="button"
+              onClick={() => setShowConvSidebar((o) => !o)}
+              className="absolute right-4 top-3 z-10 hidden rounded-md border border-border bg-background p-1.5 text-muted-foreground shadow-sm transition-colors hover:bg-muted xl:block"
+            >
+              {showConvSidebar ? (
+                <PanelRightClose className="h-4 w-4" />
+              ) : (
+                <PanelRightOpen className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+        )}
 
-      {activeTab === "users" && (
-        <div className="flex-1 overflow-y-auto p-4 lg:p-6">
-          <ProjectUsers project={project} allUsers={users} />
-        </div>
-      )}
+        {activeTab === "uploads" && (
+          <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-4 lg:p-6">
+            <FileDropzone onUpload={() => {}} />
+            <FileList
+              files={projectFiles}
+              projectNameById={
+                project ? { [project.id]: project.name } : undefined
+              }
+            />
+          </div>
+        )}
 
-      {activeTab === "settings" && (
-        <div className="flex-1 overflow-y-auto p-4 lg:p-6">
-          <div className="mx-auto max-w-2xl space-y-8">
+        {activeTab === "users" && (
+          <div className="min-h-0 flex-1 overflow-y-auto p-4 lg:p-6">
+            <ProjectUsers project={project} allUsers={users} />
+          </div>
+        )}
+
+        {activeTab === "settings" && (
+          <div className="min-h-0 flex-1 overflow-y-auto p-4 lg:p-6">
+            <div className="mx-auto max-w-2xl space-y-8">
             {/* Project Info */}
             <section className="space-y-4">
               <h2 className="text-lg font-semibold text-foreground">Project Information</h2>
@@ -342,7 +347,9 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
             </div>
           </div>
         </div>
-      )}
+        )}
+        </div>
+      </div>
     </div>
   )
 }

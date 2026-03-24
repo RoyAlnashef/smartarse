@@ -78,7 +78,7 @@ export function ProjectUsers({ project, allUsers }: ProjectUsersProps) {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="w-full space-y-6">
       <section className="space-y-2">
         <h2 className="text-lg font-semibold text-foreground">
           Project members

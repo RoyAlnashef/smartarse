@@ -21,7 +21,7 @@ export function ChatInput({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-end gap-3 border-t border-border bg-card p-4">
+    <form onSubmit={handleSubmit} className="flex items-end gap-3 border-t border-border bg-muted/50 p-4">
       <div className="flex-1">
         <textarea
           rows={1}

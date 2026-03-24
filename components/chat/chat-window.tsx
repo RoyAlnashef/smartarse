@@ -8,9 +8,12 @@ import { MessageBubble } from "./message-bubble"
 export function ChatWindow({
   messages,
   isTyping,
+  readOnly = false,
 }: {
   messages: ChatMessage[]
   isTyping?: boolean
+  /** When true, message area uses page background (var(--background)) for a view-only admin preview. */
+  readOnly?: boolean
 }) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -20,7 +23,9 @@ export function ChatWindow({
 
   if (messages.length === 0) {
     return (
-      <div className="flex flex-1 flex-col items-center justify-center p-8">
+      <div
+        className={`flex flex-1 flex-col items-center justify-center p-8 ${readOnly ? "bg-background" : ""}`}
+      >
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
           <MessageSquare className="h-8 w-8 text-muted-foreground/50" />
         </div>
@@ -33,7 +38,9 @@ export function ChatWindow({
   }
 
   return (
-    <div className="flex-1 space-y-6 overflow-y-auto p-4 lg:p-6">
+    <div
+      className={`flex-1 space-y-6 overflow-y-auto p-4 lg:p-6 ${readOnly ? "bg-background" : ""}`}
+    >
       {messages.map((msg) => (
         <MessageBubble key={msg.id} message={msg} />
       ))}
