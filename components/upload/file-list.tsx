@@ -74,6 +74,27 @@ function FileListEmptySkeleton() {
   )
 }
 
+function FileListEmptyState() {
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <table className="w-full text-left text-sm">
+        <thead>
+          <tr className="border-b border-border bg-muted/50">
+            <th className="px-4 py-3 font-medium text-muted-foreground">Name</th>
+            <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
+            <th className="px-4 py-3 font-medium text-muted-foreground">
+              <span className="sr-only">Actions</span>
+            </th>
+          </tr>
+        </thead>
+      </table>
+      <p className="px-4 py-10 text-center text-sm text-muted-foreground">
+        No documents match your filters.
+      </p>
+    </div>
+  )
+}
+
 export function FileList({
   files,
   onDelete,
@@ -84,8 +105,11 @@ export function FileList({
   /** When true, show the skeleton table (e.g. first Supabase fetch in flight). */
   isInitialLoading?: boolean
 }) {
-  if (isInitialLoading || files.length === 0) {
+  if (isInitialLoading) {
     return <FileListEmptySkeleton />
+  }
+  if (files.length === 0) {
+    return <FileListEmptyState />
   }
 
   return (

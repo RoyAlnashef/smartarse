@@ -10,7 +10,10 @@ import {
   setOrganizationStatus,
   updateOrganization,
 } from "@/lib/supabase/organizations"
-import { OrganizationTable } from "@/components/organizations/organization-table"
+import {
+  OrganizationTable,
+  OrganizationTableSkeleton,
+} from "@/components/organizations/organization-table"
 import {
   OrganizationFormModal,
   type OrganizationSavePayload,
@@ -179,9 +182,7 @@ export default function OrganizationsPage() {
         </div>
       </div>
 
-      {isLoading && (
-        <p className="text-sm text-muted-foreground">Loading organizations...</p>
-      )}
+      {isLoading && <OrganizationTableSkeleton />}
       {loadError && (
         <p className="text-sm text-red-600">Could not load organizations: {loadError}</p>
       )}
@@ -197,9 +198,6 @@ export default function OrganizationsPage() {
             onActivate={handleActivate}
             onDeactivate={handleDeactivate}
           />
-          {filtered.length === 0 && (
-            <p className="text-sm text-muted-foreground">No organizations match your filters.</p>
-          )}
         </>
       )}
 

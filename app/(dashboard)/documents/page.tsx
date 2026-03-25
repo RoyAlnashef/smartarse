@@ -61,7 +61,7 @@ export default function DocumentsPage() {
         </div>
       </div>
 
-      <FileList files={filtered} />
+      <FileList files={filtered} isInitialLoading={false} />
     </div>
   )
 }

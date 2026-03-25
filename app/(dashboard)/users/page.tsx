@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/auth-context"
 import { listOrganizationsForDashboard } from "@/lib/supabase/organizations"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { listUsersForDashboard, updateUserAdmin } from "@/lib/supabase/users"
-import { UserTable } from "@/components/users/user-table"
+import { UserTable, UserTableSkeleton } from "@/components/users/user-table"
 import {
   UserFormModal,
   type UserCreatePayload,
@@ -205,9 +205,7 @@ export default function UsersPage() {
         </div>
       </div>
 
-      {isLoading && (
-        <p className="text-sm text-muted-foreground">Loading users...</p>
-      )}
+      {isLoading && <UserTableSkeleton />}
       {loadError && (
         <p className="text-sm text-red-600">Could not load data: {loadError}</p>
       )}
@@ -222,9 +220,6 @@ export default function UsersPage() {
               setModalOpen(true)
             }}
           />
-          {filtered.length === 0 && (
-            <p className="text-sm text-muted-foreground">No users match your filters.</p>
-          )}
         </>
       )}
 
