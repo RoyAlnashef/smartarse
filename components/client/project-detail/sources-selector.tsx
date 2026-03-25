@@ -14,7 +14,7 @@ export function SourcesSelector({
       </div>
       <div className="px-4 py-4">
         <p className="mb-3 text-xs text-arse-white/70">Sources included</p>
-        <div className="space-y-2">
+        <div className="space-y-0">
           {files.length === 0 ? (
             <p className="text-sm text-arse-white/70">No sources for this project yet.</p>
           ) : (

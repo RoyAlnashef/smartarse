@@ -19,10 +19,11 @@
 - **Location:** [app/(dashboard)/documents/page.tsx](../../../app/(dashboard)/documents/page.tsx)
 - **Relevance:** Table UX reference (Ready / Processing); filter/search; admin gate.
 
-### Client Sources (read path for Phase B)
+### Client Sources (Phase 3 parity path)
 
 - **Location:** [components/client/project-detail/sources-selector.tsx](../../../components/client/project-detail/sources-selector.tsx), [app/client/projects/[id]/page.tsx](../../../app/client/projects/[id]/page.tsx)
-- **Relevance:** Will list `UploadedFile`-shaped rows from Supabase per project.
+- **Relevance:** Lists `UploadedFile`-shaped rows for the same project document context used by chat `documentIds`.
+- **Patterns:** One resolved document list; derive ready subset once; feed both Sources and chat payload.
 
 ### Data and types
 
@@ -32,6 +33,11 @@
 
 - **Location:** [lib/supabase/client.ts](../../../lib/supabase/client.ts), [lib/supabase/projects.ts](../../../lib/supabase/projects.ts)
 - **Relevance:** Browser client guard, row fetch patterns for Phase B.
+
+### Documents data access
+
+- **Location:** [lib/supabase/documents.ts](../../../lib/supabase/documents.ts)
+- **Relevance:** Canonical list/read path for project documents from Supabase.
 
 ## Related specs
 
@@ -46,3 +52,10 @@
 - [agent-os/standards/javascript/auth-rbac.md](../../standards/javascript/auth-rbac.md)
 - [agent-os/standards/global/project-conventions.md](../../standards/global/project-conventions.md)
 - [agent-os/standards/css/ui-styling.md](../../standards/css/ui-styling.md)
+
+## Visual references for parity checks
+
+- [visuals/01-dashboard-project-documents-tab.png](./visuals/01-dashboard-project-documents-tab.png) — Admin project documents reference.
+- [visuals/03-dashboard-documents-page.png](./visuals/03-dashboard-documents-page.png) — Global ready/processing status reference.
+- [visuals/04-client-sources-empty.png](./visuals/04-client-sources-empty.png) — Client Sources panel reference (empty-state baseline).
+- [visuals/02-supabase-storage-buckets.png](./visuals/02-supabase-storage-buckets.png) — Storage-bucket backing context.

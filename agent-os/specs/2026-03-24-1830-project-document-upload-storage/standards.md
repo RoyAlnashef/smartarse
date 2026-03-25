@@ -163,3 +163,12 @@ import { Button } from "@/components/ui/button"
 
 - New primitive → add under `components/ui/` (shadcn-style: forwardRef, `cn`, Radix if needed).
 - Product-specific chrome → feature folder; keep shell (`sidebar`, `header`) in `layout/`.
+
+---
+
+## Phase 3 standards application (client Sources parity)
+
+- **domain-data-layer:** Resolve client `Sources` from `UploadedFile`-shaped Supabase documents when available; keep mock fallback contract identical.
+- **auth-rbac:** Only query project documents through existing role-scoped access path and RLS-backed reads.
+- **project-conventions:** Preserve current `toast.error` pattern for non-blocking fetch failures; keep `@/` import style.
+- **ui-styling:** Keep Sources card shell and empty-state copy unchanged; update data wiring only.

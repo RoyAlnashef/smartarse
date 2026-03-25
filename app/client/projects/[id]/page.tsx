@@ -9,6 +9,7 @@ import aiCoin from "@/public/ai-coin.png"
 import { useAuth } from "@/lib/auth-context"
 import { uploadedFiles, conversations as mockConversations } from "@/lib/mock-data"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { listProjectDocuments } from "@/lib/supabase/documents"
 import { getProjectById } from "@/lib/supabase/projects"
 import { cn } from "@/lib/utils"
 import type {
@@ -16,6 +17,7 @@ import type {
   PersonaActivatedEvent,
   PersonaEndedEvent,
   Project,
+  UploadedFile,
 } from "@/lib/types"
 import { ClientProjectDetailSkeleton } from "@/components/client/project-detail/client-project-detail-skeleton"
 import { MOCK_SEGMENT_PERSONAS } from "@/components/client/project-detail/persona-drawer"
@@ -88,9 +90,43 @@ export default function ClientProjectDetailPage() {
   // Mocked for now (demo UI). In a real app this would come from the billing model.
   const accessUntil = "Jun 30, 2026"
 
-  const projectFiles = useMemo(
-    () => uploadedFiles.filter((f) => f.projectId === id),
-    [id]
+  const [remoteDocuments, setRemoteDocuments] = useState<
+    UploadedFile[] | undefined
+  >(undefined)
+  useEffect(() => {
+    if (!useRemoteDetail || !user) {
+      setRemoteDocuments(undefined)
+      return
+    }
+    let cancelled = false
+    setRemoteDocuments(undefined)
+    listProjectDocuments(id)
+      .then((list) => {
+        if (!cancelled) setRemoteDocuments(list)
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          toast.error(
+            err instanceof Error ? err.message : "Failed to load documents"
+          )
+          setRemoteDocuments([])
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [id, user?.id, useRemoteDetail])
+
+  const resolvedProjectDocuments = useMemo(
+    () =>
+      useRemoteDetail
+        ? (remoteDocuments ?? [])
+        : uploadedFiles.filter((f) => f.projectId === id),
+    [id, remoteDocuments, useRemoteDetail]
+  )
+  const readyDocuments = useMemo(
+    () => resolvedProjectDocuments.filter((f) => f.status === "ready"),
+    [resolvedProjectDocuments]
   )
   const seededMessages = useMemo<ChatMessage[]>(() => {
     const first = mockConversations.find((c) => c.projectId === id)
@@ -103,8 +139,8 @@ export default function ClientProjectDetailPage() {
   }, [seededMessages])
 
   const sourceDocumentIds = useMemo(
-    () => projectFiles.filter((f) => f.status === "ready").map((f) => f.id),
-    [projectFiles]
+    () => readyDocuments.map((f) => f.id),
+    [readyDocuments]
   )
   const [personaEvents, setPersonaEvents] = useState<
     (PersonaActivatedEvent | PersonaEndedEvent)[]
@@ -239,7 +275,7 @@ export default function ClientProjectDetailPage() {
               </section>
             ) : null}
             <ProjectDetailCard project={project} />
-            <SourcesSelector files={projectFiles} />
+            <SourcesSelector files={readyDocuments} />
           </aside>
 
           <div className="min-h-0 min-w-0">

@@ -11,6 +11,24 @@ Copies live in [visuals/](./visuals/):
 | `03-dashboard-documents-page.png` | Global `/documents`: table with Ready / Processing badges (upload button deferred). |
 | `04-client-sources-empty.png` | Client project chat: Sources card empty state (sync with Supabase in later task). |
 
+## Phase 3 completion notes (client Sources parity)
+
+- Client project detail now resolves one project-document set for both Sources and chat context.
+- The same ready-document subset is used for:
+  - `SourcesSelector` display rows
+  - chat `documentIds` payload
+- Existing mock fallback remains unchanged when Supabase/session is unavailable.
+- Errors from remote document fetch stay non-blocking via toast and page-level fallback.
+
+### Visual parity references
+
+| Validation goal | Visual reference |
+|---|---|
+| Admin sees project document rows for the target project. | `01-dashboard-project-documents-tab.png` |
+| Dashboard documents list reflects ready/processing statuses. | `03-dashboard-documents-page.png` |
+| Client Sources surface for the same project shows aligned documents (or empty when none are ready). | `04-client-sources-empty.png` |
+| Storage backing context for uploaded files is present in Supabase. | `02-supabase-storage-buckets.png` |
+
 ## Why Supabase Storage
 
 Buckets fit binary blobs (PDF, Office, CSV). Use a **private bucket** plus **Postgres rows** for `project_id`, `status`, `uploaded_by`, and `storage_path` so chat/RAG and the UI query metadata under RLS. Keep **service role off the client**; use anon + RLS for uploads or a **signed-URL route** / **server action** if you prefer not to expose permissive storage policies to the browser.
