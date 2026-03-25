@@ -21,19 +21,22 @@ import { cn } from "@/lib/utils"
 
 const statuses = ["all", "live", "archived"] as const
 
-function ClientCombobox({
-  clients,
+/** cmdk list sentinel; must match the "all" CommandItem `value` */
+const ALL_ORGANIZATIONS = "all organizations."
+
+function OrganizationCombobox({
+  organizations,
   value,
   onValueChange,
 }: {
-  clients: string[]
+  organizations: string[]
   value: string | null
   onValueChange: (v: string | null) => void
 }) {
   const [open, setOpen] = React.useState(false)
 
   /** cmdk list value (must match each CommandItem `value`); drives keyboard highlight + data-selected */
-  const selectedValue = value === null ? "all clients" : value
+  const selectedValue = value === null ? ALL_ORGANIZATIONS : value
   const [listValue, setListValue] = React.useState(selectedValue)
 
   React.useEffect(() => {
@@ -42,13 +45,13 @@ function ClientCombobox({
     }
   }, [open, selectedValue])
 
-  const label = value ?? "All clients"
+  const label = value ?? "All organizations."
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
-          id="project-client-combobox"
+          id="project-organization-combobox"
           type="button"
           variant="outline"
           role="combobox"
@@ -64,15 +67,15 @@ function ClientCombobox({
         align="start"
       >
         <Command value={listValue} onValueChange={setListValue}>
-          <CommandInput placeholder="Search clients..." className="h-9" />
+          <CommandInput placeholder="Search orgs..." className="h-9" />
           <CommandList>
-            <CommandEmpty>No client found.</CommandEmpty>
+            <CommandEmpty>No organization found.</CommandEmpty>
             <CommandGroup>
               <CommandItem
-                value="all clients"
+                value={ALL_ORGANIZATIONS}
                 onSelect={() => {
                   onValueChange(null)
-                  setListValue("all clients")
+                  setListValue(ALL_ORGANIZATIONS)
                   setOpen(false)
                 }}
               >
@@ -82,9 +85,9 @@ function ClientCombobox({
                     value === null ? "opacity-100" : "opacity-0",
                   )}
                 />
-                All clients
+                All organizations
               </CommandItem>
-              {clients.map((name) => (
+              {organizations.map((name) => (
                 <CommandItem
                   key={name}
                   value={name}
@@ -116,17 +119,17 @@ export function ProjectFilters({
   onSearchChange,
   status,
   onStatusChange,
-  clients,
-  clientFilter,
-  onClientFilterChange,
+  organizations,
+  organizationFilter,
+  onOrganizationFilterChange,
 }: {
   search: string
   onSearchChange: (v: string) => void
   status: string
   onStatusChange: (v: string) => void
-  clients: string[]
-  clientFilter: string | null
-  onClientFilterChange: (v: string | null) => void
+  organizations: string[]
+  organizationFilter: string | null
+  onOrganizationFilterChange: (v: string | null) => void
 }) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-3">
@@ -143,15 +146,15 @@ export function ProjectFilters({
           />
         </div>
 
-        {/* Client combobox */}
+        {/* Organization filter */}
         <div className="shrink-0 sm:w-auto">
-          <label className="sr-only" htmlFor="project-client-combobox">
-            Filter by client
+          <label className="sr-only" htmlFor="project-organization-combobox">
+            Filter by organization
           </label>
-          <ClientCombobox
-            clients={clients}
-            value={clientFilter}
-            onValueChange={onClientFilterChange}
+          <OrganizationCombobox
+            organizations={organizations}
+            value={organizationFilter}
+            onValueChange={onOrganizationFilterChange}
           />
         </div>
       </div>

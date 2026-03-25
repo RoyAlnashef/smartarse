@@ -17,7 +17,9 @@ export function ProjectsWorkspace() {
   const { user, getVisibleProjects } = useAuth()
   const [search, setSearch] = useState("")
   const [status, setStatus] = useState("all")
-  const [clientFilter, setClientFilter] = useState<string | null>(null)
+  const [organizationFilter, setOrganizationFilter] = useState<string | null>(
+    null,
+  )
   const [createOpen, setCreateOpen] = useState(false)
 
   const useRemoteProjects = !!getSupabaseBrowserClient() && !!user
@@ -52,7 +54,7 @@ export function ProjectsWorkspace() {
     return remoteProjects ?? []
   }, [useRemoteProjects, remoteProjects, getVisibleProjects])
 
-  const clients = useMemo(() => {
+  const organizations = useMemo(() => {
     const names = [...new Set(allProjects.map((p) => p.clientName))]
     return names.sort((a, b) => a.localeCompare(b))
   }, [allProjects])
@@ -63,11 +65,11 @@ export function ProjectsWorkspace() {
         p.name.toLowerCase().includes(search.toLowerCase()) ||
         p.clientName.toLowerCase().includes(search.toLowerCase())
       const matchStatus = status === "all" || p.status === status
-      const matchClient =
-        clientFilter === null || p.clientName === clientFilter
-      return matchSearch && matchStatus && matchClient
+      const matchOrganization =
+        organizationFilter === null || p.clientName === organizationFilter
+      return matchSearch && matchStatus && matchOrganization
     })
-  }, [allProjects, search, status, clientFilter])
+  }, [allProjects, search, status, organizationFilter])
 
   if (!user) return null
 
@@ -90,7 +92,7 @@ export function ProjectsWorkspace() {
           <h1 className="text-2xl font-semibold text-foreground">Projects</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {user.role === "admin"
-              ? "Manage all client projects and research data"
+              ? "Manage all organization projects and research data"
               : "View and interact with your research projects"}
           </p>
         </div>
@@ -111,9 +113,9 @@ export function ProjectsWorkspace() {
         onSearchChange={setSearch}
         status={status}
         onStatusChange={setStatus}
-        clients={clients}
-        clientFilter={clientFilter}
-        onClientFilterChange={setClientFilter}
+        organizations={organizations}
+        organizationFilter={organizationFilter}
+        onOrganizationFilterChange={setOrganizationFilter}
       />
 
       {loadingRemote ? (
