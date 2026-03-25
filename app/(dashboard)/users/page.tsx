@@ -106,6 +106,53 @@ export default function UsersPage() {
     }
   }
 
+  async function handleDeleteUser(user: User) {
+    if (
+      !window.confirm(
+        `Permanently delete “${user.name}”? This cannot be undone. Their account and profile will be removed.`
+      )
+    ) {
+      return
+    }
+    try {
+      const supabase = getSupabaseBrowserClient()
+      if (!supabase) throw new Error("Supabase is not configured.")
+
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession()
+
+      if (sessionError || !session?.access_token) {
+        throw new Error("You must be signed in to delete users.")
+      }
+
+      const response = await fetch(
+        `/api/admin/users/${encodeURIComponent(user.id)}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      )
+
+      if (!response.ok) {
+        const body = (await response.json().catch(() => null)) as
+          | { error?: string }
+          | null
+        throw new Error(body?.error ?? "Could not delete user.")
+      }
+
+      await refreshData()
+      toast.success("User deleted.")
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Could not delete user."
+      toast.error(message)
+    }
+  }
+
   async function handleCreateUser(payload: UserCreatePayload) {
     try {
       const supabase = getSupabaseBrowserClient()
@@ -215,10 +262,12 @@ export default function UsersPage() {
           <UserTable
             users={filtered}
             organizations={organizationRows}
+            currentUserId={currentUser?.id}
             onEdit={(u) => {
               setEditingUser(u)
               setModalOpen(true)
             }}
+            onDelete={handleDeleteUser}
           />
         </>
       )}

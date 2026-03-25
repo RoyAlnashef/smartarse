@@ -2,6 +2,12 @@
 
 import type { Project } from "@/lib/types"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import {
+  isUuidString,
+  PROJECT_DOCUMENTS_BUCKET,
+} from "@/lib/supabase/documents"
+
+const STORAGE_REMOVE_CHUNK = 50
 
 /** Row shape from `public.projects` plus embedded org (PostgREST). */
 type ProjectRow = {
@@ -191,4 +197,65 @@ export async function updateProject(input: {
   const { error } = await supabase.from("projects").update(patch).eq("id", input.id)
 
   if (error) throw new Error(error.message)
+}
+
+/**
+ * Deletes a project (admin + RLS: only when used_credits = 0).
+ * Removes the DB row first, then deletes storage objects for project documents.
+ */
+export async function deleteProject(projectId: string): Promise<void> {
+  const supabase = getSupabaseBrowserClient()
+  if (!supabase) throw new Error("Supabase is not configured.")
+
+  if (!isUuidString(projectId)) {
+    throw new Error(
+      "This project id is not valid for deletion. Open a project from the dashboard list (Supabase projects use UUID ids)."
+    )
+  }
+
+  const { data: creditRow, error: creditErr } = await supabase
+    .from("projects")
+    .select("id, used_credits")
+    .eq("id", projectId)
+    .maybeSingle()
+
+  if (creditErr) throw new Error(creditErr.message)
+  if (!creditRow) throw new Error("Project not found.")
+  if ((creditRow as { used_credits: number }).used_credits > 0) {
+    throw new Error("Cannot delete project while credits have been used on it.")
+  }
+
+  const { data: docRows, error: docErr } = await supabase
+    .from("project_documents")
+    .select("storage_path")
+    .eq("project_id", projectId)
+
+  if (docErr) throw new Error(docErr.message)
+
+  const storagePaths = (docRows ?? [])
+    .map((r) => (r as { storage_path: string }).storage_path)
+    .filter(Boolean)
+
+  const { data: deletedRows, error: delErr } = await supabase
+    .from("projects")
+    .delete()
+    .eq("id", projectId)
+    .select("id")
+
+  if (delErr) throw new Error(delErr.message)
+  if (!deletedRows?.length) {
+    throw new Error(
+      "Could not delete this project. It may no longer exist, you may not have permission, or credits may have been used on it."
+    )
+  }
+
+  for (let i = 0; i < storagePaths.length; i += STORAGE_REMOVE_CHUNK) {
+    const chunk = storagePaths.slice(i, i + STORAGE_REMOVE_CHUNK)
+    const { error: storageErr } = await supabase.storage
+      .from(PROJECT_DOCUMENTS_BUCKET)
+      .remove(chunk)
+    if (storageErr) {
+      console.warn("Storage delete failed after project removed:", storageErr.message)
+    }
+  }
 }

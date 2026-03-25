@@ -26,7 +26,7 @@ import {
   deleteProjectDocument,
   listProjectDocuments,
 } from "@/lib/supabase/documents"
-import { getProjectById } from "@/lib/supabase/projects"
+import { deleteProject, getProjectById } from "@/lib/supabase/projects"
 import { listUsersForDashboard } from "@/lib/supabase/users"
 import { ChatWindow } from "@/components/chat/chat-window"
 import { ChatInput } from "@/components/chat/chat-input"
@@ -37,6 +37,7 @@ import { useMockProjectDocuments } from "@/components/upload/use-mock-project-do
 import { useSupabaseProjectUploadFlow } from "@/components/upload/use-supabase-project-upload-flow"
 import { ProjectUsers } from "@/components/projects/project-users"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import type { ChatMessage, Conversation, Project, UploadedFile, User } from "@/lib/types"
 
 const tabs = [
@@ -183,6 +184,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   )
   const [isTyping, setIsTyping] = useState(false)
   const [showConvSidebar, setShowConvSidebar] = useState(true)
+  const [isDeletingProject, setIsDeletingProject] = useState(false)
   const isChatReadOnly = user?.role === "admin"
 
   const activeConversation = useMemo(
@@ -327,6 +329,30 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     },
     [activeConversationId, id, readyDocumentIds]
   )
+
+  const handleDeleteProject = useCallback(async () => {
+    if (!useRemoteDetail || user?.role !== "admin") return
+    if (!project) return
+    if (
+      !window.confirm(
+        `Permanently delete “${project.name}”? This cannot be undone. Uploaded documents will be removed from storage.`
+      )
+    ) {
+      return
+    }
+    setIsDeletingProject(true)
+    try {
+      await deleteProject(id)
+      toast.success("Project deleted.")
+      router.push("/projects")
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Could not delete project."
+      )
+    } finally {
+      setIsDeletingProject(false)
+    }
+  }, [useRemoteDetail, user?.role, project, id, router])
 
   if (!user) {
     return (
@@ -554,6 +580,25 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                 Save Changes
               </button>
             </div>
+
+            {user.role === "admin" && useRemoteDetail && (
+              <section className="space-y-4 rounded-xl border border-destructive/25 bg-destructive/5 p-6">
+                <h2 className="text-lg font-semibold text-foreground">Delete project</h2>
+                <p className="text-sm text-muted-foreground">
+                  {project.usedCredits > 0
+                    ? "Projects that have used credits cannot be deleted."
+                    : "Permanently remove this project and its uploaded documents from storage. Users and the organization are not affected."}
+                </p>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={project.usedCredits > 0 || isDeletingProject}
+                  onClick={() => void handleDeleteProject()}
+                >
+                  {isDeletingProject ? "Deleting…" : "Delete project"}
+                </Button>
+              </section>
+            )}
           </div>
         </div>
         )}

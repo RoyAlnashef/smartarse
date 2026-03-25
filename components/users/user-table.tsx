@@ -1,6 +1,6 @@
 "use client"
 
-import { Edit, MoreHorizontal } from "lucide-react"
+import { Edit, MoreHorizontal, Trash2 } from "lucide-react"
 import type { User } from "@/lib/types"
 import {
   Tooltip,
@@ -93,10 +93,14 @@ export function UserTable({
   users,
   organizations,
   onEdit,
+  onDelete,
+  currentUserId,
 }: {
   users: User[]
   organizations: { id: string; name: string; status: "active" | "inactive" }[]
   onEdit: (user: User) => void
+  onDelete?: (user: User) => void
+  currentUserId?: string
 }) {
   return (
     <TooltipProvider>
@@ -196,6 +200,15 @@ export function UserTable({
                             <Edit className="h-4 w-4" />
                             Edit
                           </DropdownMenuItem>
+                          {onDelete && user.id !== currentUserId ? (
+                            <DropdownMenuItem
+                              onClick={() => onDelete(user)}
+                              className="text-red-600 focus:text-red-600"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          ) : null}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </td>
