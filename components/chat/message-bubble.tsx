@@ -16,7 +16,7 @@ export function MessageBubble({ message }: { message: ChatMessage }) {
     <div className={`flex gap-3 ${isUser ? "justify-end" : "justify-start"}`}>
       {/* AI avatar */}
       {!isUser && (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-dark-950 text-xs font-bold text-mint-300">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-dark-950 text-xs font-bold text-arse-cyan">
           D
         </div>
       )}
@@ -61,7 +61,7 @@ export function MessageBubble({ message }: { message: ChatMessage }) {
 
       {/* User avatar */}
       {isUser && (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-mint-100 text-xs font-semibold text-mint-700">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-arse-cyan/15 text-xs font-semibold text-arse-black">
           You
         </div>
       )}

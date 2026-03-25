@@ -65,7 +65,7 @@ export default function SettingsPage() {
               <input
                 type="text"
                 defaultValue={user.name}
-                className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-mint-400 focus:outline-none focus:ring-2 focus:ring-mint-300/20"
+                className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30"
               />
             </div>
             <div>
@@ -75,7 +75,7 @@ export default function SettingsPage() {
               <input
                 type="email"
                 defaultValue={user.email}
-                className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-mint-400 focus:outline-none focus:ring-2 focus:ring-mint-300/20"
+                className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30"
               />
             </div>
           </div>
@@ -103,7 +103,7 @@ export default function SettingsPage() {
                   <p className="text-xs text-muted-foreground">{item.description}</p>
                 </div>
                 <button
-                  className="relative h-6 w-11 rounded-full bg-mint-400 transition-colors"
+                  className="relative h-6 w-11 rounded-full bg-arse-pink transition-colors"
                   aria-label={`Toggle ${item.label}`}
                 >
                   <span className="absolute left-0.5 top-0.5 h-5 w-5 translate-x-5 rounded-full bg-white shadow transition-transform" />

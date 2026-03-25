@@ -16,7 +16,7 @@ import {
 } from "recharts"
 
 const stats = [
-  { label: "Total Queries", value: "543", icon: BarChart3, color: "text-mint-600", bg: "bg-mint-50" },
+  { label: "Total Queries", value: "543", icon: BarChart3, color: "text-arse-cyan", bg: "bg-arse-cyan/10" },
   { label: "Active Users", value: "6", icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
   { label: "Avg Queries/Day", value: "12.4", icon: TrendingUp, color: "text-amber-600", bg: "bg-amber-50" },
   { label: "Top Project", value: "SaaS Landscape", icon: Award, color: "text-dark-600", bg: "bg-dark-50" },
@@ -93,9 +93,9 @@ export default function AnalyticsPage() {
                 <Line
                   type="monotone"
                   dataKey="queries"
-                  stroke="#74f0bd"
+                  stroke="#00ffff"
                   strokeWidth={2}
-                  dot={{ fill: "#74f0bd", r: 4 }}
+                  dot={{ fill: "#00ffff", r: 4 }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>

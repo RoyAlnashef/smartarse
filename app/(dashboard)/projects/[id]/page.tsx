@@ -393,7 +393,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
             variant="outline"
             className="gap-1.5 rounded-lg px-3 py-1.5 text-sm font-normal bg-white"
           >
-            <Coins className="h-4 w-4 text-mint-500" />
+            <Coins className="h-4 w-4 text-arse-pink" />
             <span className="font-medium text-foreground">{project.usedCredits}</span>
             <span className="text-muted-foreground">credits used</span>
           </Badge>
@@ -507,7 +507,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                   <input
                     type="text"
                     defaultValue={project.name}
-                    className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-mint-400 focus:outline-none focus:ring-2 focus:ring-mint-300/20"
+                    className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30"
                   />
                 </div>
                 <div>
@@ -517,7 +517,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                   <textarea
                     rows={3}
                     defaultValue={project.description}
-                    className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-mint-400 focus:outline-none focus:ring-2 focus:ring-mint-300/20"
+                    className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -538,7 +538,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                     </label>
                     <select
                       defaultValue={project.status}
-                      className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-mint-400 focus:outline-none focus:ring-2 focus:ring-mint-300/20"
+                      className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30"
                     >
                       <option value="live">Live</option>
                       <option value="archived">Archived</option>

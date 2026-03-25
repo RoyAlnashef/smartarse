@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
@@ -38,7 +39,7 @@ const profileMenuLinks: {
 ]
 
 const roleBadgeColors: Record<UserRole, string> = {
-  admin: "bg-mint-300/20 text-mint-300",
+  admin: "bg-arse-pink/20 text-arse-pink",
   client: "bg-blue-400/20 text-blue-400",
   user: "bg-amber-400/20 text-amber-400",
 }
@@ -70,11 +71,15 @@ export function Sidebar() {
   return (
     <div className="flex h-full flex-col bg-dark-950 text-white">
       {/* Logo */}
-      <div className="flex h-16 items-center gap-2 px-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-mint-300">
-          <span className="font-serif text-sm font-bold text-dark-950">D</span>
-        </div>
-        <span className="text-lg font-semibold tracking-tight">Disrupt</span>
+      <div className="flex h-16 items-center px-6">
+        <Image
+          src="/disrupt-logo-white.png"
+          alt="Disrupt"
+          width={240}
+          height={83}
+          className="h-8 w-auto"
+          priority
+        />
       </div>
 
       {/* Navigation */}
@@ -88,13 +93,13 @@ export function Sidebar() {
               href={item.href}
               className={`group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-white/10 text-mint-300"
+                  ? "bg-white/10 text-arse-cyan"
                   : "text-dark-300 hover:bg-white/5 hover:text-white"
               }`}
             >
               <item.icon
                 className={`h-5 w-5 shrink-0 ${
-                  isActive ? "text-mint-300" : "text-dark-400 group-hover:text-white"
+                  isActive ? "text-arse-cyan" : "text-dark-400 group-hover:text-white"
                 }`}
               />
               {item.name}
@@ -115,7 +120,7 @@ export function Sidebar() {
               onClick={() => switchRole(role)}
               className={`flex-1 rounded-md px-2 py-1.5 text-xs font-medium capitalize transition-colors ${
                 user.role === role
-                  ? "bg-mint-300 text-dark-950"
+                  ? "bg-arse-cyan text-arse-black"
                   : "text-dark-300 hover:bg-white/10 hover:text-white"
               }`}
             >
@@ -132,7 +137,7 @@ export function Sidebar() {
           onClick={() => setProfileMenuOpen((o) => !o)}
           aria-expanded={profileMenuOpen}
           aria-haspopup="menu"
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-white/5 focus-visible:outline focus-visible:ring-2 focus-visible:ring-mint-300/50"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors hover:bg-white/5 focus-visible:outline focus-visible:ring-2 focus-visible:ring-arse-pink/50"
         >
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-dark-700 text-sm font-medium text-white">
             {user.name

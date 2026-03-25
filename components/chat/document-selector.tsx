@@ -38,18 +38,18 @@ export function DocumentSelector({
               disabled={disabled || file.status !== "ready"}
               className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition-colors ${
                 isSelected
-                  ? "bg-mint-50 ring-1 ring-mint-300"
+                  ? "bg-arse-cyan/10 ring-1 ring-arse-cyan/40"
                   : "hover:bg-muted"
               } ${disabled || file.status !== "ready" ? "opacity-50" : ""}`}
             >
               <div
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
-                  isSelected ? "bg-mint-100" : "bg-muted"
+                  isSelected ? "bg-arse-cyan/15" : "bg-muted"
                 }`}
               >
                 <Icon
                   className={`h-4 w-4 ${
-                    isSelected ? "text-mint-600" : "text-muted-foreground"
+                    isSelected ? "text-arse-cyan" : "text-muted-foreground"
                   }`}
                 />
               </div>
@@ -64,12 +64,12 @@ export function DocumentSelector({
               <div
                 className={`flex h-5 w-5 shrink-0 items-center justify-center rounded border ${
                   isSelected
-                    ? "border-mint-500 bg-mint-500"
+                    ? "border-arse-pink bg-arse-pink"
                     : "border-border bg-card"
                 }`}
               >
                 {isSelected && (
-                  <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <svg className="h-3 w-3 text-arse-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                 )}

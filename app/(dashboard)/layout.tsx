@@ -31,7 +31,7 @@ export default function DashboardLayout({
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-mint-300 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-arse-cyan border-t-transparent" />
       </div>
     )
   }
@@ -40,7 +40,7 @@ export default function DashboardLayout({
   if (!isAuthenticated) {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-mint-300 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-arse-cyan border-t-transparent" />
       </div>
     )
   }
@@ -49,7 +49,7 @@ export default function DashboardLayout({
   if (!user || user.role !== "admin") {
     return (
       <div className="flex h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-mint-300 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-arse-cyan border-t-transparent" />
       </div>
     )
   }

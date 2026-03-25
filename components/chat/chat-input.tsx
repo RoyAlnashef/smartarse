@@ -35,7 +35,7 @@ export function ChatInput({
           }}
           placeholder="Ask a question about your research data..."
           disabled={disabled}
-          className="block w-full resize-none rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder-muted-foreground focus:border-mint-400 focus:outline-none focus:ring-2 focus:ring-mint-300/20 disabled:opacity-50"
+          className="block w-full resize-none rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground placeholder-muted-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30 disabled:opacity-50"
         />
       </div>
       <button

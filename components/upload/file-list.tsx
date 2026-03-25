@@ -179,7 +179,7 @@ export function FileList({
                     <div className="max-w-[10rem] space-y-1.5">
                       <Progress
                         value={file.uploadProgress ?? 0}
-                        className="h-2 bg-muted [&>div]:bg-mint-500"
+                        className="h-2 bg-muted [&>div]:bg-arse-cyan"
                       />
                       <span className="text-xs text-muted-foreground">Uploading…</span>
                     </div>

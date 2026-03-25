@@ -79,7 +79,7 @@ export function ChatSidebar({
             onClick={() => onSelect(conv.id)}
             className={`flex w-full flex-col gap-1 rounded-lg px-3 py-2.5 text-left transition-colors ${
               activeId === conv.id
-                ? "bg-mint-50 ring-1 ring-mint-300"
+                ? "bg-arse-cyan/10 ring-1 ring-arse-cyan/40"
                 : "hover:bg-muted"
             }`}
           >

@@ -169,7 +169,7 @@ export function OrganizationTable({
                 </td>
                 <td className="hidden px-4 py-3 lg:table-cell">
                   <div className="flex items-center gap-2">
-                    <Coins className="h-4 w-4 shrink-0 text-mint-500" aria-hidden />
+                    <Coins className="h-4 w-4 shrink-0 text-arse-pink" aria-hidden />
                     <span className="font-medium tabular-nums text-foreground">
                       {org.creditBalance}
                     </span>

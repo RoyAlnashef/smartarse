@@ -56,7 +56,7 @@ export function PrivacyDataExportSection({
           </p>
           <a
             href={privacyUrl}
-            className="mt-3 inline-flex text-sm font-medium text-mint-600 underline decoration-mint-400 underline-offset-4 hover:text-mint-500"
+            className="mt-3 inline-flex text-sm font-medium text-arse-cyan underline decoration-arse-pink underline-offset-4 hover:text-arse-pink"
           >
             View privacy policy
           </a>

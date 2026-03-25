@@ -39,12 +39,12 @@ export function FileDropzone({
       onDrop={handleDrop}
       className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed p-8 transition-colors ${
         isDragOver
-          ? "border-mint-400 bg-mint-50"
-          : "border-border bg-card hover:border-mint-300 hover:bg-muted"
+          ? "border-arse-cyan bg-arse-cyan/10"
+          : "border-border bg-card hover:border-arse-cyan/50 hover:bg-muted"
       }`}
     >
       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
-        <Upload className={`h-6 w-6 ${isDragOver ? "text-mint-500" : "text-muted-foreground"}`} />
+        <Upload className={`h-6 w-6 ${isDragOver ? "text-arse-pink" : "text-muted-foreground"}`} />
       </div>
       <p className="mt-4 text-sm font-medium text-foreground">
         Drop files here

@@ -41,7 +41,7 @@ const config: Config = {
         border: 'var(--border)',
         input: 'var(--input)',
         ring: 'var(--ring)',
-        // Disrupt brand
+        /** Legacy mint scale — prefer arse-cyan / arse-pink for new UI */
         mint: {
           DEFAULT: '#74f0bd',
           50: '#edfdf5',
@@ -70,18 +70,18 @@ const config: Config = {
           950: '#262626',
         },
         chart: {
-          '1': '#74f0bd',
-          '2': '#3de0a0',
-          '3': '#15c785',
-          '4': '#0aa26c',
-          '5': '#098259',
+          '1': '#00ffff',
+          '2': '#ff00e6',
+          '3': '#00cccc',
+          '4': '#cc00b8',
+          '5': '#009999',
         },
-        /** Client + login theme (smart A.R.S.E) — keep dashboard on mint/dark + Inter */
+        /** Client + dashboard accents: cyan (1st), pink (2nd) */
         arse: {
-          cyan: '#00ffff',
-          pink: '#ff00e6',
-          black: '#000000',
-          white: '#ffffff',
+          cyan: 'var(--arse-cyan)',
+          pink: 'var(--arse-pink)',
+          black: 'var(--arse-black)',
+          white: 'var(--arse-white)',
         },
       },
       fontFamily: {

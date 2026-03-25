@@ -105,7 +105,7 @@ export function ChangePasswordForm({
           <p className="text-sm font-medium text-destructive">{error}</p>
         ) : null}
         {success ? (
-          <p className="text-sm font-medium text-mint-500">{success}</p>
+          <p className="text-sm font-medium text-arse-cyan">{success}</p>
         ) : null}
 
         <div className="flex justify-end pt-2">

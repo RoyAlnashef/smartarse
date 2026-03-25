@@ -27,7 +27,7 @@ export function ProjectCard({ project }: { project: Project }) {
         {/* Header */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1">
-            <h3 className="text-sm font-semibold text-foreground group-hover:text-mint-600 transition-colors">
+            <h3 className="text-sm font-semibold text-foreground group-hover:text-arse-pink transition-colors">
               {project.name}
             </h3>
             <p className="mt-0.5 text-xs text-muted-foreground">{project.clientName}</p>
@@ -61,10 +61,10 @@ export function ProjectCard({ project }: { project: Project }) {
         </div>
       </div>
 
-      {/* Credits used — matches project detail mint coin treatment */}
+      {/* Credits used — matches project detail coin treatment */}
       <div className="border-t border-border px-5 py-3">
         <span className="flex items-center gap-1.5 text-xs">
-          <Coins className="h-3.5 w-3.5 shrink-0 text-mint-500" aria-hidden />
+          <Coins className="h-3.5 w-3.5 shrink-0 text-arse-pink" aria-hidden />
           <span className="font-medium text-foreground">
             {creditsUsedLabel(project.usedCredits)}
           </span>

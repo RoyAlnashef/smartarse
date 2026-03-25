@@ -40,8 +40,8 @@ export function StatsBar() {
       label: "Active Projects",
       value: activeProjects,
       icon: Zap,
-      color: "text-mint-600",
-      bgColor: "bg-mint-50",
+      color: "text-arse-cyan",
+      bgColor: "bg-arse-cyan/10",
     },
     {
       label: "Credits Remaining",

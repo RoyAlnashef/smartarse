@@ -55,7 +55,7 @@ export function ProjectFilterCombobox({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="h-9 w-full justify-between rounded-lg border-border bg-card px-3 font-normal hover:bg-card focus-visible:border-mint-400 focus-visible:ring-2 focus-visible:ring-mint-300/20 focus-visible:ring-offset-0 sm:w-[min(100%,14rem)]"
+          className="h-9 w-full justify-between rounded-lg border-border bg-card px-3 font-normal hover:bg-card focus-visible:border-arse-cyan focus-visible:ring-2 focus-visible:ring-arse-pink/30 focus-visible:ring-offset-0 sm:w-[min(100%,14rem)]"
         >
           <span className="truncate text-left text-sm">{label}</span>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
