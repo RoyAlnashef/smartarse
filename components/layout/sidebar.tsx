@@ -39,7 +39,8 @@ const profileMenuLinks: {
 ]
 
 const roleBadgeColors: Record<UserRole, string> = {
-  admin: "bg-arse-pink/20 text-arse-pink",
+  admin:
+    "bg-[color-mix(in_srgb,var(--arse-cyan)_20%,transparent)] text-arse-cyan",
   client: "bg-blue-400/20 text-blue-400",
   user: "bg-amber-400/20 text-amber-400",
 }
