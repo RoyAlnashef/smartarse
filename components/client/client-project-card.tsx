@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import type { Project } from "@/lib/types"
+import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 
 function formatCardDate(iso: string) {
@@ -40,5 +41,27 @@ export function ClientProjectCard({ project }: { project: Project }) {
         <p className="mt-4 text-xs leading-snug text-arse-black/75">{sourceLine(project)}</p>
       </div>
     </Link>
+  )
+}
+
+/** Placeholder layout aligned with `ClientProjectCard` (shadcn Skeleton). */
+export function ClientProjectCardSkeleton() {
+  return (
+    <div
+      className="flex flex-col overflow-hidden rounded-3xl border border-arse-black/10"
+      aria-busy
+      aria-label="Loading project"
+    >
+      <div className="h-9 animate-pulse bg-arse-pink/90" />
+      <div className="flex flex-1 flex-col items-center bg-arse-cyan px-8 pt-8 pb-16">
+        <Skeleton className="h-5 w-[min(100%,12rem)] bg-arse-black/15" />
+        <div className="mt-3 w-full space-y-2">
+          <Skeleton className="mx-auto h-4 w-full max-w-sm bg-arse-black/15" />
+          <Skeleton className="mx-auto h-4 w-full max-w-[90%] bg-arse-black/15" />
+          <Skeleton className="mx-auto h-4 w-full max-w-[75%] bg-arse-black/15" />
+        </div>
+        <Skeleton className="mt-4 h-3 w-48 bg-arse-black/15" />
+      </div>
+    </div>
   )
 }

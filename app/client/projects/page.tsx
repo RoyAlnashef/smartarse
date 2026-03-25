@@ -1,26 +1,66 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { Search } from "lucide-react"
-import { ClientProjectCard } from "@/components/client/client-project-card"
+import { toast } from "sonner"
+import {
+  ClientProjectCard,
+  ClientProjectCardSkeleton,
+} from "@/components/client/client-project-card"
 import { useAuth } from "@/lib/auth-context"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { listProjectsForAuthUser } from "@/lib/supabase/projects"
+import type { Project } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
+const SKELETON_CARD_COUNT = 3
+
 export default function ClientProjectsPage() {
-  const { getVisibleProjects } = useAuth()
+  const { user, getVisibleProjects } = useAuth()
   const [search, setSearch] = useState("")
-  const projects = getVisibleProjects()
+
+  const useRemoteProjects = !!getSupabaseBrowserClient() && !!user
+  const [remoteProjects, setRemoteProjects] = useState<Project[] | null>(null)
+
+  const loadRemoteProjects = useCallback(async () => {
+    if (!getSupabaseBrowserClient() || !user) return
+    setRemoteProjects(null)
+    try {
+      const rows = await listProjectsForAuthUser()
+      setRemoteProjects(rows)
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load projects"
+      toast.error(message)
+      setRemoteProjects([])
+    }
+  }, [user?.id, user?.role])
+
+  useEffect(() => {
+    if (!useRemoteProjects) {
+      setRemoteProjects(null)
+      return
+    }
+    void loadRemoteProjects()
+  }, [useRemoteProjects, loadRemoteProjects, user?.id, user?.role])
+
+  const loadingRemote = useRemoteProjects && remoteProjects === null
+
+  const allProjects = useMemo(() => {
+    if (!useRemoteProjects) return getVisibleProjects()
+    return remoteProjects ?? []
+  }, [useRemoteProjects, remoteProjects, getVisibleProjects])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
-    if (!q) return projects
-    return projects.filter(
+    if (!q) return allProjects
+    return allProjects.filter(
       (p) =>
         p.name.toLowerCase().includes(q) ||
         p.description.toLowerCase().includes(q) ||
         p.clientName.toLowerCase().includes(q)
     )
-  }, [projects, search])
+  }, [allProjects, search])
 
   return (
     <div className="px-4 pb-12 pt-8 sm:px-6 lg:px-8">
@@ -97,7 +137,20 @@ export default function ClientProjectsPage() {
             <p className="mb-6 font-arse-title text-2xl font-light uppercase tracking-[0.2em] text-arse-black lg:hidden">
               Projects
             </p>
-            {filtered.length > 0 ? (
+            {loadingRemote ? (
+              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {Array.from({ length: SKELETON_CARD_COUNT }, (_, i) => (
+                  <ClientProjectCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : allProjects.length === 0 ? (
+              <div className="rounded-2xl border-2 border-dashed border-arse-black/20 bg-arse-cyan/20 px-6 py-16 text-center">
+                <p className="font-arse-title font-semibold text-arse-black">No projects yet</p>
+                <p className="mt-2 text-sm text-arse-black/60">
+                  When your organization has projects, they will appear here.
+                </p>
+              </div>
+            ) : filtered.length > 0 ? (
               <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {filtered.map((project) => (
                   <ClientProjectCard key={project.id} project={project} />

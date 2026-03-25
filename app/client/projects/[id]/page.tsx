@@ -1,18 +1,23 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useParams } from "next/navigation"
+import { toast } from "sonner"
 import aiCoin from "@/public/ai-coin.png"
 import { useAuth } from "@/lib/auth-context"
 import { uploadedFiles, conversations as mockConversations } from "@/lib/mock-data"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { getProjectById } from "@/lib/supabase/projects"
 import { cn } from "@/lib/utils"
 import type {
   ChatMessage,
   PersonaActivatedEvent,
   PersonaEndedEvent,
+  Project,
 } from "@/lib/types"
+import { ClientProjectDetailSkeleton } from "@/components/client/project-detail/client-project-detail-skeleton"
 import { MOCK_SEGMENT_PERSONAS } from "@/components/client/project-detail/persona-drawer"
 import { MobilePersonaDrawer } from "@/components/client/project-detail/mobile-persona-drawer"
 import { PersonasColumn } from "@/components/client/project-detail/personas-column"
@@ -23,11 +28,60 @@ import { ProjectChat } from "@/components/client/project-detail/project-chat"
 export default function ClientProjectDetailPage() {
   const params = useParams()
   const id = typeof params.id === "string" ? params.id : ""
-  const { getClientForUser, getVisibleProjects } = useAuth()
-  const project = useMemo(
-    () => getVisibleProjects().find((p) => p.id === id),
+  const { user, getClientForUser, getVisibleProjects } = useAuth()
+
+  const mockProject = useMemo(
+    () => getVisibleProjects().find((p) => p.id === id) ?? null,
     [getVisibleProjects, id]
   )
+
+  const useRemoteDetail = !!getSupabaseBrowserClient() && !!user
+  const [remoteProject, setRemoteProject] = useState<Project | null | undefined>(
+    undefined
+  )
+
+  useEffect(() => {
+    if (!user) {
+      setRemoteProject(undefined)
+      return
+    }
+    if (!getSupabaseBrowserClient()) {
+      setRemoteProject(undefined)
+      return
+    }
+    if (!id) {
+      setRemoteProject(null)
+      return
+    }
+
+    let cancelled = false
+    setRemoteProject(undefined)
+
+    getProjectById(id)
+      .then((proj) => {
+        if (!cancelled) setRemoteProject(proj)
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          toast.error(
+            err instanceof Error ? err.message : "Failed to load project"
+          )
+          setRemoteProject(null)
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [id, user?.id, user?.role])
+
+  const loadingRemote = useRemoteDetail && remoteProject === undefined
+  const project = useRemoteDetail
+    ? remoteProject === undefined
+      ? undefined
+      : remoteProject
+    : mockProject
+
   const client = getClientForUser()
   const remaining = client ? client.totalCredits - client.usedCredits : 0
   const total = client?.totalCredits ?? 0
@@ -43,11 +97,15 @@ export default function ClientProjectDetailPage() {
     return first?.messages ?? []
   }, [id])
 
+  const [messages, setMessages] = useState<ChatMessage[]>([])
+  useEffect(() => {
+    setMessages(seededMessages)
+  }, [seededMessages])
+
   const sourceDocumentIds = useMemo(
     () => projectFiles.filter((f) => f.status === "ready").map((f) => f.id),
     [projectFiles]
   )
-  const [messages, setMessages] = useState<ChatMessage[]>(seededMessages)
   const [personaEvents, setPersonaEvents] = useState<
     (PersonaActivatedEvent | PersonaEndedEvent)[]
   >([])
@@ -77,8 +135,8 @@ export default function ClientProjectDetailPage() {
   }
 
   function handleClearPersona() {
-    const id = appliedPersonaId
-    if (!id) return
+    const clearedId = appliedPersonaId
+    if (!clearedId) return
     setAppliedPersonaId(null)
     setPersonaEvents((prev) => [
       ...prev,
@@ -86,9 +144,13 @@ export default function ClientProjectDetailPage() {
         id: `persona-ended-${Date.now()}`,
         type: "persona_ended",
         timestamp: new Date().toISOString(),
-        personaId: id,
+        personaId: clearedId,
       },
     ])
+  }
+
+  if (loadingRemote) {
+    return <ClientProjectDetailSkeleton />
   }
 
   if (!project) {
