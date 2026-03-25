@@ -29,7 +29,7 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-function FileListEmptySkeleton() {
+function FileListEmptySkeleton({ showProjectColumn }: { showProjectColumn?: boolean }) {
   const rows = [0, 1, 2]
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
@@ -37,6 +37,9 @@ function FileListEmptySkeleton() {
         <thead>
           <tr className="border-b border-border bg-muted/50">
             <th className="px-4 py-3 font-medium text-muted-foreground">Name</th>
+            {showProjectColumn ? (
+              <th className="px-4 py-3 font-medium text-muted-foreground">Project</th>
+            ) : null}
             <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
             <th className="px-4 py-3 font-medium text-muted-foreground">
               <span className="sr-only">Actions</span>
@@ -57,6 +60,11 @@ function FileListEmptySkeleton() {
                   </div>
                 </div>
               </td>
+              {showProjectColumn ? (
+                <td className="px-4 py-3 align-middle">
+                  <Skeleton className="h-4 w-[min(100%,10rem)] max-w-[10rem]" />
+                </td>
+              ) : null}
               <td className="px-4 py-3 align-middle">
                 <Skeleton className="h-5 w-20 rounded-full" />
               </td>
@@ -74,13 +82,16 @@ function FileListEmptySkeleton() {
   )
 }
 
-function FileListEmptyState() {
+function FileListEmptyState({ showProjectColumn }: { showProjectColumn?: boolean }) {
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b border-border bg-muted/50">
             <th className="px-4 py-3 font-medium text-muted-foreground">Name</th>
+            {showProjectColumn ? (
+              <th className="px-4 py-3 font-medium text-muted-foreground">Project</th>
+            ) : null}
             <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
             <th className="px-4 py-3 font-medium text-muted-foreground">
               <span className="sr-only">Actions</span>
@@ -99,17 +110,23 @@ export function FileList({
   files,
   onDelete,
   isInitialLoading = false,
+  showProjectColumn = false,
+  projectNamesById = {},
 }: {
   files: UploadedFile[]
   onDelete?: (id: string) => void
   /** When true, show the skeleton table (e.g. first Supabase fetch in flight). */
   isInitialLoading?: boolean
+  /** When true, show a Project column (e.g. global documents list). */
+  showProjectColumn?: boolean
+  /** Resolved display names for `file.projectId` when `showProjectColumn` is true. */
+  projectNamesById?: Record<string, string>
 }) {
   if (isInitialLoading) {
-    return <FileListEmptySkeleton />
+    return <FileListEmptySkeleton showProjectColumn={showProjectColumn} />
   }
   if (files.length === 0) {
-    return <FileListEmptyState />
+    return <FileListEmptyState showProjectColumn={showProjectColumn} />
   }
 
   return (
@@ -118,6 +135,9 @@ export function FileList({
         <thead>
           <tr className="border-b border-border bg-muted/50">
             <th className="px-4 py-3 font-medium text-muted-foreground">Name</th>
+            {showProjectColumn ? (
+              <th className="px-4 py-3 font-medium text-muted-foreground">Project</th>
+            ) : null}
             <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
             <th className="px-4 py-3 font-medium text-muted-foreground">
               <span className="sr-only">Actions</span>
@@ -129,6 +149,7 @@ export function FileList({
             const Icon = fileIcons[file.type] ?? File
             const showActions =
               Boolean(onDelete) && file.status !== "uploading"
+            const projectLabel = projectNamesById[file.projectId]
             return (
               <tr key={file.id} className="transition-colors hover:bg-muted/30">
                 <td className="px-4 py-3">
@@ -142,6 +163,17 @@ export function FileList({
                     </div>
                   </div>
                 </td>
+                {showProjectColumn ? (
+                  <td className="max-w-[14rem] px-4 py-3 align-top">
+                    {projectLabel ? (
+                      <span className="line-clamp-2 text-foreground" title={projectLabel}>
+                        {projectLabel}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </td>
+                ) : null}
                 <td className="px-4 py-3 align-top">
                   {file.status === "uploading" ? (
                     <div className="max-w-[10rem] space-y-1.5">
