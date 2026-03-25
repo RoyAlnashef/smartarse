@@ -114,6 +114,11 @@ export async function POST(request: Request) {
       email_confirm: true,
       user_metadata: {
         full_name: payload.name,
+        // Mirror for DB triggers that only read raw_user_meta_data (some setups).
+        admin_provisioned: true,
+      },
+      app_metadata: {
+        admin_provisioned: true,
       },
     })
 
