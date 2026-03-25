@@ -12,7 +12,7 @@ as $$
     select 1
     from public.users u
     where u.id = auth.uid()
-      and u.role = 'admin'
+      and lower(trim(coalesce(u.role::text, ''))) = 'admin'
   );
 $$;
 

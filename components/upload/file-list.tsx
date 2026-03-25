@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
 
 const fileIcons: Record<string, typeof FileText> = {
@@ -17,6 +18,7 @@ const fileIcons: Record<string, typeof FileText> = {
 }
 
 const statusColors: Record<string, string> = {
+  uploading: "bg-muted text-muted-foreground",
   ready: "bg-mint-100 text-mint-700",
   processing: "bg-amber-100 text-amber-700",
   error: "bg-red-100 text-red-700",
@@ -72,8 +74,17 @@ function FileListEmptySkeleton() {
   )
 }
 
-export function FileList({ files }: { files: UploadedFile[] }) {
-  if (files.length === 0) {
+export function FileList({
+  files,
+  onDelete,
+  isInitialLoading = false,
+}: {
+  files: UploadedFile[]
+  onDelete?: (id: string) => void
+  /** When true, show the skeleton table (e.g. first Supabase fetch in flight). */
+  isInitialLoading?: boolean
+}) {
+  if (isInitialLoading || files.length === 0) {
     return <FileListEmptySkeleton />
   }
 
@@ -92,6 +103,8 @@ export function FileList({ files }: { files: UploadedFile[] }) {
         <tbody className="divide-y divide-border">
           {files.map((file) => {
             const Icon = fileIcons[file.type] ?? File
+            const showActions =
+              Boolean(onDelete) && file.status !== "uploading"
             return (
               <tr key={file.id} className="transition-colors hover:bg-muted/30">
                 <td className="px-4 py-3">
@@ -105,29 +118,46 @@ export function FileList({ files }: { files: UploadedFile[] }) {
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3">
-                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${statusColors[file.status]}`}>
-                    {file.status}
-                  </span>
+                <td className="px-4 py-3 align-top">
+                  {file.status === "uploading" ? (
+                    <div className="max-w-[10rem] space-y-1.5">
+                      <Progress
+                        value={file.uploadProgress ?? 0}
+                        className="h-2 bg-muted [&>div]:bg-mint-500"
+                      />
+                      <span className="text-xs text-muted-foreground">Uploading…</span>
+                    </div>
+                  ) : (
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${statusColors[file.status] ?? statusColors.processing}`}
+                    >
+                      {file.status}
+                    </span>
+                  )}
                 </td>
-                <td className="px-4 py-3 text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        type="button"
-                        className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                        <span className="sr-only">Open actions for {file.name}</span>
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem className="text-red-500 focus:text-red-500">
-                        <Trash2 className="h-4 w-4" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                <td className="px-4 py-3 text-right align-top">
+                  {showActions ? (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          className="rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Open actions for {file.name}</span>
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          className="text-red-500 focus:text-red-500"
+                          onClick={() => onDelete?.(file.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  ) : null}
                 </td>
               </tr>
             )

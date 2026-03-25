@@ -88,7 +88,9 @@ export interface UploadedFile {
   projectId: string
   uploadedBy: string
   uploadedAt: string
-  status: "processing" | "ready" | "error"
+  status: "uploading" | "processing" | "ready" | "error"
+  /** Set when `status` is `uploading` (mock or optimistic UI before persistence). */
+  uploadProgress?: number
 }
 
 export interface ChatMessage {

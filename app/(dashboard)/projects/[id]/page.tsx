@@ -22,6 +22,10 @@ import {
   conversations as mockConversations,
 } from "@/lib/mock-data"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import {
+  deleteProjectDocument,
+  listProjectDocuments,
+} from "@/lib/supabase/documents"
 import { getProjectById } from "@/lib/supabase/projects"
 import { listUsersForDashboard } from "@/lib/supabase/users"
 import { ChatWindow } from "@/components/chat/chat-window"
@@ -29,9 +33,11 @@ import { ChatInput } from "@/components/chat/chat-input"
 import { ChatSidebar } from "@/components/chat/chat-sidebar"
 import { FileDropzone } from "@/components/upload/file-dropzone"
 import { FileList } from "@/components/upload/file-list"
+import { useMockProjectDocuments } from "@/components/upload/use-mock-project-documents"
+import { useSupabaseProjectUploadFlow } from "@/components/upload/use-supabase-project-upload-flow"
 import { ProjectUsers } from "@/components/projects/project-users"
 import { Badge } from "@/components/ui/badge"
-import type { ChatMessage, Conversation, Project, User } from "@/lib/types"
+import type { ChatMessage, Conversation, Project, UploadedFile, User } from "@/lib/types"
 
 const tabs = [
   { id: "chat", label: "Chat", icon: MessageSquare },
@@ -116,7 +122,58 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
 
   const memberDirectoryUsers = useRemoteDetail ? directoryUsers : mockUsers
 
-  const projectFiles = uploadedFiles.filter((f) => f.projectId === id)
+  const [remoteDocuments, setRemoteDocuments] = useState<
+    UploadedFile[] | undefined
+  >(undefined)
+
+  useEffect(() => {
+    if (!useRemoteDetail || !user) {
+      setRemoteDocuments(undefined)
+      return
+    }
+    let cancelled = false
+    setRemoteDocuments(undefined)
+    listProjectDocuments(id)
+      .then((list) => {
+        if (!cancelled) setRemoteDocuments(list)
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          toast.error(
+            err instanceof Error ? err.message : "Failed to load documents"
+          )
+          setRemoteDocuments([])
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [id, user?.id, useRemoteDetail])
+
+  const {
+    mergedDocuments: remoteMergedDocuments,
+    uploadFiles: runRemoteUploads,
+    dismissPendingUpload,
+    pendingCount: remoteUploadPendingCount,
+  } = useSupabaseProjectUploadFlow({
+    projectId: id,
+    remoteDocuments,
+    setRemoteDocuments,
+  })
+
+  const { localFiles, addFiles, removeFile, localIds } = useMockProjectDocuments({
+    projectId: id,
+    uploadedBy: user?.id ?? "unknown",
+  })
+
+  const mergedProjectFiles = useMemo(() => {
+    if (useRemoteDetail) {
+      return remoteMergedDocuments
+    }
+    const seed = uploadedFiles.filter((f) => f.projectId === id)
+    return [...localFiles, ...seed]
+  }, [useRemoteDetail, remoteMergedDocuments, id, localFiles])
+
   const projectConversations = mockConversations.filter((c) => c.projectId === id)
 
   const [activeTab, setActiveTab] = useState<TabId>("chat")
@@ -135,10 +192,72 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
 
   const readyDocumentIds = useMemo(
     () =>
-      uploadedFiles
+      mergedProjectFiles
         .filter((f) => f.projectId === id && f.status === "ready")
         .map((f) => f.id),
-    [id]
+    [id, mergedProjectFiles]
+  )
+
+  const handleAddFiles = useCallback(
+    (files: File[]) => {
+      if (useRemoteDetail) {
+        if (!user) return
+        void runRemoteUploads(files)
+        return
+      }
+      addFiles(files)
+    },
+    [useRemoteDetail, user, runRemoteUploads, addFiles]
+  )
+
+  const handleDocumentDelete = useCallback(
+    (fileId: string) => {
+      const meta = mergedProjectFiles.find((f) => f.id === fileId)
+
+      if (useRemoteDetail) {
+        if (dismissPendingUpload(fileId)) {
+          toast.success(
+            meta?.name
+              ? `Removed “${meta.name}”`
+              : "Upload removed"
+          )
+          return
+        }
+        void (async () => {
+          try {
+            await deleteProjectDocument(fileId)
+            setRemoteDocuments((prev) => (prev ?? []).filter((f) => f.id !== fileId))
+            toast.success(
+              meta?.name
+                ? `Deleted “${meta.name}”`
+                : "Document deleted"
+            )
+          } catch (err: unknown) {
+            toast.error(
+              err instanceof Error ? err.message : "Failed to delete document"
+            )
+          }
+        })()
+        return
+      }
+      if (localIds.has(fileId)) {
+        removeFile(fileId)
+        toast.success(
+          meta?.name
+            ? `Deleted “${meta.name}”`
+            : "Document deleted"
+        )
+        return
+      }
+      toast.info("Built-in demo documents can’t be removed from this view.")
+    },
+    [
+      useRemoteDetail,
+      dismissPendingUpload,
+      localIds,
+      removeFile,
+      mergedProjectFiles,
+    ]
   )
 
   const handleSendMessage = useCallback(
@@ -350,8 +469,16 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                   Documents
                 </h2>
                 <div className="space-y-6">
-                  <FileDropzone onUpload={() => {}} />
-                  <FileList files={projectFiles} />
+                  <FileDropzone onUpload={handleAddFiles} />
+                  <FileList
+                    files={mergedProjectFiles}
+                    onDelete={handleDocumentDelete}
+                    isInitialLoading={
+                      useRemoteDetail &&
+                      remoteDocuments === undefined &&
+                      remoteUploadPendingCount === 0
+                    }
+                  />
                 </div>
               </section>
             </div>
