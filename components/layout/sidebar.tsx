@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   FolderOpen,
   Building2,
-  FileText,
   Users,
   BarChart3,
   HelpCircle,
@@ -24,7 +23,6 @@ const navigation = [
   { name: "Projects", href: "/projects", icon: FolderOpen, roles: ["admin", "client"] },
   { name: "Users", href: "/users", icon: Users, roles: ["admin"] },
   { name: "Organizations", href: "/organizations", icon: Building2, roles: ["admin"] },
-  { name: "Documents", href: "/documents", icon: FileText, roles: ["admin"] },
   { name: "Analytics", href: "/analytics", icon: BarChart3, roles: ["admin"] },
 ]
 
