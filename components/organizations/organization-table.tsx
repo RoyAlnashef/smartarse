@@ -1,6 +1,6 @@
 "use client"
 
-import { Ban, Coins, Edit, MoreHorizontal, RefreshCcw } from "lucide-react"
+import { Ban, Coins, Edit, MoreHorizontal, RefreshCcw, Trash2 } from "lucide-react"
 import type { Organization } from "@/lib/types"
 import {
   DropdownMenu,
@@ -103,11 +103,13 @@ export function OrganizationTable({
   onEdit,
   onActivate,
   onDeactivate,
+  onDelete,
 }: {
   organizations: Organization[]
   onEdit: (org: Organization) => void
   onActivate?: (org: Organization) => void
   onDeactivate?: (org: Organization) => void
+  onDelete?: (org: Organization) => void
 }) {
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
@@ -217,6 +219,17 @@ export function OrganizationTable({
                           Deactivate
                         </DropdownMenuItem>
                       )}
+                      {onDelete &&
+                        org.projectIds.length === 0 &&
+                        org.userIds.length === 0 && (
+                          <DropdownMenuItem
+                            onClick={() => onDelete(org)}
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </td>

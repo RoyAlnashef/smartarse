@@ -6,6 +6,7 @@ import { Plus, Search } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import {
   createOrganization,
+  deleteOrganization,
   listOrganizationsForDashboard,
   setOrganizationStatus,
   updateOrganization,
@@ -122,6 +123,25 @@ export default function OrganizationsPage() {
     }
   }
 
+  async function handleDelete(org: Organization) {
+    if (
+      !window.confirm(
+        `Permanently delete “${org.name}”? This cannot be undone. The organization must have no users and no projects.`
+      )
+    ) {
+      return
+    }
+    try {
+      await deleteOrganization(org.id)
+      await refreshOrganizations()
+      toast.success("Organization deleted.")
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Could not delete organization."
+      toast.error(message)
+    }
+  }
+
   if (currentUser?.role !== "admin") {
     return (
       <div className="flex flex-col items-center justify-center py-20">
@@ -197,6 +217,7 @@ export default function OrganizationsPage() {
             }}
             onActivate={handleActivate}
             onDeactivate={handleDeactivate}
+            onDelete={handleDelete}
           />
         </>
       )}

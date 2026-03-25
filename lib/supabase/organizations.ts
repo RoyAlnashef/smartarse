@@ -151,6 +151,15 @@ export async function updateOrganization(input: {
   if (error) throw new Error(error.message)
 }
 
+export async function deleteOrganization(id: string): Promise<void> {
+  const supabase = getSupabaseBrowserClient()
+  if (!supabase) throw new Error("Supabase is not configured.")
+
+  const { error } = await supabase.rpc("delete_organization_if_empty", { p_org_id: id })
+
+  if (error) throw new Error(error.message)
+}
+
 export async function setOrganizationStatus(
   id: string,
   status: Organization["status"]
