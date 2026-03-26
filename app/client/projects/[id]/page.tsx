@@ -11,7 +11,6 @@ import { uploadedFiles, conversations as mockConversations } from "@/lib/mock-da
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { listProjectDocuments } from "@/lib/supabase/documents"
 import { getProjectById } from "@/lib/supabase/projects"
-import { cn } from "@/lib/utils"
 import type {
   ChatMessage,
   PersonaActivatedEvent,
@@ -22,7 +21,7 @@ import type {
 import { ClientProjectDetailSkeleton } from "@/components/client/project-detail/client-project-detail-skeleton"
 import { MOCK_SEGMENT_PERSONAS } from "@/components/client/project-detail/persona-drawer"
 import { MobilePersonaDrawer } from "@/components/client/project-detail/mobile-persona-drawer"
-import { PersonasColumn } from "@/components/client/project-detail/personas-column"
+import { ProjectRightSidebar } from "@/components/client/project-detail/project-right-sidebar"
 import { ProjectDetailCard } from "@/components/client/project-detail/project-detail-card"
 import { SourcesSelector } from "@/components/client/project-detail/sources-selector"
 import { ProjectChat } from "@/components/client/project-detail/project-chat"
@@ -146,7 +145,6 @@ export default function ClientProjectDetailPage() {
     (PersonaActivatedEvent | PersonaEndedEvent)[]
   >([])
   const [appliedPersonaId, setAppliedPersonaId] = useState<string | null>(null)
-  const [personasColumnCollapsed, setPersonasColumnCollapsed] = useState(false)
   const [mobilePersonasOpen, setMobilePersonasOpen] = useState(false)
 
   const appliedPersona = useMemo(
@@ -230,14 +228,7 @@ export default function ClientProjectDetailPage() {
         </span>
       </nav>
 
-      <div
-        className={cn(
-          "mt-6 grid grid-cols-1 items-start gap-6 lg:gap-8",
-          personasColumnCollapsed
-            ? "lg:grid-cols-[minmax(12rem,1fr)_minmax(0,2fr)_minmax(3rem,3.5rem)]"
-            : "lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)]"
-        )}
-      >
+      <div className="mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] lg:gap-8">
           <aside className="min-w-0 space-y-6">
             {client ? (
               <section className="w-full overflow-hidden rounded-3xl bg-arse-cyan">
@@ -319,10 +310,8 @@ export default function ClientProjectDetailPage() {
           </div>
 
           <div className="hidden min-h-0 min-w-0 lg:block">
-            <PersonasColumn
-              collapsed={personasColumnCollapsed}
-              onToggleCollapsed={setPersonasColumnCollapsed}
-              appliedPersonaId={appliedPersonaId}
+            <ProjectRightSidebar
+              appliedPersona={appliedPersona}
               onApplyPersona={handleApplyPersona}
               onClearPersona={handleClearPersona}
             />

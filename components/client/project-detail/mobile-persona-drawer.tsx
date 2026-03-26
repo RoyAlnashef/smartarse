@@ -1,8 +1,10 @@
 "use client"
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { PersonaPanel, type PersonaMock } from "@/components/client/project-detail/persona-drawer"
+import { ProjectSidebarTabs } from "@/components/client/project-detail/project-sidebar-tabs"
+import type { PersonaMock } from "@/components/client/project-detail/persona-drawer"
 
 export function MobilePersonaDrawer({
   open,
@@ -77,7 +79,7 @@ export function MobilePersonaDrawer({
           "absolute inset-0 cursor-pointer bg-black/20 transition-opacity duration-200 ease-out",
           entering || exiting ? "opacity-0" : "opacity-100"
         )}
-        aria-label="Close persona panel"
+        aria-label="Close panel"
       />
       <div
         onTransitionEnd={handleTransitionEnd}
@@ -86,13 +88,31 @@ export function MobilePersonaDrawer({
           entering || exiting ? "translate-x-full" : "translate-x-0"
         )}
       >
-        <PersonaPanel
-          className="max-w-sm shadow-[-4px_0_24px_rgba(0,0,0,0.08)]"
-          appliedPersona={appliedPersona}
-          onApply={onApply}
-          onClearPersona={onClearPersona}
-          onClose={requestClose}
-        />
+        <div
+          className={cn(
+            "flex h-full min-h-0 w-full max-w-sm flex-col bg-white shadow-[-4px_0_24px_rgba(0,0,0,0.08)]"
+          )}
+        >
+          <div className="flex shrink-0 items-center justify-between gap-2 border-b border-arse-black/10 px-3 py-2.5">
+            <p className="font-arse-title text-xs font-bold uppercase tracking-wide text-arse-black">
+              Panel
+            </p>
+            <button
+              type="button"
+              onClick={requestClose}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-arse-black/15 bg-white text-arse-black transition hover:border-arse-pink hover:bg-arse-black/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink"
+              aria-label="Close panel"
+            >
+              <X className="h-4 w-4" strokeWidth={2.5} />
+            </button>
+          </div>
+          <ProjectSidebarTabs
+            className="min-h-0 flex-1"
+            appliedPersona={appliedPersona}
+            onApplyPersona={onApply}
+            onClearPersona={onClearPersona}
+          />
+        </div>
       </div>
     </div>
   )

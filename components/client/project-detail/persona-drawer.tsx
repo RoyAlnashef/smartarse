@@ -157,7 +157,7 @@ export const MOCK_SEGMENT_PERSONAS: PersonaMock[] = [
   },
 ]
 
-function EmptyPane({ title }: { title: string }) {
+export function EmptyPane({ title }: { title: string }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col items-center justify-center rounded-xl border-2 border-dashed border-arse-black/15 bg-arse-black/[0.02] px-4 py-6 text-center sm:py-10">
       <p className="font-arse-title text-xs font-bold uppercase tracking-wide text-arse-black/50">
