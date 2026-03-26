@@ -7,6 +7,8 @@
     /* smart A.R.S.E client surface (also usable in raw CSS) */
     --arse-cyan: #00ffff;
     --arse-pink: #ff00e6;
+    /** Light wash for icon wells / chips (pairs with --arse-pink); opaque hex so Tailwind opacity modifiers are not required */
+    --arse-pink-muted: #fdf7fb;
     --arse-black: #000000;
     --arse-white: #ffffff;
 

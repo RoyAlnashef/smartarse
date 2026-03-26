@@ -1,61 +1,49 @@
 "use client"
 
-import { FolderOpen, Zap, Coins, Users } from "lucide-react"
+import { Building2, FolderOpen, MessageSquare, Users } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
-import { projects, clients, users } from "@/lib/mock-data"
+
+// TODO: wire Supabase — replace with count from `projects` (RLS-aware for role)
+const PLACEHOLDER_PROJECTS = 8
+// TODO: wire Supabase — define source (e.g. query_log, messages aggregate)
+const PLACEHOLDER_QUERIES = 930
+// TODO: wire Supabase — count from app users table or policy-exposed view
+const PLACEHOLDER_USERS = 7
+// TODO: wire Supabase — count from `organizations`
+const PLACEHOLDER_ORGANIZATIONS = 4
 
 export function StatsBar() {
-  const { user, getVisibleProjects } = useAuth()
+  const { user } = useAuth()
   if (!user) return null
-
-  const visible = getVisibleProjects()
-  const activeProjects = visible.filter((p) => p.status === "live").length
-
-  let totalCredits = 0
-  let usedCredits = 0
-  let activeUsers = 0
-
-  if (user.role === "admin") {
-    totalCredits = clients.reduce((s, c) => s + c.totalCredits, 0)
-    usedCredits = clients.reduce((s, c) => s + c.usedCredits, 0)
-    activeUsers = users.filter((u) => u.status === "active").length
-  } else if (user.clientId) {
-    const client = clients.find((c) => c.id === user.clientId)
-    totalCredits = client?.totalCredits ?? 0
-    usedCredits = client?.usedCredits ?? 0
-    activeUsers = users.filter(
-      (u) => u.clientId === user.clientId && u.status === "active"
-    ).length
-  }
 
   const stats = [
     {
-      label: "Total Projects",
-      value: visible.length,
+      label: "Queries",
+      value: PLACEHOLDER_QUERIES,
+      icon: MessageSquare,
+      color: "text-arse-pink",
+      bgColor: "bg-arse-pink-muted",
+    },
+    {
+      label: "Projects",
+      value: PLACEHOLDER_PROJECTS,
       icon: FolderOpen,
       color: "text-dark-500",
       bgColor: "bg-dark-50",
     },
     {
-      label: "Active Projects",
-      value: activeProjects,
-      icon: Zap,
-      color: "text-arse-cyan",
-      bgColor: "bg-arse-cyan/10",
-    },
-    {
-      label: "Credits Remaining",
-      value: totalCredits - usedCredits,
-      icon: Coins,
-      color: "text-amber-600",
-      bgColor: "bg-amber-50",
-    },
-    {
-      label: "Active Users",
-      value: activeUsers,
+      label: "Users",
+      value: PLACEHOLDER_USERS,
       icon: Users,
       color: "text-blue-600",
       bgColor: "bg-blue-50",
+    },
+    {
+      label: "Organizations",
+      value: PLACEHOLDER_ORGANIZATIONS,
+      icon: Building2,
+      color: "text-amber-600",
+      bgColor: "bg-amber-50",
     },
   ]
 

@@ -80,6 +80,7 @@ const config: Config = {
         arse: {
           cyan: 'var(--arse-cyan)',
           pink: 'var(--arse-pink)',
+          'pink-muted': 'var(--arse-pink-muted)',
           black: 'var(--arse-black)',
           white: 'var(--arse-white)',
         },
