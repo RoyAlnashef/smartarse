@@ -52,15 +52,15 @@ export function ClientProjectCardSkeleton() {
       aria-busy
       aria-label="Loading project"
     >
-      <div className="h-9 animate-pulse bg-arse-pink/90" />
+      <div className="h-9 shrink-0 bg-arse-pink px-4" aria-hidden />
       <div className="flex flex-1 flex-col items-center bg-arse-cyan px-8 pt-8 pb-16">
-        <Skeleton className="h-5 w-[min(100%,12rem)] bg-arse-black/15" />
+        <Skeleton className="h-5 w-[min(100%,12rem)] bg-white/40 ring-1 ring-arse-black/10" />
         <div className="mt-3 w-full space-y-2">
-          <Skeleton className="mx-auto h-4 w-full max-w-sm bg-arse-black/15" />
-          <Skeleton className="mx-auto h-4 w-full max-w-[90%] bg-arse-black/15" />
-          <Skeleton className="mx-auto h-4 w-full max-w-[75%] bg-arse-black/15" />
+          <Skeleton className="mx-auto h-4 w-full max-w-sm bg-white/40 ring-1 ring-arse-black/10" />
+          <Skeleton className="mx-auto h-4 w-full max-w-[90%] bg-white/40 ring-1 ring-arse-black/10" />
+          <Skeleton className="mx-auto h-4 w-full max-w-[75%] bg-white/40 ring-1 ring-arse-black/10" />
         </div>
-        <Skeleton className="mt-4 h-3 w-48 bg-arse-black/15" />
+        <Skeleton className="mt-4 h-3 w-48 bg-white/40 ring-1 ring-arse-black/10" />
       </div>
     </div>
   )
