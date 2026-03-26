@@ -44,9 +44,9 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
               className="flex items-center hover:opacity-90"
           >
               <img
-                src="/disrupt-logo-blktxt.png"
+                src="/client-header-logo.gif"
                 alt="disrupt"
-                className="block h-[22px] w-auto sm:h-[26px]"
+                className="block h-[32px] w-auto sm:h-[48px]"
                 draggable={false}
               />
           </Link>
