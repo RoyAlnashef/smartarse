@@ -103,7 +103,7 @@ export function LoginPage() {
           <img
             src="/disrupt-logo-login.gif"
             alt="disrupt"
-            className="mx-auto block h-[48px] w-auto sm:h-[64px]"
+            className="mx-auto block h-[64px] w-auto sm:h-[64px]"
             draggable={false}
           />
 
@@ -118,7 +118,7 @@ export function LoginPage() {
           </div>
 
           {mode === "signin" ? (
-            <form onSubmit={handleSignInSubmit} className="mt-6 w-80 space-y-4 text-left">
+            <form onSubmit={handleSignInSubmit} className=" w-64 sm:w-72 space-y-4 text-left">
               <p className="font-arse-title mb-2 text-center text-sm font-bold uppercase tracking-[0.35em] text-arse-pink">
                 Login
               </p>
