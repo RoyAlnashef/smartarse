@@ -28,7 +28,7 @@ export function ClientProjectDetailSkeleton() {
               <Skeleton className="h-16 w-full rounded-2xl bg-arse-black/10" />
             </div>
           </div>
-          <div className="overflow-hidden rounded-3xl bg-arse-black/60">
+          <div className="overflow-hidden rounded-3xl bg-dark-950">
             <Skeleton className="h-9 w-full rounded-none bg-arse-pink/80" />
             <div className="space-y-2 px-4 py-4">
               <Skeleton className="h-6 w-full max-w-[75%] bg-arse-white/20" />
@@ -36,7 +36,7 @@ export function ClientProjectDetailSkeleton() {
               <Skeleton className="h-4 w-[90%] bg-arse-white/15" />
             </div>
           </div>
-          <div className="overflow-hidden rounded-3xl bg-arse-black/60">
+          <div className="overflow-hidden rounded-3xl bg-dark-950">
             <Skeleton className="h-9 w-full rounded-none bg-arse-pink/80" />
             <div className="space-y-2 px-4 py-4">
               <Skeleton className="h-4 w-1/2 bg-arse-white/15" />

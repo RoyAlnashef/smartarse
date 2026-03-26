@@ -8,7 +8,7 @@ export function SourcesSelector({
   files: UploadedFile[]
 }) {
   return (
-    <section className="overflow-hidden rounded-3xl bg-arse-black/60 text-arse-white shadow-[0_0_0_1px_rgba(0,0,0,0.08)]">
+    <section className="overflow-hidden rounded-3xl bg-dark-950 text-arse-white shadow-[0_0_0_1px_rgba(0,0,0,0.08)]">
       <div className="bg-arse-pink px-4 py-2 text-center font-arse-title text-xs font-bold uppercase tracking-[0.35em] text-arse-white">
         Sources
       </div>

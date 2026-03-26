@@ -49,7 +49,11 @@ function normalizeOrgEmbed(
   return Array.isArray(embed) ? embed[0] ?? null : embed
 }
 
-function rowToProject(row: ProjectRow, assignedUserIds: string[]): Project {
+function rowToProject(
+  row: ProjectRow,
+  assignedUserIds: string[],
+  uploadedFileIds: string[] = []
+): Project {
   const org = normalizeOrgEmbed(row.organizations)
   const lastActivity = row.last_activity ?? row.updated_at ?? row.created_at
   return {
@@ -64,7 +68,7 @@ function rowToProject(row: ProjectRow, assignedUserIds: string[]): Project {
     totalCredits: org?.credit_balance ?? 0,
     usedCredits: row.used_credits,
     assignedUserIds,
-    uploadedFileIds: [],
+    uploadedFileIds,
   }
 }
 
@@ -92,6 +96,30 @@ async function fetchAssignedUserIdsByProject(
   return map
 }
 
+async function fetchDocumentIdsByProject(
+  supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>,
+  projectIds: string[]
+): Promise<Map<string, string[]>> {
+  const map = new Map<string, string[]>()
+  if (projectIds.length === 0) return map
+
+  const { data, error } = await supabase
+    .from("project_documents")
+    .select("id, project_id")
+    .in("project_id", projectIds)
+
+  if (error) throw new Error(error.message)
+
+  for (const row of data ?? []) {
+    const pid = row.project_id as string
+    const docId = row.id as string
+    const list = map.get(pid) ?? []
+    list.push(docId)
+    map.set(pid, list)
+  }
+  return map
+}
+
 /**
  * Lists projects visible to the current session (RLS enforces admin / client org / user assignment).
  */
@@ -109,11 +137,18 @@ export async function listProjectsForAuthUser(): Promise<Project[]> {
   const rows = (data ?? []) as ProjectRow[]
   if (rows.length === 0) return []
 
-  const byProject = await fetchAssignedUserIdsByProject(
-    supabase,
-    rows.map((r) => r.id)
+  const ids = rows.map((r) => r.id)
+  const [byProject, docsByProject] = await Promise.all([
+    fetchAssignedUserIdsByProject(supabase, ids),
+    fetchDocumentIdsByProject(supabase, ids),
+  ])
+  return rows.map((row) =>
+    rowToProject(
+      row,
+      byProject.get(row.id) ?? [],
+      docsByProject.get(row.id) ?? []
+    )
   )
-  return rows.map((row) => rowToProject(row, byProject.get(row.id) ?? []))
 }
 
 /**
@@ -133,15 +168,15 @@ export async function getProjectById(id: string): Promise<Project | null> {
   if (!data) return null
 
   const row = data as ProjectRow
-  const { data: puRows, error: puError } = await supabase
-    .from("project_users")
-    .select("user_id")
-    .eq("project_id", id)
+  const [{ data: puRows, error: puError }, docMap] = await Promise.all([
+    supabase.from("project_users").select("user_id").eq("project_id", id),
+    fetchDocumentIdsByProject(supabase, [id]),
+  ])
 
   if (puError) throw new Error(puError.message)
   const assignedUserIds = (puRows ?? []).map((r) => r.user_id as string)
 
-  return rowToProject(row, assignedUserIds)
+  return rowToProject(row, assignedUserIds, docMap.get(id) ?? [])
 }
 
 export async function createProject(input: {
