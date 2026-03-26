@@ -36,7 +36,7 @@ export function ClientProjectCard({ project }: { project: Project }) {
           {project.name}
         </h2>
         <p className="mt-3 line-clamp-4 text-md font-bold leading-tight text-arse-black/90">
-          Overview of project: {project.description}
+          {project.description}
         </p>
         <p className="mt-4 text-xs leading-snug text-arse-black/75">{sourceLine(project)}</p>
       </div>

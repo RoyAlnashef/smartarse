@@ -12,12 +12,7 @@ export function ProjectDetailCard({ project }: { project: Project }) {
         <h2 className="font-arse-title text-lg font-bold uppercase tracking-wide text-arse-white">
           {project.name}
         </h2>
-        <p className="text-sm leading-relaxed text-arse-white/80">
-          <span className="font-arse-title font-semibold text-arse-white">
-            Overview of project:
-          </span>{" "}
-          {project.description}
-        </p>
+        <p className="text-sm leading-relaxed text-arse-white/80">{project.description}</p>
       </div>
     </section>
   )
