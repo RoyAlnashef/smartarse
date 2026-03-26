@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { Eye, EyeOff, Lock, User } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { ArseLogoGroup } from "@/components/arse-logo-group"
 import { cn } from "@/lib/utils"
 import type { UserRole } from "@/lib/types"
 
@@ -107,15 +108,7 @@ export function LoginPage() {
             draggable={false}
           />
 
-          <div className="flex w-max max-w-full flex-col items-stretch gap-0">
-            <h1 className="flex flex-row gap-3 items-baseline leading-none">
-              <span className="font-arse-smart text-arse-pink leading-[3rem] sm:leading-[3.75rem] text-7xl sm:text-8xl">smart</span>
-              <span className="font-arse-title font-normal tracking-[0.12em] text-arse-black leading-none text-5xl sm:text-6xl">A.R.S.E</span>
-            </h1>
-            <p className="font-arse-title w-full text-xs font-semibold uppercase text-arse-black sm:text-sm text-justify [text-align-last:justify] [text-justify:inter-character]">
-              Agentic research search engine
-            </p>
-          </div>
+          <ArseLogoGroup className="flex w-max max-w-full flex-col items-stretch gap-0" />
 
           {mode === "signin" ? (
             <form onSubmit={handleSignInSubmit} className=" w-64 sm:w-72 space-y-4 text-left">

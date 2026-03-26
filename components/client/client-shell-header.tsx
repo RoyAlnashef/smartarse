@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { LogOut, Settings } from "lucide-react"
+import { ArseLogoGroup } from "@/components/arse-logo-group"
 import { useAuth } from "@/lib/auth-context"
 import { cn } from "@/lib/utils"
 
@@ -58,14 +59,10 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
           )}
           {!isProjectListPage && (
             // Mobile brand cluster (desktop brand is centered separately).
-            <div className="flex items-center gap-2 lg:hidden">
-              <span className="font-arse-smart text-2xl text-arse-pink sm:text-3xl">smart</span>
-              <span className="font-arse-title text-xl font-bold tracking-[0.15em] text-arse-black sm:text-2xl">
-                A.R.S.E
-              </span>
-              {/* Robot placeholder (small screens) */}
+            <div className="flex items-center gap-1 sm:gap-1.5 lg:hidden">
+              <ArseLogoGroup variant="inline" showTagline={false} />
               <span
-                className="ml-1 hidden sm:inline-flex sm:items-center sm:justify-center"
+                className="hidden sm:inline-flex sm:items-center sm:justify-center"
                 aria-hidden
                 title="Robot illustration"
               >
@@ -83,14 +80,10 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
 
         {!isProjectListPage && (
           <div className="hidden items-center justify-center lg:flex lg:justify-self-center">
-            <span className="flex items-center gap-2">
-              <span className="font-arse-smart text-2xl text-arse-pink sm:text-3xl">smart</span>
-              <span className="font-arse-title text-xl font-bold tracking-[0.15em] text-arse-black sm:text-2xl">
-                A.R.S.E
-              </span>
-              {/* Robot placeholder (small screens) */}
+            <span className="flex items-center gap-1 sm:gap-1.5">
+              <ArseLogoGroup variant="inline" showTagline={false} />
               <span
-                className="ml-1 hidden sm:inline-flex sm:items-center sm:justify-center"
+                className="hidden sm:inline-flex sm:items-center sm:justify-center"
                 aria-hidden
                 title="Robot illustration"
               >

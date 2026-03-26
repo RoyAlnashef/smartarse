@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/auth-context"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { listProjectsForAuthUser } from "@/lib/supabase/projects"
 import type { Project } from "@/lib/types"
+import { ArseLogoGroup } from "@/components/arse-logo-group"
 import { cn } from "@/lib/utils"
 
 const SKELETON_CARD_COUNT = 3
@@ -68,13 +69,7 @@ export default function ClientProjectsPage() {
         {/* Hero branding */}
         <div className="flex flex-col items-center text-center lg:flex-row lg:justify-center lg:gap-10 lg:text-left">
           <div className="max-w-xl">
-            <h1 className="flex flex-wrap items-end justify-center gap-x-2 gap-y-1 text-4xl sm:text-5xl md:text-6xl lg:justify-start">
-              <span className="font-arse-smart text-arse-pink leading-none">smart</span>
-              <span className="font-arse-title font-bold tracking-[0.12em] text-arse-black">A.R.S.E</span>
-            </h1>
-            <p className="font-arse-title mt-2 text-xs font-semibold uppercase tracking-[0.25em] text-arse-black sm:text-sm">
-              Agentic research search engine
-            </p>
+            <ArseLogoGroup className="flex w-max max-w-full flex-col items-stretch gap-0" />
           </div>
           <div
             className="mt-6 hidden h-36 w-36 shrink-0 lg:flex lg:items-center lg:justify-center"
