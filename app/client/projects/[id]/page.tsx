@@ -205,16 +205,34 @@ export default function ClientProjectDetailPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 pb-12 pt-6 sm:px-6 lg:px-8">
-      <Link
-        href="/client/projects"
-        className="font-arse-body text-sm font-medium text-arse-black/70 hover:text-arse-pink"
+      <nav
+        aria-label="Breadcrumb"
+        className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1"
       >
-        ← Projects
-      </Link>
+        <Link
+          href="/client/projects"
+          className="shrink-0 font-arse-body text-sm font-medium text-arse-black/70 hover:text-arse-pink"
+        >
+          ← Projects
+        </Link>
+        <span
+          className="select-none font-arse-body text-sm text-arse-black/35"
+          aria-hidden
+        >
+          /
+        </span>
+        <span
+          className="min-w-0 truncate font-arse-title text-sm font-bold uppercase tracking-wide text-arse-black"
+          title={project.name}
+          aria-current="page"
+        >
+          {project.name}
+        </span>
+      </nav>
 
       <div
         className={cn(
-          "mt-6 grid items-start gap-6 lg:gap-8",
+          "mt-6 grid grid-cols-1 items-start gap-6 lg:gap-8",
           personasColumnCollapsed
             ? "lg:grid-cols-[minmax(12rem,1fr)_minmax(0,2fr)_minmax(3rem,3.5rem)]"
             : "lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)]"
@@ -278,7 +296,7 @@ export default function ClientProjectDetailPage() {
             <SourcesSelector files={readyDocuments} />
           </aside>
 
-          <div className="min-h-0 min-w-0">
+          <div className="order-first min-h-0 min-w-0 lg:order-none">
             <ProjectChat
               messages={messages}
               personaEvents={personaEvents}

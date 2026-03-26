@@ -8,16 +8,25 @@ import { cn } from "@/lib/utils"
 export function ClientProjectDetailSkeleton() {
   return (
     <div className="mx-auto max-w-7xl px-4 pb-12 pt-6 sm:px-6 lg:px-8">
-      <Link
-        href="/client/projects"
-        className="font-arse-body text-sm font-medium text-arse-black/70 hover:text-arse-pink"
-      >
-        ← Projects
-      </Link>
+      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+        <Link
+          href="/client/projects"
+          className="shrink-0 font-arse-body text-sm font-medium text-arse-black/70 hover:text-arse-pink"
+        >
+          ← Projects
+        </Link>
+        <span
+          className="select-none font-arse-body text-sm text-arse-black/35"
+          aria-hidden
+        >
+          /
+        </span>
+        <Skeleton className="h-4 w-44 max-w-[min(100%,12rem)] rounded bg-arse-black/10" />
+      </div>
 
       <div
         className={cn(
-          "mt-6 grid items-start gap-6 lg:gap-8",
+          "mt-6 grid grid-cols-1 items-start gap-6 lg:gap-8",
           "lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)]"
         )}
       >
@@ -45,7 +54,7 @@ export function ClientProjectDetailSkeleton() {
           </div>
         </aside>
 
-        <div className="min-h-[20rem] min-w-0 rounded-3xl border-4 border-arse-pink bg-white p-4">
+        <div className="order-first min-h-[20rem] min-w-0 rounded-3xl border-4 border-arse-pink bg-white p-4 lg:order-none">
           <Skeleton className="h-10 w-48 rounded-full bg-arse-cyan/50" />
           <Skeleton className="mt-8 h-32 w-full max-w-md rounded-2xl bg-arse-black/5" />
           <div className="mt-auto flex items-end gap-2 pt-16">

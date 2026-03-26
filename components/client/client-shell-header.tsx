@@ -37,7 +37,7 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
 
   return (
     <header className="bg-white px-4 py-4 sm:px-6 lg:px-8">
-      <div className="w-full flex flex-col gap-4 lg:grid lg:grid-cols-[auto_1fr_auto] lg:items-start lg:gap-6">
+      <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4 lg:grid lg:grid-cols-[auto_1fr_auto] lg:items-start lg:justify-normal lg:gap-6">
         <div className="flex flex-wrap items-center gap-4 lg:gap-8 lg:justify-self-start">
           <Link
             href={homeHref}
