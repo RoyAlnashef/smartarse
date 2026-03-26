@@ -87,11 +87,11 @@ export default function ClientProjectsPage() {
         </div>
 
         {/* Search */}
-        <div className="mx-auto mt-10 max-w-2xl">
-          <label htmlFor="client-project-search" className="font-arse-title text-xs font-bold uppercase tracking-[0.2em] text-arse-black">
+        <div className="mx-auto mt-12 sm:mt-0 max-w-[480px]">
+          <label htmlFor="client-project-search" className="sr-only">
             Project search
           </label>
-          <div className="relative mt-2">
+          <div className="relative">
             <input
               id="client-project-search"
               type="search"
@@ -99,7 +99,7 @@ export default function ClientProjectsPage() {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search projects…"
               className={cn(
-                "w-full rounded-lg border-4 border-arse-black bg-arse-cyan py-3 pl-4 pr-14 font-arse-body text-sm text-arse-black placeholder:text-arse-black/45",
+                "w-full rounded-lg border-4 border-arse-black bg-arse-cyan py-3 pl-4 pr-14 font-arse-body text-sm text-arse-black placeholder:text-arse-black placeholder:opacity-100",
                 "focus:outline-none focus:ring-2 focus:ring-arse-pink"
               )}
             />
@@ -108,7 +108,7 @@ export default function ClientProjectsPage() {
         </div>
 
         {/* Projects grid + side label */}
-        <div className="relative mt-14 grid grid-cols-1 gap-6 lg:grid-cols-4 lg:gap-10">
+        <div className="relative mt-12 grid grid-cols-1 gap-6 lg:grid-cols-4 lg:gap-10">
           <aside className="relative hidden lg:block lg:col-span-1">
             <div
               className="absolute -left-4 top-8 h-40 w-40 rounded-full opacity-40"
@@ -119,7 +119,7 @@ export default function ClientProjectsPage() {
               aria-hidden
             />
             <div className="relative flex flex-col gap-2 items-end text-right">
-              <p className="font-arse-title text-4xl font-light uppercase tracking-wider text-arse-black">
+              <p className="font-arse-title text-3xl sm:text-4xl font-light uppercase tracking-wider text-arse-black">
                 Projects
               </p>
               <p className="mt-1 max-w-[10rem] text-sm font-bold leading-snug text-arse-black">

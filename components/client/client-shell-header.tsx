@@ -42,7 +42,7 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
           <Link
             href={homeHref}
             title={showGuestHelp ? "Go to sign in" : "Project list"}
-              className="flex items-center hover:opacity-90"
+            className="hidden items-center hover:opacity-90 sm:flex"
           >
               <img
                 src="/client-header-logo.gif"
@@ -99,9 +99,9 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
           </div>
         )}
 
-        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start sm:gap-4 lg:justify-self-end">
+        <div className="flex min-w-0 flex-col items-stretch gap-3 sm:flex-row sm:items-start sm:gap-4 lg:justify-self-end">
           <div
-            className="flex flex-wrap items-center gap-2 sm:gap-3"
+            className="flex min-w-0 max-w-full flex-wrap items-center gap-2 sm:gap-3"
             {...(showGuestHelp ? { "aria-busy": isLoading } : {})}
           >
             <span className="font-arse-title text-lg font-normal uppercase tracking-wider text-arse-black">
@@ -116,8 +116,15 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
                 Sign In
               </Link>
             ) : (
-              <div className={cn(clientNameDivClass, "flex items-center gap-2")}>
-                <span className="inline-flex items-center">{displayName}</span>
+              <div
+                className={cn(
+                  clientNameDivClass,
+                  "flex min-w-0 max-w-full flex-1 items-center gap-2 sm:flex-none sm:max-w-none"
+                )}
+              >
+                <span className="min-w-0 flex-1 truncate" title={displayName}>
+                  {displayName}
+                </span>
                 <Link
                   href="/client/settings"
                   title="Settings"
