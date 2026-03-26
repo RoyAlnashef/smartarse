@@ -114,21 +114,8 @@ export function ProjectUsers({
         Project members
       </h2>
       <p className="text-sm text-muted-foreground">
-        Only people in{" "}
-        <span className="font-medium text-foreground">{project.clientName}</span>{" "}
-        can be assigned to this project.
-        {persistToSupabase ? (
-          <>
-            {" "}
-            Changes save when you confirm. Users with the{" "}
-            <span className="font-medium text-foreground">user</span> role only
-            see projects they are assigned to in the client area;{" "}
-            <span className="font-medium text-foreground">client</span> role
-            accounts keep organization-wide project access.
-          </>
-        ) : (
-          <> Connect Supabase to persist assignments.</>
-        )}
+        Assign members of this organization to work on the project.
+        {!persistToSupabase && <> Connect Supabase to persist assignments.</>}
       </p>
       <div className="rounded-xl border border-border bg-card p-6">
         {eligibleUsers.length === 0 ? (
