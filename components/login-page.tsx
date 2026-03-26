@@ -101,7 +101,7 @@ export function LoginPage() {
         <div className="flex w-full max-w-md flex-col items-center justify-start text-center">
           {/* disrupt wordmark */}
           <img
-            src="/disrupt-logo-blktxt.png"
+            src="/disrupt-logo-login.gif"
             alt="disrupt"
             className="mx-auto block h-[26px] w-auto sm:h-[30px]"
             draggable={false}
