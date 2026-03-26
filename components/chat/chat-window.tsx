@@ -1,18 +1,27 @@
 "use client"
 
 import { useRef, useEffect } from "react"
-import { MessageSquare } from "lucide-react"
+import { Bot, MessageSquare } from "lucide-react"
 import type { ChatMessage } from "@/lib/types"
-import { Skeleton } from "@/components/ui/skeleton"
 import { MessageBubble } from "./message-bubble"
 
-function ChatWindowEmptySkeleton() {
+function ChatWindowAdminReadOnlyEmpty() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center bg-white p-8">
-      <Skeleton className="h-16 w-16 shrink-0 rounded-2xl" />
-      <Skeleton className="mt-4 h-6 w-[min(100%,14rem)] max-w-sm" />
-      <Skeleton className="mt-2 h-4 w-full max-w-sm" />
-      <Skeleton className="mt-2 h-4 w-[min(100%,18rem)] max-w-sm" />
+    <div
+      className="flex flex-1 flex-col items-center justify-center bg-white p-8"
+      role="status"
+      aria-live="polite"
+    >
+      <div className="flex h-[5.5rem] w-[5.5rem] shrink-0 items-center justify-center rounded-2xl border border-arse-pink/25 bg-arse-pink-muted text-arse-pink shadow-sm">
+        <Bot className="h-12 w-12" strokeWidth={1.5} aria-hidden />
+      </div>
+      <h3 className="mt-5 max-w-sm text-center text-lg font-semibold text-foreground">
+        No client activity <span className="text-arse-pink">yet</span>
+      </h3>
+      <p className="mt-2 max-w-sm text-center text-sm text-muted-foreground">
+        You&apos;ll see the conversation here once your client starts asking smartARSE questions. Reach out if they
+        need help getting started.
+      </p>
     </div>
   )
 }
@@ -34,7 +43,7 @@ export function ChatWindow({
 
   if (messages.length === 0) {
     if (emptyState === "skeleton") {
-      return <ChatWindowEmptySkeleton />
+      return <ChatWindowAdminReadOnlyEmpty />
     }
     return (
       <div className="flex flex-1 flex-col items-center justify-center bg-white p-8">
