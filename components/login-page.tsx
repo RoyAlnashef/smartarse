@@ -98,29 +98,30 @@ export function LoginPage() {
       />
 
       <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6">
-        <div className="flex w-full max-w-md flex-col items-center justify-start text-center">
+        <div className="flex w-full max-w-md flex-col gap-12 items-center justify-start text-center">
           {/* disrupt wordmark */}
           <img
             src="/disrupt-logo-login.gif"
             alt="disrupt"
-            className="mx-auto block h-[26px] w-auto sm:h-[30px]"
+            className="mx-auto block h-[48px] w-auto sm:h-[64px]"
             draggable={false}
           />
 
-          <h1 className="mt-6 flex flex-wrap items-end justify-center gap-x-1 gap-y-0 text-4xl sm:text-5xl md:text-6xl">
-            <span className="font-arse-smart text-arse-pink leading-none">smart</span>
-            <span className="font-arse-title font-bold tracking-[0.12em] text-arse-black">A.R.S.E</span>
-          </h1>
-          <p className="font-arse-title mt-2 text-xs font-semibold uppercase tracking-[0.2em] text-arse-black sm:text-sm">
-            Agentic research search engine
-          </p>
-
-          <p className="font-arse-title mt-10 text-sm font-bold uppercase tracking-[0.35em] text-arse-pink">
-            {mode === "signin" ? "Login" : "Reset Password"}
-          </p>
+          <div className="flex w-max max-w-full flex-col items-stretch gap-0">
+            <h1 className="flex flex-row gap-3 items-baseline leading-none">
+              <span className="font-arse-smart text-arse-pink leading-[3rem] sm:leading-[3.75rem] text-7xl sm:text-8xl">smart</span>
+              <span className="font-arse-title font-normal tracking-[0.12em] text-arse-black leading-none text-5xl sm:text-6xl">A.R.S.E</span>
+            </h1>
+            <p className="font-arse-title w-full text-xs font-semibold uppercase text-arse-black sm:text-sm text-justify [text-align-last:justify] [text-justify:inter-character]">
+              Agentic research search engine
+            </p>
+          </div>
 
           {mode === "signin" ? (
             <form onSubmit={handleSignInSubmit} className="mt-6 w-80 space-y-4 text-left">
+              <p className="font-arse-title mb-2 text-center text-sm font-bold uppercase tracking-[0.35em] text-arse-pink">
+                Login
+              </p>
               <div className="flex items-center gap-3">
                 <User className="h-6 w-6 shrink-0 text-arse-pink" strokeWidth={1.75} aria-hidden />
                 <input
@@ -196,6 +197,9 @@ export function LoginPage() {
             </form>
           ) : (
             <form onSubmit={handleForgotPasswordSubmit} className="mt-6 w-80 space-y-4 text-left">
+              <p className="font-arse-title mb-2 text-center text-sm font-bold uppercase tracking-[0.35em] text-arse-pink">
+                Reset Password
+              </p>
               <div className="flex items-center gap-3">
                 <User className="h-6 w-6 shrink-0 text-arse-pink" strokeWidth={1.75} aria-hidden />
                 <input
