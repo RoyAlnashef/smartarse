@@ -42,7 +42,7 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
           <Link
             href={homeHref}
             title={showGuestHelp ? "Go to sign in" : "Project list"}
-            className="hidden items-center hover:opacity-90 sm:flex"
+            className="flex max-[725px]:hidden items-center hover:opacity-90"
           >
               <img
                 src="/client-header-logo.gif"
@@ -53,14 +53,16 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
           </Link>
           {!isProjectListPage && (
             <div
-              className="hidden h-10 w-px bg-arse-black/20 sm:block lg:hidden"
+              className="hidden h-10 w-px bg-arse-black/20 min-[726px]:block lg:hidden"
               aria-hidden
             />
           )}
           {!isProjectListPage && (
             // Mobile brand cluster (desktop brand is centered separately).
             <div className="flex items-center gap-1 sm:gap-1.5 lg:hidden">
-              <ArseLogoGroup variant="inline" showTagline={false} />
+              <span className="max-[638px]:hidden">
+                <ArseLogoGroup variant="inline" showTagline={false} />
+              </span>
               <span
                 className="hidden sm:inline-flex sm:items-center sm:justify-center"
                 aria-hidden
