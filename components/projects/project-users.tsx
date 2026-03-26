@@ -114,7 +114,9 @@ export function ProjectUsers({
         Project members
       </h2>
       <p className="text-sm text-muted-foreground">
-        Assign members of this organization to work on the project.
+        Assign members of{" "}
+        <span className="font-medium text-foreground">{project.clientName}</span>{" "}
+        to work on the project.
         {!persistToSupabase && <> Connect Supabase to persist assignments.</>}
       </p>
       <div className="rounded-xl border border-border bg-card p-6">

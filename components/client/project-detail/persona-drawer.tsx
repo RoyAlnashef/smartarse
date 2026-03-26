@@ -278,7 +278,6 @@ function PersonaDetailCard({
         <Switch
           checked={whatIf}
           onCheckedChange={setWhatIf}
-          className="data-[state=checked]:bg-arse-pink"
           aria-label="Toggle what-if mode"
         />
       </div>
