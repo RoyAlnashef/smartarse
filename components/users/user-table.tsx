@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
+import { initialAvatarClass } from "@/lib/avatar-palette"
 import { userRoleBadgeClassName } from "@/lib/user-role-badge"
 
 const statusColors: Record<string, string> = {
@@ -149,7 +150,9 @@ export function UserTable({
                   <tr key={user.id} className="transition-colors hover:bg-muted/30">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-dark-100 text-sm font-medium text-dark-600">
+                        <div
+                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-medium ${initialAvatarClass(user.id)}`}
+                        >
                           {user.name
                             .split(" ")
                             .map((n) => n[0])

@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
+import { initialAvatarClass } from "@/lib/avatar-palette"
 
 const statusColors: Record<string, string> = {
   active: "bg-mint-100 text-mint-700",
@@ -151,7 +152,9 @@ export function OrganizationTable({
               <tr key={org.id} className="transition-colors hover:bg-muted/30">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-dark-100 text-sm font-medium text-dark-600">
+                    <div
+                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-medium ${initialAvatarClass(org.id)}`}
+                    >
                       {orgInitials(org.name)}
                     </div>
                     <div>
