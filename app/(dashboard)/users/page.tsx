@@ -7,7 +7,9 @@ import { useAuth } from "@/lib/auth-context"
 import { listOrganizationsForDashboard } from "@/lib/supabase/organizations"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { listUsersForDashboard, updateUserAdmin } from "@/lib/supabase/users"
+import { ListPagination } from "@/components/dashboard/list-pagination"
 import { UserTable, UserTableSkeleton } from "@/components/users/user-table"
+import { LIST_PAGE_SIZE } from "@/lib/constants"
 import {
   UserFormModal,
   type UserCreatePayload,
@@ -25,6 +27,7 @@ export default function UsersPage() {
   const [roleFilter, setRoleFilter] = useState("all")
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
+  const [page, setPage] = useState(1)
 
   async function refreshData() {
     const [userRows, orgRows] = await Promise.all([
@@ -79,6 +82,21 @@ export default function UsersPage() {
       return matchSearch && matchRole
     })
   }, [users, organizations, search, roleFilter])
+
+  useEffect(() => {
+    setPage(1)
+  }, [search, roleFilter])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / LIST_PAGE_SIZE))
+
+  useEffect(() => {
+    setPage((p) => Math.min(p, totalPages))
+  }, [totalPages])
+
+  const paginatedUsers = useMemo(() => {
+    const start = (page - 1) * LIST_PAGE_SIZE
+    return filtered.slice(start, start + LIST_PAGE_SIZE)
+  }, [filtered, page])
 
   const organizationOptions = useMemo(
     () => organizations.map((o) => ({ id: o.id, name: o.name })),
@@ -258,18 +276,24 @@ export default function UsersPage() {
       )}
 
       {!isLoading && !loadError && (
-        <>
-          <UserTable
-            users={filtered}
-            organizations={organizationRows}
-            currentUserId={currentUser?.id}
-            onEdit={(u) => {
-              setEditingUser(u)
-              setModalOpen(true)
-            }}
-            onDelete={handleDeleteUser}
-          />
-        </>
+        <UserTable
+          users={paginatedUsers}
+          organizations={organizationRows}
+          currentUserId={currentUser?.id}
+          onEdit={(u) => {
+            setEditingUser(u)
+            setModalOpen(true)
+          }}
+          onDelete={handleDeleteUser}
+          footer={
+            <ListPagination
+              currentPage={page}
+              totalItems={filtered.length}
+              pageSize={LIST_PAGE_SIZE}
+              onPageChange={setPage}
+            />
+          }
+        />
       )}
 
       <UserFormModal

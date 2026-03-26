@@ -11,10 +11,12 @@ import {
   setOrganizationStatus,
   updateOrganization,
 } from "@/lib/supabase/organizations"
+import { ListPagination } from "@/components/dashboard/list-pagination"
 import {
   OrganizationTable,
   OrganizationTableSkeleton,
 } from "@/components/organizations/organization-table"
+import { LIST_PAGE_SIZE } from "@/lib/constants"
 import {
   OrganizationFormModal,
   type OrganizationSavePayload,
@@ -30,6 +32,7 @@ export default function OrganizationsPage() {
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all")
   const [editingOrg, setEditingOrg] = useState<Organization | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
+  const [page, setPage] = useState(1)
 
   useEffect(() => {
     let isCancelled = false
@@ -62,6 +65,21 @@ export default function OrganizationsPage() {
       return matchSearch && matchStatus
     })
   }, [organizations, search, statusFilter])
+
+  useEffect(() => {
+    setPage(1)
+  }, [search, statusFilter])
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / LIST_PAGE_SIZE))
+
+  useEffect(() => {
+    setPage((p) => Math.min(p, totalPages))
+  }, [totalPages])
+
+  const paginatedOrganizations = useMemo(() => {
+    const start = (page - 1) * LIST_PAGE_SIZE
+    return filtered.slice(start, start + LIST_PAGE_SIZE)
+  }, [filtered, page])
 
   async function refreshOrganizations() {
     const rows = await listOrganizationsForDashboard()
@@ -208,18 +226,24 @@ export default function OrganizationsPage() {
       )}
 
       {!isLoading && !loadError && (
-        <>
-          <OrganizationTable
-            organizations={filtered}
-            onEdit={(o) => {
-              setEditingOrg(o)
-              setModalOpen(true)
-            }}
-            onActivate={handleActivate}
-            onDeactivate={handleDeactivate}
-            onDelete={handleDelete}
-          />
-        </>
+        <OrganizationTable
+          organizations={paginatedOrganizations}
+          onEdit={(o) => {
+            setEditingOrg(o)
+            setModalOpen(true)
+          }}
+          onActivate={handleActivate}
+          onDeactivate={handleDeactivate}
+          onDelete={handleDelete}
+          footer={
+            <ListPagination
+              currentPage={page}
+              totalItems={filtered.length}
+              pageSize={LIST_PAGE_SIZE}
+              onPageChange={setPage}
+            />
+          }
+        />
       )}
 
       <OrganizationFormModal

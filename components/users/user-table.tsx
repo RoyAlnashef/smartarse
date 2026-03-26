@@ -1,5 +1,6 @@
 "use client"
 
+import type { ReactNode } from "react"
 import { Edit, MoreHorizontal, Trash2 } from "lucide-react"
 import type { User } from "@/lib/types"
 import {
@@ -96,12 +97,14 @@ export function UserTable({
   onEdit,
   onDelete,
   currentUserId,
+  footer,
 }: {
   users: User[]
   organizations: { id: string; name: string; status: "active" | "inactive" }[]
   onEdit: (user: User) => void
   onDelete?: (user: User) => void
   currentUserId?: string
+  footer?: ReactNode
 }) {
   return (
     <TooltipProvider>
@@ -221,6 +224,7 @@ export function UserTable({
             </tbody>
           </table>
         </div>
+        {footer}
       </div>
     </TooltipProvider>
   )

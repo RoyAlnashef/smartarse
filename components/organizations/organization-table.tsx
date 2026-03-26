@@ -1,5 +1,6 @@
 "use client"
 
+import type { ReactNode } from "react"
 import { Ban, Coins, Edit, MoreHorizontal, RefreshCcw, Trash2 } from "lucide-react"
 import type { Organization } from "@/lib/types"
 import {
@@ -105,12 +106,14 @@ export function OrganizationTable({
   onActivate,
   onDeactivate,
   onDelete,
+  footer,
 }: {
   organizations: Organization[]
   onEdit: (org: Organization) => void
   onActivate?: (org: Organization) => void
   onDeactivate?: (org: Organization) => void
   onDelete?: (org: Organization) => void
+  footer?: ReactNode
 }) {
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
@@ -241,6 +244,7 @@ export function OrganizationTable({
           </tbody>
         </table>
       </div>
+      {footer}
     </div>
   )
 }
