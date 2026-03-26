@@ -123,6 +123,18 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
 
   const memberDirectoryUsers = useRemoteDetail ? directoryUsers : mockUsers
 
+  const refreshProjectFromServer = useCallback(async () => {
+    if (!getSupabaseBrowserClient() || !user) return
+    try {
+      const proj = await getProjectById(id)
+      setRemoteProject(proj)
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to refresh project"
+      )
+    }
+  }, [id, user?.id])
+
   const [remoteDocuments, setRemoteDocuments] = useState<
     UploadedFile[] | undefined
   >(undefined)
@@ -514,7 +526,13 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         {activeTab === "members" && (
           <div className="min-h-0 flex-1 overflow-y-auto p-4 lg:p-6">
             <div className="mx-auto max-w-2xl">
-              <ProjectUsers project={project} allUsers={memberDirectoryUsers} />
+              <ProjectUsers
+                project={project}
+                allUsers={memberDirectoryUsers}
+                onAssignmentsChange={
+                  useRemoteDetail ? refreshProjectFromServer : undefined
+                }
+              />
             </div>
           </div>
         )}

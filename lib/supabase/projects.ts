@@ -179,6 +179,46 @@ export async function getProjectById(id: string): Promise<Project | null> {
   return rowToProject(row, assignedUserIds, docMap.get(id) ?? [])
 }
 
+export async function assignProjectUser(
+  projectId: string,
+  userId: string
+): Promise<void> {
+  const supabase = getSupabaseBrowserClient()
+  if (!supabase) throw new Error("Supabase is not configured.")
+  if (!isUuidString(projectId) || !isUuidString(userId)) {
+    throw new Error("Invalid project or user id.")
+  }
+
+  const { error } = await supabase.from("project_users").insert({
+    project_id: projectId,
+    user_id: userId,
+  })
+
+  if (error) {
+    if (error.code === "23505") return
+    throw new Error(error.message)
+  }
+}
+
+export async function unassignProjectUser(
+  projectId: string,
+  userId: string
+): Promise<void> {
+  const supabase = getSupabaseBrowserClient()
+  if (!supabase) throw new Error("Supabase is not configured.")
+  if (!isUuidString(projectId) || !isUuidString(userId)) {
+    throw new Error("Invalid project or user id.")
+  }
+
+  const { error } = await supabase
+    .from("project_users")
+    .delete()
+    .eq("project_id", projectId)
+    .eq("user_id", userId)
+
+  if (error) throw new Error(error.message)
+}
+
 export async function createProject(input: {
   organizationId: string
   name: string

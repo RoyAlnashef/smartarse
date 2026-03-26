@@ -8,7 +8,6 @@ import {
   ChangePasswordForm,
   type ChangePasswordValues,
 } from "@/components/settings/change-password-form"
-import { PrivacyDataExportSection } from "@/components/settings/privacy-data-export-section"
 import { SettingsBlock } from "@/components/settings/settings-block"
 import { useAuth } from "@/lib/auth-context"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
@@ -62,25 +61,6 @@ export default function ClientSettingsPage() {
       .toUpperCase()
   }, [user?.name])
 
-  const exportPayload = useMemo(() => {
-    if (!user) return { exportedAt: new Date().toISOString() }
-    return {
-      exportedAt: new Date().toISOString(),
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-      client: client
-        ? {
-            id: client.id,
-            name: client.name,
-          }
-        : null,
-    }
-  }, [client, user])
-
   if (isLoading || !user) return null
 
   return (
@@ -122,11 +102,6 @@ export default function ClientSettingsPage() {
         </SettingsBlock>
 
         <ChangePasswordForm onSave={handleSavePassword} />
-
-        <PrivacyDataExportSection
-          exportData={exportPayload}
-          privacyUrl="/help/privacy"
-        />
 
         {lastSavedAt ? (
           <p className="text-center text-xs text-muted-foreground">

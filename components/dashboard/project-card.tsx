@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Calendar, Coins, FileText } from "lucide-react"
+import { Calendar, Coins, FileText, Users } from "lucide-react"
 import type { Project } from "@/lib/types"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -48,15 +48,20 @@ export function ProjectCard({ project }: { project: Project }) {
           {project.description}
         </p>
 
-        {/* Meta */}
+        {/* Meta — users, docs, date */}
         <div className="mt-auto flex items-center gap-4 pt-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
-            <Calendar className="h-3.5 w-3.5" />
-            {formatDate(project.lastActivity)}
+            <Users className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            {project.assignedUserIds.length}{" "}
+            {project.assignedUserIds.length === 1 ? "user" : "users"}
           </span>
           <span className="flex items-center gap-1">
-            <FileText className="h-3.5 w-3.5" aria-hidden />
+            <FileText className="h-3.5 w-3.5 shrink-0" aria-hidden />
             {project.uploadedFileIds.length} docs
+          </span>
+          <span className="flex items-center gap-1">
+            <Calendar className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            {formatDate(project.lastActivity)}
           </span>
         </div>
       </div>
@@ -95,8 +100,9 @@ export function ProjectCardSkeleton() {
           <Skeleton className="h-3.5 w-[92%]" />
         </div>
         <div className="mt-auto flex items-center gap-4 pt-4">
-          <Skeleton className="h-3.5 w-24" />
+          <Skeleton className="h-3.5 w-16" />
           <Skeleton className="h-3.5 w-20" />
+          <Skeleton className="h-3.5 w-24" />
         </div>
       </div>
       <div className="border-t border-border px-5 py-3">
