@@ -6,10 +6,12 @@ import Link from "next/link"
 import { useParams } from "next/navigation"
 import { toast } from "sonner"
 import aiCoin from "@/public/ai-coin.png"
+import type { ChatResultForClient } from "@/lib/api/chat-payload"
 import { useAuth } from "@/lib/auth-context"
-import type { HistoryItem } from "@/lib/chat-history-types"
 import { uploadedFiles, conversations as mockConversations } from "@/lib/mock-data"
 import { MOCK_CHAT_HISTORY } from "@/lib/mock-chat-history"
+import { useChatHistory } from "@/hooks/useChatHistory"
+import { useChatQuestion } from "@/hooks/useChatQuestion"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { listProjectDocuments } from "@/lib/supabase/documents"
 import { getProjectById } from "@/lib/supabase/projects"
@@ -130,21 +132,78 @@ export default function ClientProjectDetailPage() {
     [resolvedProjectDocuments]
   )
   const seededMessages = useMemo<ChatMessage[]>(() => {
+    if (useRemoteDetail) return []
     const first = mockConversations.find((c) => c.projectId === id)
     return first?.messages ?? []
-  }, [id])
+  }, [id, useRemoteDetail])
 
   const [messages, setMessages] = useState<ChatMessage[]>([])
   useEffect(() => {
     setMessages(seededMessages)
   }, [seededMessages])
 
-  const [chatHistoryItems, setChatHistoryItems] = useState<HistoryItem[]>(() => [
-    ...MOCK_CHAT_HISTORY,
-  ])
+  const { history: apiHistory, refresh: refreshChatHistory } = useChatHistory({
+    projectId: id,
+    enabled: useRemoteDetail && !!id,
+  })
+
+  const chatHistoryItems = useMemo(
+    () => (useRemoteDetail ? apiHistory : [...MOCK_CHAT_HISTORY]),
+    [useRemoteDetail, apiHistory]
+  )
+
+  const [sessionId, setSessionId] = useState(() => crypto.randomUUID())
   useEffect(() => {
-    setChatHistoryItems([...MOCK_CHAT_HISTORY])
+    setSessionId(crypto.randomUUID())
   }, [id])
+
+  const orgSettings = useMemo(
+    () => ({
+      weighted: false,
+      data_source_mode: "default",
+      qual_enabled: false,
+    }),
+    []
+  )
+
+  const orgId = project?.clientId ?? user?.clientId ?? ""
+  const useRealChat = Boolean(useRemoteDetail && project && orgId)
+
+  const refreshHistory = useCallback(() => {
+    void refreshChatHistory()
+  }, [refreshChatHistory])
+
+  const onChatResult = useCallback(
+    (result: ChatResultForClient) => {
+      const text = result.answer.trim() || "No answer returned."
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `msg-${crypto.randomUUID()}`,
+          conversationId: `conv-${id}`,
+          role: "assistant",
+          content: text,
+          timestamp: new Date().toISOString(),
+        },
+      ])
+    },
+    [id]
+  )
+
+  const { submitQuestion, loading: chatLoading, error: chatError } =
+    useChatQuestion({
+      orgId,
+      userId: user?.id ?? "",
+      projectId: id,
+      sessionId,
+      orgSettings,
+      onResult: onChatResult,
+      onHistoryRefresh: refreshHistory,
+    })
+
+  useEffect(() => {
+    if (chatError) toast.error(chatError)
+  }, [chatError])
 
   const sourceDocumentIds = useMemo(
     () => readyDocuments.map((f) => f.id),
@@ -194,19 +253,23 @@ export default function ClientProjectDetailPage() {
 
   const handleHistoryQuestionSelect = useCallback(
     (question: string) => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `msg-${Date.now()}`,
-          conversationId: `conv-${id}`,
-          role: "user",
-          content: question,
-          timestamp: new Date().toISOString(),
-          documentIds: sourceDocumentIds,
-        },
-      ])
+      const ts = new Date().toISOString()
+      const userMsg: ChatMessage = {
+        id: `msg-${crypto.randomUUID()}`,
+        conversationId: `conv-${id}`,
+        role: "user",
+        content: question,
+        timestamp: ts,
+        documentIds: sourceDocumentIds,
+      }
+      if (useRealChat) {
+        setMessages((prev) => [...prev, userMsg])
+        void submitQuestion(question)
+        return
+      }
+      setMessages((prev) => [...prev, userMsg])
     },
-    [id, sourceDocumentIds]
+    [id, sourceDocumentIds, submitQuestion, useRealChat]
   )
 
   if (loadingRemote) {
@@ -318,32 +381,24 @@ export default function ClientProjectDetailPage() {
               messages={messages}
               personaEvents={personaEvents}
               appliedPersonaId={appliedPersonaId}
+              disabled={useRealChat && chatLoading}
               onOpenPersonas={() => setMobilePersonasOpen(true)}
               onSend={(content) => {
-                const isFirstUserMessage = !messages.some((m) => m.role === "user")
                 const ts = new Date().toISOString()
-                setMessages((prev) => [
-                  ...prev,
-                  {
-                    id: `msg-${Date.now()}`,
-                    conversationId: `conv-${id}`,
-                    role: "user",
-                    content,
-                    timestamp: ts,
-                    documentIds: sourceDocumentIds,
-                  },
-                ])
-                if (isFirstUserMessage) {
-                  setChatHistoryItems((prev) => [
-                    {
-                      id: Date.now(),
-                      user_query: content,
-                      created_at: ts,
-                      status: "complete",
-                    },
-                    ...prev,
-                  ])
+                const userMsg: ChatMessage = {
+                  id: `msg-${crypto.randomUUID()}`,
+                  conversationId: `conv-${id}`,
+                  role: "user",
+                  content,
+                  timestamp: ts,
+                  documentIds: sourceDocumentIds,
                 }
+                if (useRealChat) {
+                  setMessages((prev) => [...prev, userMsg])
+                  void submitQuestion(content)
+                  return
+                }
+                setMessages((prev) => [...prev, userMsg])
               }}
             />
           </div>
@@ -355,6 +410,7 @@ export default function ClientProjectDetailPage() {
               onClearPersona={handleClearPersona}
               onHistoryQuestionSelect={handleHistoryQuestionSelect}
               chatHistoryItems={chatHistoryItems}
+              chatRequestLoading={useRealChat ? chatLoading : undefined}
             />
           </div>
         </div>
@@ -367,6 +423,7 @@ export default function ClientProjectDetailPage() {
           onClearPersona={handleClearPersona}
           onHistoryQuestionSelect={handleHistoryQuestionSelect}
           chatHistoryItems={chatHistoryItems}
+          chatRequestLoading={useRealChat ? chatLoading : undefined}
         />
     </div>
   )

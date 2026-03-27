@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useRef, useState, useCallback } from "react"
+import { useMemo, useRef, useState, useCallback, useEffect } from "react"
 import type { HistoryItem as ChatHistoryRow } from "@/lib/chat-history-types"
 import { HistoryGroup } from "@/components/chat/history-group"
 import { groupByDate } from "@/lib/group-by-date"
@@ -13,6 +13,11 @@ export type ChatHistoryMockListProps = {
   items?: ChatHistoryRow[]
   /** Fired when a history row is activated (e.g. append user message in main chat). */
   onQuestionSelect?: (question: string) => void
+  /**
+   * When set, rerun spinner clears when this goes from true → false (real chat pipeline).
+   * When omitted, a short mock delay is used after select.
+   */
+  chatRequestLoading?: boolean
   /** Static pagination strip for layout review (mock only). */
   showMockPagination?: boolean
   className?: string
@@ -36,12 +41,24 @@ function orderedGroupEntries(groups: Record<string, ChatHistoryRow[]>) {
 export function ChatHistoryMockList({
   items = MOCK_CHAT_HISTORY,
   onQuestionSelect,
+  chatRequestLoading,
   showMockPagination = false,
   className,
 }: ChatHistoryMockListProps) {
   const [isRerunning, setIsRerunning] = useState(false)
   const [activeItemId, setActiveItemId] = useState<number | null>(null)
   const prevItemsKeyRef = useRef("")
+  const prevChatLoadingRef = useRef(false)
+
+  useEffect(() => {
+    if (chatRequestLoading === undefined) return
+    const was = prevChatLoadingRef.current
+    prevChatLoadingRef.current = chatRequestLoading
+    if (was && !chatRequestLoading) {
+      setIsRerunning(false)
+      setActiveItemId(null)
+    }
+  }, [chatRequestLoading])
 
   const enteringItemIds = useMemo(() => {
     const key = items.map((i) => i.id).join(",")
@@ -72,12 +89,14 @@ export function ChatHistoryMockList({
       setIsRerunning(true)
       setActiveItemId(item.id)
       onQuestionSelect?.(item.user_query)
-      window.setTimeout(() => {
-        setIsRerunning(false)
-        setActiveItemId(null)
-      }, RERUN_SIM_MS)
+      if (chatRequestLoading === undefined) {
+        window.setTimeout(() => {
+          setIsRerunning(false)
+          setActiveItemId(null)
+        }, RERUN_SIM_MS)
+      }
     },
-    [isRerunning, onQuestionSelect],
+    [isRerunning, onQuestionSelect, chatRequestLoading],
   )
 
   if (items.length === 0) {

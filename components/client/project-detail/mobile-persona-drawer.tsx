@@ -15,6 +15,7 @@ export function MobilePersonaDrawer({
   onClearPersona,
   onHistoryQuestionSelect,
   chatHistoryItems,
+  chatRequestLoading,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -23,6 +24,7 @@ export function MobilePersonaDrawer({
   onClearPersona?: () => void
   onHistoryQuestionSelect?: (question: string) => void
   chatHistoryItems?: HistoryItem[]
+  chatRequestLoading?: boolean
 }) {
   const [exiting, setExiting] = useState(false)
   const [entering, setEntering] = useState(false)
@@ -118,6 +120,7 @@ export function MobilePersonaDrawer({
             onClearPersona={onClearPersona}
             onHistoryQuestionSelect={onHistoryQuestionSelect}
             chatHistoryItems={chatHistoryItems}
+            chatRequestLoading={chatRequestLoading}
           />
         </div>
       </div>

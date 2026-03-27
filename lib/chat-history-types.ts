@@ -5,3 +5,13 @@ export interface HistoryItem {
   created_at: string
   status: string
 }
+
+export interface HistoryResponse {
+  history: HistoryItem[]
+  pagination: {
+    page: number
+    pageSize: number
+    totalItems: number
+    totalPages: number
+  }
+}

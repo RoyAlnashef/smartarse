@@ -23,6 +23,8 @@ export type ProjectSidebarTabsProps = {
   onHistoryQuestionSelect?: (question: string) => void
   /** When set, drives Chat History list; omit to use static mock default. */
   chatHistoryItems?: HistoryItem[]
+  /** Sync sidebar rerun spinner with project chat request lifecycle. */
+  chatRequestLoading?: boolean
   className?: string
 }
 
@@ -40,6 +42,7 @@ export function ProjectSidebarTabs({
   personaPanelOnClose,
   onHistoryQuestionSelect,
   chatHistoryItems,
+  chatRequestLoading,
   className,
 }: ProjectSidebarTabsProps) {
   return (
@@ -73,6 +76,7 @@ export function ProjectSidebarTabs({
             <ChatHistoryMockList
               items={chatHistoryItems}
               onQuestionSelect={onHistoryQuestionSelect}
+              chatRequestLoading={chatRequestLoading}
               className="min-h-0 flex-1"
             />
           </div>
