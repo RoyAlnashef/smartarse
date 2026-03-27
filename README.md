@@ -19,6 +19,8 @@ Status legend: ✅ built, 🟡 partial/in progress, ⚪ planned/not built yet
 - ✅ **RLS-backed admin workflows**: Policies and constraints enforce role checks and org-safe data relationships
 - ✅ **Forgot password flow**: Send reset email from sign-in, recover session from email link, and land on settings to update password
 - 🟡 **AI chat with personas**: Persona UX is implemented; full AI/RAG integration is still evolving
+- 🟡 **Tabbed project sidebar (client)**: Right column uses **Chat History** and **Personas** tabs (line-style tabs); **Studio** is scaffolded but hidden until ready. Mobile uses the same tabbed shell inside the overlay drawer.
+- 🟡 **Chat history (past questions)**: Grouped list UI and mock data (`HistoryGroup`, `HistoryItem`, `ChatHistoryMockList`); server routes, polling, and n8n re-run flow are specified in product notes and still to wire end-to-end.
 - 🟡 **Document-based queries**: Upload and selection UX exists; production document-grounded query backend is still evolving
 - 🟡 **Credit system**: Balance and management surfaces exist; end-to-end consumption lifecycle is still evolving
 
@@ -30,9 +32,17 @@ Status legend: ✅ built, 🟡 partial/in progress, ⚪ planned/not built yet
   - Users dashboard wired to Supabase for org assignment and admin-only user creation
   - Server route for admin user creation: `POST /api/admin/users`
   - Supabase migrations for admin RLS and active-with-organization constraints
+- **Recent client UX**:
+  - `components/ui/tabs.tsx` supports a **`line`** variant on `TabsList` for underline-style tabs (default pill tabs unchanged for persona sub-tabs).
+  - Client project detail: `ProjectSidebarTabs` in `components/client/project-detail/` drives the right column; chat history selection can call back into the main chat (mock re-run hookup until APIs land).
 - **Still evolving**:
+  - Chat history: `GET /api/chat/history`, poll/claim endpoints, hooks, and org-scoped webhook payloads per `agent-os/product/dev-notes/chat-history-spec.md` (see also `agent-os/specs/2026-03-26-tabbed-sidebar-chat-history/`).
   - Full AI/RAG backend integration and credit consumption lifecycle
   - Expanded analytics beyond current shell/reporting surfaces
+
+### Product specs (agent-os)
+
+Detailed feature plans, standards, and references live under [`agent-os/`](agent-os/) (e.g. chat history, Supabase admin flows, client project detail). Use those folders when implementing or extending a feature beyond what this README summarizes.
 
 ## Tech Stack
 
@@ -103,7 +113,7 @@ The sign-in form includes a `Forgot password?` flow:
 │   │   └── privacy/          # Internal privacy
 │   ├── client/               # Client-facing area (branded shell)
 │   │   ├── projects/         # Project list + search
-│   │   └── projects/[id]/    # Client project detail (chat + personas)
+│   │   └── projects/[id]/    # Client project detail (chat + tabbed sidebar: history / personas)
 │   ├── auth/
 │   │   └── reset-password/   # Supabase recovery callback + redirect to settings
 │   ├── api/
@@ -112,8 +122,8 @@ The sign-in form includes a `Forgot password?` flow:
 │   ├── layout.tsx            # Root layout, fonts, AuthProvider
 │   └── page.tsx              # Login / redirect
 ├── components/
-│   ├── client/               # Client-specific UI (project cards, chat, persona drawer)
-│   ├── chat/                 # Admin chat (window, input, sidebar, document selector)
+│   ├── client/               # Client-specific UI (project cards, chat, persona drawer, project sidebar tabs)
+│   ├── chat/                 # Admin chat + shared history UI (window, input, sidebar, document selector, history groups/items, mock list)
 │   ├── layout/               # Dashboard sidebar, header, mobile sidebar
 │   ├── settings/             # Settings sections
 │   ├── upload/               # File dropzone, file list
