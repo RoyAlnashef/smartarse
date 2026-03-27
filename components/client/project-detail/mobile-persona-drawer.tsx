@@ -79,7 +79,7 @@ export function MobilePersonaDrawer({
           "absolute inset-0 cursor-pointer bg-black/20 transition-opacity duration-200 ease-out",
           entering || exiting ? "opacity-0" : "opacity-100"
         )}
-        aria-label="Close panel"
+        aria-label="Close controls"
       />
       <div
         onTransitionEnd={handleTransitionEnd}
@@ -95,13 +95,13 @@ export function MobilePersonaDrawer({
         >
           <div className="flex shrink-0 items-center justify-between gap-2 border-b border-arse-black/10 px-3 py-2.5">
             <p className="font-arse-title text-xs font-bold uppercase tracking-wide text-arse-black">
-              Panel
+              Controls
             </p>
             <button
               type="button"
               onClick={requestClose}
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-arse-black/15 bg-white text-arse-black transition hover:border-arse-pink hover:bg-arse-black/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink"
-              aria-label="Close panel"
+              aria-label="Close controls"
             >
               <X className="h-4 w-4" strokeWidth={2.5} />
             </button>

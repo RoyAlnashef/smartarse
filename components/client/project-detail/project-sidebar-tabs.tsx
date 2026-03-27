@@ -8,6 +8,9 @@ import {
   type PersonaMock,
 } from "@/components/client/project-detail/persona-drawer"
 
+/** Set true when the Studio tab and pane are ready to ship. */
+const SHOW_STUDIO_TAB = false
+
 export type ProjectSidebarTabsProps = {
   appliedPersona: PersonaMock | null
   onApplyPersona: (personaId: string) => void
@@ -19,6 +22,10 @@ export type ProjectSidebarTabsProps = {
 
 const tabContentClass =
   "mt-0 flex min-h-0 flex-1 flex-col overflow-hidden px-3 pb-3 pt-2 focus-visible:outline-none focus-visible:ring-0 data-[state=inactive]:hidden"
+
+/** Match panel shell `border-4`; inactive keeps transparent border-b-4 so layout does not shift. */
+const tabTriggerClass =
+  "shrink-0 border-b-4 border-transparent font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black/50 data-[state=active]:border-arse-pink data-[state=active]:text-arse-black"
 
 export function ProjectSidebarTabs({
   appliedPersona,
@@ -32,30 +39,23 @@ export function ProjectSidebarTabs({
       defaultValue="chat-history"
       className={cn("flex min-h-0 flex-1 flex-col overflow-hidden", className)}
     >
-      <div className="shrink-0 px-3 pt-3">
+      <div className="shrink-0 px-4">
         <TabsList
           variant="line"
-          className="!grid h-10 w-full grid-cols-3 items-end gap-0 rounded-none border-b-0 bg-transparent p-0"
+          className="!flex min-h-12 h-auto w-full items-end justify-center gap-6 rounded-none border-b-0 bg-transparent p-0"
           aria-label="Sidebar sections"
         >
-          <TabsTrigger
-            value="chat-history"
-            className="min-w-0 justify-self-center font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black/50 data-[state=active]:border-arse-pink data-[state=active]:text-arse-black"
-          >
+          <TabsTrigger value="chat-history" className={tabTriggerClass}>
             Chat History
           </TabsTrigger>
-          <TabsTrigger
-            value="personas"
-            className="min-w-0 justify-self-center font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black/50 data-[state=active]:border-arse-pink data-[state=active]:text-arse-black"
-          >
+          <TabsTrigger value="personas" className={tabTriggerClass}>
             Personas
           </TabsTrigger>
-          <TabsTrigger
-            value="studio"
-            className="min-w-0 justify-self-center font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black/50 data-[state=active]:border-arse-pink data-[state=active]:text-arse-black"
-          >
-            Studio
-          </TabsTrigger>
+          {SHOW_STUDIO_TAB ? (
+            <TabsTrigger value="studio" className={tabTriggerClass}>
+              Studio
+            </TabsTrigger>
+          ) : null}
         </TabsList>
       </div>
 
@@ -82,11 +82,13 @@ export function ProjectSidebarTabs({
         />
       </TabsContent>
 
-      <TabsContent value="studio" className={tabContentClass}>
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-          <EmptyPane title="Studio" />
-        </div>
-      </TabsContent>
+      {SHOW_STUDIO_TAB ? (
+        <TabsContent value="studio" className={tabContentClass}>
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+            <EmptyPane title="Studio" />
+          </div>
+        </TabsContent>
+      ) : null}
     </Tabs>
   )
 }

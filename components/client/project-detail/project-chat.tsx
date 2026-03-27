@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { Send, Users } from "lucide-react"
+import { Send, SlidersHorizontal } from "lucide-react"
 import type {
   ChatMessage,
   PersonaActivatedEvent,
@@ -158,7 +158,7 @@ export function ProjectChat({
         <button
           type="button"
           onClick={() => onOpenPersonas?.()}
-          aria-label="Open chat panel (history, personas, studio)"
+          aria-label="Open controls (chat history, personas, studio)"
           className="absolute right-3 top-3 z-10 inline-flex items-center gap-2 rounded-xl border-2 border-arse-black bg-white px-3 py-1.5 font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black shadow-[3px_3px_0_0_var(--arse-pink)] transition hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--arse-pink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink sm:right-4 sm:top-4 lg:hidden"
         >
           {appliedPersona ? (
@@ -167,8 +167,8 @@ export function ProjectChat({
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
             </span>
           ) : null}
-          <Users className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
-          Panel
+          <SlidersHorizontal className="h-3.5 w-3.5" strokeWidth={2.5} aria-hidden />
+          Controls
         </button>
 
         <div className="relative min-h-0 flex-1 overflow-hidden">

@@ -360,7 +360,7 @@ export function PersonaPanel({
       )}
       aria-label="Persona"
     >
-      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-arse-black/10 px-2 py-3">
+      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-arse-black/10 px-0 py-3">
         <div className="flex min-w-0 flex-1 items-start gap-2">
           {onCollapseToRail ? (
             <button
@@ -394,7 +394,7 @@ export function PersonaPanel({
       </div>
 
       {appliedPersona ? (
-        <div className="shrink-0 border-b border-arse-black/10 px-2 py-2">
+        <div className="shrink-0 border-b border-arse-black/10 py-2">
           <div className="inline-flex items-center gap-2 rounded-full border border-arse-black/10 bg-arse-black/[0.03] pl-2.5 pr-1 py-1 font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black/70">
             <span className="relative flex h-2 w-2 shrink-0">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
@@ -417,9 +417,9 @@ export function PersonaPanel({
 
       <Tabs
         defaultValue="segments"
-        className="flex min-h-0 flex-1 flex-col overflow-hidden p-2"
+        className="flex min-h-0 flex-1 flex-col overflow-hidden py-2"
       >
-        <TabsList className="grid h-auto w-full shrink-0 grid-cols-3 gap-1 rounded-xl border-2 border-arse-black/10 bg-arse-black/[0.04] p-1">
+        <TabsList className="grid h-auto w-full shrink-0 grid-cols-3 gap-0 rounded-xl bg-arse-black/[0.04]">
           <TabsTrigger
             value="segments"
             className={cn(
@@ -445,7 +445,7 @@ export function PersonaPanel({
               "data-[state=active]:border-2 data-[state=active]:border-arse-black/15 data-[state=active]:bg-white data-[state=active]:text-arse-black data-[state=active]:shadow-sm"
             )}
           >
-            Focus group
+            Focus grp
           </TabsTrigger>
         </TabsList>
 
