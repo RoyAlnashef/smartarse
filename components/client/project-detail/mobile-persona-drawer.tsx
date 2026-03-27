@@ -5,6 +5,7 @@ import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProjectSidebarTabs } from "@/components/client/project-detail/project-sidebar-tabs"
 import type { PersonaMock } from "@/components/client/project-detail/persona-drawer"
+import type { HistoryItem } from "@/lib/chat-history-types"
 
 export function MobilePersonaDrawer({
   open,
@@ -13,6 +14,7 @@ export function MobilePersonaDrawer({
   onApply,
   onClearPersona,
   onHistoryQuestionSelect,
+  chatHistoryItems,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -20,6 +22,7 @@ export function MobilePersonaDrawer({
   onApply: (personaId: string) => void
   onClearPersona?: () => void
   onHistoryQuestionSelect?: (question: string) => void
+  chatHistoryItems?: HistoryItem[]
 }) {
   const [exiting, setExiting] = useState(false)
   const [entering, setEntering] = useState(false)
@@ -114,6 +117,7 @@ export function MobilePersonaDrawer({
             onApplyPersona={onApply}
             onClearPersona={onClearPersona}
             onHistoryQuestionSelect={onHistoryQuestionSelect}
+            chatHistoryItems={chatHistoryItems}
           />
         </div>
       </div>

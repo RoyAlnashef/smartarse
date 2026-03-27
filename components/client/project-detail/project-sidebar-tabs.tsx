@@ -8,6 +8,7 @@ import {
   type PersonaMock,
 } from "@/components/client/project-detail/persona-drawer"
 import { ChatHistoryMockList } from "@/components/chat/chat-history-mock-list"
+import type { HistoryItem } from "@/lib/chat-history-types"
 
 /** Set true when the Studio tab and pane are ready to ship. */
 const SHOW_STUDIO_TAB = false
@@ -20,6 +21,8 @@ export type ProjectSidebarTabsProps = {
   personaPanelOnClose?: () => void
   /** Chat History tab: when user picks a past question (mock re-run / future API). */
   onHistoryQuestionSelect?: (question: string) => void
+  /** When set, drives Chat History list; omit to use static mock default. */
+  chatHistoryItems?: HistoryItem[]
   className?: string
 }
 
@@ -36,6 +39,7 @@ export function ProjectSidebarTabs({
   onClearPersona,
   personaPanelOnClose,
   onHistoryQuestionSelect,
+  chatHistoryItems,
   className,
 }: ProjectSidebarTabsProps) {
   return (
@@ -67,6 +71,7 @@ export function ProjectSidebarTabs({
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-arse-black/[0.02]">
             <ChatHistoryMockList
+              items={chatHistoryItems}
               onQuestionSelect={onHistoryQuestionSelect}
               className="min-h-0 flex-1"
             />

@@ -7,7 +7,9 @@ import { useParams } from "next/navigation"
 import { toast } from "sonner"
 import aiCoin from "@/public/ai-coin.png"
 import { useAuth } from "@/lib/auth-context"
+import type { HistoryItem } from "@/lib/chat-history-types"
 import { uploadedFiles, conversations as mockConversations } from "@/lib/mock-data"
+import { MOCK_CHAT_HISTORY } from "@/lib/mock-chat-history"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { listProjectDocuments } from "@/lib/supabase/documents"
 import { getProjectById } from "@/lib/supabase/projects"
@@ -136,6 +138,13 @@ export default function ClientProjectDetailPage() {
   useEffect(() => {
     setMessages(seededMessages)
   }, [seededMessages])
+
+  const [chatHistoryItems, setChatHistoryItems] = useState<HistoryItem[]>(() => [
+    ...MOCK_CHAT_HISTORY,
+  ])
+  useEffect(() => {
+    setChatHistoryItems([...MOCK_CHAT_HISTORY])
+  }, [id])
 
   const sourceDocumentIds = useMemo(
     () => readyDocuments.map((f) => f.id),
@@ -311,6 +320,8 @@ export default function ClientProjectDetailPage() {
               appliedPersonaId={appliedPersonaId}
               onOpenPersonas={() => setMobilePersonasOpen(true)}
               onSend={(content) => {
+                const isFirstUserMessage = !messages.some((m) => m.role === "user")
+                const ts = new Date().toISOString()
                 setMessages((prev) => [
                   ...prev,
                   {
@@ -318,10 +329,21 @@ export default function ClientProjectDetailPage() {
                     conversationId: `conv-${id}`,
                     role: "user",
                     content,
-                    timestamp: new Date().toISOString(),
+                    timestamp: ts,
                     documentIds: sourceDocumentIds,
                   },
                 ])
+                if (isFirstUserMessage) {
+                  setChatHistoryItems((prev) => [
+                    {
+                      id: Date.now(),
+                      user_query: content,
+                      created_at: ts,
+                      status: "complete",
+                    },
+                    ...prev,
+                  ])
+                }
               }}
             />
           </div>
@@ -332,6 +354,7 @@ export default function ClientProjectDetailPage() {
               onApplyPersona={handleApplyPersona}
               onClearPersona={handleClearPersona}
               onHistoryQuestionSelect={handleHistoryQuestionSelect}
+              chatHistoryItems={chatHistoryItems}
             />
           </div>
         </div>
@@ -343,6 +366,7 @@ export default function ClientProjectDetailPage() {
           onApply={handleApplyPersona}
           onClearPersona={handleClearPersona}
           onHistoryQuestionSelect={handleHistoryQuestionSelect}
+          chatHistoryItems={chatHistoryItems}
         />
     </div>
   )

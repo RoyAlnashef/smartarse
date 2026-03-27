@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useCallback } from "react"
+import { useMemo, useRef, useState, useCallback } from "react"
 import type { HistoryItem as ChatHistoryRow } from "@/lib/chat-history-types"
 import { HistoryGroup } from "@/components/chat/history-group"
 import { groupByDate } from "@/lib/group-by-date"
@@ -41,6 +41,27 @@ export function ChatHistoryMockList({
 }: ChatHistoryMockListProps) {
   const [isRerunning, setIsRerunning] = useState(false)
   const [activeItemId, setActiveItemId] = useState<number | null>(null)
+  const prevItemsKeyRef = useRef("")
+
+  const enteringItemIds = useMemo(() => {
+    const key = items.map((i) => i.id).join(",")
+    const prev = prevItemsKeyRef.current
+    if (prev === "") {
+      prevItemsKeyRef.current = key
+      return new Set<number>()
+    }
+    if (prev === key) {
+      return new Set<number>()
+    }
+    const prevIds = new Set(
+      prev.split(",").filter(Boolean).map((s) => Number(s)),
+    )
+    const added = new Set(
+      items.filter((i) => !prevIds.has(i.id)).map((i) => i.id),
+    )
+    prevItemsKeyRef.current = key
+    return added
+  }, [items])
 
   const grouped = useMemo(() => groupByDate(items), [items])
   const groupLabels = useMemo(() => orderedGroupEntries(grouped), [grouped])
@@ -91,6 +112,7 @@ export function ChatHistoryMockList({
               onRerun={handleRerun}
               isRerunning={isRerunning}
               activeItemId={activeItemId}
+              enteringItemIds={enteringItemIds}
             />
           ))}
         </div>

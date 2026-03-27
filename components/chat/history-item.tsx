@@ -11,6 +11,8 @@ export type HistoryItemProps = {
   isRerunning: boolean
   /** When re-run is in flight, spinner shows on this row only. */
   isActiveRow?: boolean
+  /** Play enter animation (e.g. row just added to the list). */
+  animateEnter?: boolean
 }
 
 export function HistoryItem({
@@ -18,6 +20,7 @@ export function HistoryItem({
   onRerun,
   isRerunning,
   isActiveRow = false,
+  animateEnter = false,
 }: HistoryItemProps) {
   return (
     <button
@@ -30,6 +33,9 @@ export function HistoryItem({
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink/35 focus-visible:ring-offset-1 focus-visible:ring-offset-background",
         isRerunning && "cursor-not-allowed opacity-60",
         isActiveRow && isRerunning && "opacity-100",
+        animateEnter &&
+          "motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-top-10 motion-safe:duration-[600ms] motion-safe:ease-out",
+        animateEnter && "motion-reduce:animate-none motion-reduce:opacity-100",
       )}
     >
       <span

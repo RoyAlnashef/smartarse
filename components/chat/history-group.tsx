@@ -11,6 +11,8 @@ export type HistoryGroupProps = {
   onRerun: (item: ChatHistoryRow) => void
   isRerunning: boolean
   activeItemId?: number | null
+  /** Row ids that should play the “new item” enter animation this render. */
+  enteringItemIds?: ReadonlySet<number>
   className?: string
 }
 
@@ -20,6 +22,7 @@ export function HistoryGroup({
   onRerun,
   isRerunning,
   activeItemId = null,
+  enteringItemIds,
   className,
 }: HistoryGroupProps) {
   const headingId = useId()
@@ -43,6 +46,7 @@ export function HistoryGroup({
               onRerun={onRerun}
               isRerunning={isRerunning}
               isActiveRow={activeItemId === item.id}
+              animateEnter={enteringItemIds?.has(item.id) ?? false}
             />
           </li>
         ))}
