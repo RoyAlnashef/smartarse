@@ -12,12 +12,14 @@ export function MobilePersonaDrawer({
   appliedPersona,
   onApply,
   onClearPersona,
+  onHistoryQuestionSelect,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   appliedPersona: PersonaMock | null
   onApply: (personaId: string) => void
   onClearPersona?: () => void
+  onHistoryQuestionSelect?: (question: string) => void
 }) {
   const [exiting, setExiting] = useState(false)
   const [entering, setEntering] = useState(false)
@@ -111,6 +113,7 @@ export function MobilePersonaDrawer({
             appliedPersona={appliedPersona}
             onApplyPersona={onApply}
             onClearPersona={onClearPersona}
+            onHistoryQuestionSelect={onHistoryQuestionSelect}
           />
         </div>
       </div>

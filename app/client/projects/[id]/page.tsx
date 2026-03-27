@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useParams } from "next/navigation"
@@ -183,6 +183,23 @@ export default function ClientProjectDetailPage() {
     ])
   }
 
+  const handleHistoryQuestionSelect = useCallback(
+    (question: string) => {
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `msg-${Date.now()}`,
+          conversationId: `conv-${id}`,
+          role: "user",
+          content: question,
+          timestamp: new Date().toISOString(),
+          documentIds: sourceDocumentIds,
+        },
+      ])
+    },
+    [id, sourceDocumentIds]
+  )
+
   if (loadingRemote) {
     return <ClientProjectDetailSkeleton />
   }
@@ -314,6 +331,7 @@ export default function ClientProjectDetailPage() {
               appliedPersona={appliedPersona}
               onApplyPersona={handleApplyPersona}
               onClearPersona={handleClearPersona}
+              onHistoryQuestionSelect={handleHistoryQuestionSelect}
             />
           </div>
         </div>
@@ -324,6 +342,7 @@ export default function ClientProjectDetailPage() {
           appliedPersona={appliedPersona}
           onApply={handleApplyPersona}
           onClearPersona={handleClearPersona}
+          onHistoryQuestionSelect={handleHistoryQuestionSelect}
         />
     </div>
   )

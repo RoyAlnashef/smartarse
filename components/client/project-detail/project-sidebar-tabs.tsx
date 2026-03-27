@@ -7,6 +7,7 @@ import {
   PersonaPanel,
   type PersonaMock,
 } from "@/components/client/project-detail/persona-drawer"
+import { ChatHistoryMockList } from "@/components/chat/chat-history-mock-list"
 
 /** Set true when the Studio tab and pane are ready to ship. */
 const SHOW_STUDIO_TAB = false
@@ -17,6 +18,8 @@ export type ProjectSidebarTabsProps = {
   onClearPersona?: () => void
   /** When set, PersonaPanel shows header dismiss (e.g. mobile overlay). Omit on desktop column. */
   personaPanelOnClose?: () => void
+  /** Chat History tab: when user picks a past question (mock re-run / future API). */
+  onHistoryQuestionSelect?: (question: string) => void
   className?: string
 }
 
@@ -32,6 +35,7 @@ export function ProjectSidebarTabs({
   onApplyPersona,
   onClearPersona,
   personaPanelOnClose,
+  onHistoryQuestionSelect,
   className,
 }: ProjectSidebarTabsProps) {
   return (
@@ -60,14 +64,12 @@ export function ProjectSidebarTabs({
       </div>
 
       <TabsContent value="chat-history" className={tabContentClass}>
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-          <div className="flex min-h-0 flex-1 flex-col items-center justify-center rounded-xl border-2 border-dashed border-arse-black/15 bg-arse-black/[0.02] px-4 py-8 text-center">
-            <p className="font-arse-title text-xs font-bold uppercase tracking-wide text-arse-black/50">
-              Chat history
-            </p>
-            <p className="mt-3 max-w-[16rem] font-arse-body text-sm leading-relaxed text-arse-black/60">
-              No questions yet. Ask something to get started.
-            </p>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-arse-black/[0.02]">
+            <ChatHistoryMockList
+              onQuestionSelect={onHistoryQuestionSelect}
+              className="min-h-0 flex-1"
+            />
           </div>
         </div>
       </TabsContent>
