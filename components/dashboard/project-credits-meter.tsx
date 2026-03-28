@@ -32,9 +32,9 @@ export function ProjectCreditsMeter({
     "rounded-full transition-[width] duration-500 ease-out",
     overBudget
       ? "bg-destructive"
-      : lowRemaining
+        : lowRemaining
         ? "bg-amber-500"
-        : "bg-gradient-to-r from-arse-cyan to-arse-pink"
+        : "bg-arse-pink"
   )
 
   const fractionClass =
@@ -51,7 +51,7 @@ export function ProjectCreditsMeter({
       className={cn(
         "flex min-w-0 items-center gap-2",
         variant === "header"
-          ? "w-full max-w-[320px] rounded-xl border border-border bg-white px-3 py-2 shadow-sm"
+          ? "w-full max-w-[400px] rounded-xl border border-border bg-white px-3 py-2 shadow-sm"
           : "w-full",
         className
       )}
