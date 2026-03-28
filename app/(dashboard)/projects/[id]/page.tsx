@@ -293,6 +293,11 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     }
   }, [useRemoteDetail, id, draftStableDocumentIds])
 
+  const handleCancelDocumentOrder = useCallback(() => {
+    setDocumentOrderUnlocked(false)
+    setDraftStableDocumentIds([])
+  }, [])
+
   const confirmLeaveIfUnsavedDocumentOrder = useCallback((): boolean => {
     if (!documentOrderUnlocked || !useRemoteDetail) return true
     return window.confirm(UNSAVED_DOCUMENT_ORDER_LEAVE_MESSAGE)
@@ -758,28 +763,41 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                           Sort Rows
                         </Button>
                       ) : (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="border-2 border-arse-pink hover:border-arse-pink focus-visible:ring-arse-pink/40"
-                          disabled={isSavingDocumentOrder}
-                          onClick={() => void handleLockDocumentOrder()}
-                        >
-                          <Save className="h-4 w-4" aria-hidden />
-                          Save Order
-                        </Button>
+                        <>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={isSavingDocumentOrder}
+                            onClick={handleCancelDocumentOrder}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="border-2 border-arse-pink hover:border-arse-pink focus-visible:ring-arse-pink/40"
+                            disabled={isSavingDocumentOrder}
+                            onClick={() => void handleLockDocumentOrder()}
+                          >
+                            <Save className="h-4 w-4" aria-hidden />
+                            Save Order
+                          </Button>
+                        </>
                       )
                     ) : null}
-                    <Button
-                      type="button"
-                      size="sm"
-                      className="rounded-lg border-0 bg-dark-950 px-4 text-white shadow-none hover:bg-dark-800 hover:text-white focus-visible:ring-dark-950/40"
-                      onClick={() => setUploadDocsModalOpen(true)}
-                    >
-                      <Upload className="h-4 w-4" aria-hidden />
-                      Upload
-                    </Button>
+                    {!documentOrderUnlocked ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="rounded-lg border-0 bg-dark-950 px-4 text-white shadow-none hover:bg-dark-800 hover:text-white focus-visible:ring-dark-950/40"
+                        onClick={() => setUploadDocsModalOpen(true)}
+                      >
+                        <Upload className="h-4 w-4" aria-hidden />
+                        Upload
+                      </Button>
+                    ) : null}
                   </div>
                 </div>
                 <Dialog
