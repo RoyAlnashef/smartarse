@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 /** Loading placeholder for `/client/projects/[id]` (layout aligned with the live page). */
 export function ClientProjectDetailSkeleton() {
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-12 pt-6 sm:px-6 lg:px-8">
+    <div className="w-full px-4 pb-12 pt-6 sm:px-6 lg:px-8">
       <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
         <Link
           href="/client/projects"

@@ -31,6 +31,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import {
   deleteProjectDocument,
   listProjectDocuments,
+  reorderProjectDocuments,
 } from "@/lib/supabase/documents"
 import {
   projectStatusBadgeClassName,
@@ -48,11 +49,22 @@ import { ChatInput } from "@/components/chat/chat-input"
 import { ChatSidebar } from "@/components/chat/chat-sidebar"
 import { FileDropzone } from "@/components/upload/file-dropzone"
 import { FileList } from "@/components/upload/file-list"
+import {
+  SortableProjectDocumentsTable,
+  isPersistedProjectDocumentRow,
+} from "@/components/upload/sortable-project-documents-table"
 import { useMockProjectDocuments } from "@/components/upload/use-mock-project-documents"
 import { useSupabaseProjectUploadFlow } from "@/components/upload/use-supabase-project-upload-flow"
 import { ProjectCreditsMeter } from "@/components/dashboard/project-credits-meter"
 import { ProjectUsers } from "@/components/projects/project-users"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { ChatMessage, Conversation, Project, UploadedFile, User } from "@/lib/types"
 
@@ -199,7 +211,9 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     if (useRemoteDetail) {
       return remoteMergedDocuments
     }
-    const seed = uploadedFiles.filter((f) => f.projectId === id)
+    const seed = uploadedFiles
+      .filter((f) => f.projectId === id)
+      .sort((a, b) => a.sortOrder - b.sortOrder)
     return [...localFiles, ...seed]
   }, [useRemoteDetail, remoteMergedDocuments, id, localFiles])
 
@@ -219,7 +233,59 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const [settingsDescription, setSettingsDescription] = useState("")
   const [settingsStatus, setSettingsStatus] = useState<Project["status"]>("live")
   const [isSavingSettings, setIsSavingSettings] = useState(false)
+  const [documentOrderUnlocked, setDocumentOrderUnlocked] = useState(false)
+  const [draftStableDocumentIds, setDraftStableDocumentIds] = useState<string[]>(
+    []
+  )
+  const [isSavingDocumentOrder, setIsSavingDocumentOrder] = useState(false)
+  const [uploadDocsModalOpen, setUploadDocsModalOpen] = useState(false)
   const isChatReadOnly = user?.role === "admin"
+
+  useEffect(() => {
+    setDocumentOrderUnlocked(false)
+    setDraftStableDocumentIds([])
+    setUploadDocsModalOpen(false)
+  }, [id])
+
+  useEffect(() => {
+    if (!documentOrderUnlocked || !remoteDocuments) return
+    const orderedRemoteIds = remoteDocuments.map((f) => f.id)
+    setDraftStableDocumentIds((prev) => {
+      const kept = prev.filter((docId) => orderedRemoteIds.includes(docId))
+      const extras = orderedRemoteIds.filter((docId) => !kept.includes(docId))
+      return [...kept, ...extras]
+    })
+  }, [remoteDocuments, documentOrderUnlocked])
+
+  const persistedDocumentCount = useMemo(
+    () => mergedProjectFiles.filter(isPersistedProjectDocumentRow).length,
+    [mergedProjectFiles]
+  )
+
+  const handleUnlockDocumentOrder = useCallback(() => {
+    const stable = mergedProjectFiles.filter(isPersistedProjectDocumentRow)
+    setDraftStableDocumentIds(stable.map((f) => f.id))
+    setDocumentOrderUnlocked(true)
+  }, [mergedProjectFiles])
+
+  const handleLockDocumentOrder = useCallback(async () => {
+    if (!useRemoteDetail) return
+    setIsSavingDocumentOrder(true)
+    try {
+      await reorderProjectDocuments(id, draftStableDocumentIds)
+      const list = await listProjectDocuments(id)
+      setRemoteDocuments(list)
+      setDocumentOrderUnlocked(false)
+      setDraftStableDocumentIds([])
+      toast.success("Document order saved")
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Could not save document order"
+      )
+    } finally {
+      setIsSavingDocumentOrder(false)
+    }
+  }, [useRemoteDetail, id, draftStableDocumentIds])
 
   useEffect(() => {
     if (!project) return
@@ -595,20 +661,83 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
           <div className="min-h-0 flex-1 overflow-y-auto p-4 lg:p-6">
             <div className="mx-auto max-w-2xl space-y-8">
               <section className="space-y-4">
-                <h2 className="text-lg font-semibold text-foreground">
-                  Documents
-                </h2>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h2 className="text-lg font-semibold text-foreground">
+                    Documents
+                  </h2>
+                  <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                    {useRemoteDetail && persistedDocumentCount > 0 ? (
+                      !documentOrderUnlocked ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleUnlockDocumentOrder}
+                        >
+                          Sort Rows
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={isSavingDocumentOrder}
+                          onClick={() => void handleLockDocumentOrder()}
+                        >
+                          Save Order
+                        </Button>
+                      )
+                    ) : null}
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="rounded-lg border-0 bg-dark-950 px-4 text-white shadow-none hover:bg-dark-800 hover:text-white focus-visible:ring-dark-950/40"
+                      onClick={() => setUploadDocsModalOpen(true)}
+                    >
+                      Upload
+                    </Button>
+                  </div>
+                </div>
+                <Dialog
+                  open={uploadDocsModalOpen}
+                  onOpenChange={setUploadDocsModalOpen}
+                >
+                  <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                      <DialogTitle>Upload documents</DialogTitle>
+                      <DialogDescription>
+                        Drag files into the area below or choose files from your
+                        device. Upload starts as soon as you add files.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <FileDropzone
+                      onUpload={(files) => {
+                        handleAddFiles(files)
+                        setUploadDocsModalOpen(false)
+                      }}
+                    />
+                  </DialogContent>
+                </Dialog>
                 <div className="space-y-6">
-                  <FileDropzone onUpload={handleAddFiles} />
-                  <FileList
-                    files={mergedProjectFiles}
-                    onDelete={handleDocumentDelete}
-                    isInitialLoading={
-                      useRemoteDetail &&
-                      remoteDocuments === undefined &&
-                      remoteUploadPendingCount === 0
-                    }
-                  />
+                  {useRemoteDetail ? (
+                    <SortableProjectDocumentsTable
+                      files={mergedProjectFiles}
+                      onDelete={handleDocumentDelete}
+                      isInitialLoading={
+                        remoteDocuments === undefined &&
+                        remoteUploadPendingCount === 0
+                      }
+                      reorderUnlocked={documentOrderUnlocked}
+                      draftStableIds={draftStableDocumentIds}
+                      onDraftStableIdsChange={setDraftStableDocumentIds}
+                    />
+                  ) : (
+                    <FileList
+                      files={mergedProjectFiles}
+                      onDelete={handleDocumentDelete}
+                      isInitialLoading={false}
+                    />
+                  )}
                 </div>
               </section>
             </div>

@@ -74,6 +74,7 @@ export function useMockProjectDocuments({
           uploadedBy,
           uploadedAt: new Date().toISOString(),
           status: "uploading",
+          sortOrder: 0,
           uploadProgress: 0,
         }
 

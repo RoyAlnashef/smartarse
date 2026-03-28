@@ -335,7 +335,7 @@ export default function ClientProjectDetailPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 pb-12 pt-6 sm:px-6 lg:px-8">
+    <div className="w-full px-4 pb-12 pt-6 sm:px-6 lg:px-8">
       <nav
         aria-label="Breadcrumb"
         className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1"

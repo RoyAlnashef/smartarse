@@ -269,21 +269,21 @@ export const projects: Project[] = [
 
 // ── Files ──────────────────────────────────────────────
 export const uploadedFiles: UploadedFile[] = [
-  { id: "f1", name: "UK_Grocery_Report_2025.pdf", type: "pdf", size: 4500000, projectId: "p1", uploadedBy: "u1", uploadedAt: "2025-09-05T10:00:00Z", status: "ready" },
-  { id: "f2", name: "Competitor_Pricing_Data.csv", type: "csv", size: 1200000, projectId: "p1", uploadedBy: "u1", uploadedAt: "2025-09-05T10:15:00Z", status: "ready" },
-  { id: "f3", name: "Consumer_Survey_Raw.xlsx", type: "xlsx", size: 3200000, projectId: "p1", uploadedBy: "u2", uploadedAt: "2025-09-10T09:00:00Z", status: "ready" },
-  { id: "f4", name: "Sentiment_Wave1_Results.pdf", type: "pdf", size: 2800000, projectId: "p2", uploadedBy: "u1", uploadedAt: "2025-10-20T11:00:00Z", status: "ready" },
-  { id: "f5", name: "Demographics_Breakdown.csv", type: "csv", size: 850000, projectId: "p2", uploadedBy: "u1", uploadedAt: "2025-10-22T14:00:00Z", status: "ready" },
-  { id: "f6", name: "Holiday_Promo_Analysis.pdf", type: "pdf", size: 5100000, projectId: "p3", uploadedBy: "u2", uploadedAt: "2025-12-15T08:00:00Z", status: "ready" },
-  { id: "f7", name: "Plant_Based_Market_Report.pdf", type: "pdf", size: 6700000, projectId: "p4", uploadedBy: "u1", uploadedAt: "2025-08-25T10:00:00Z", status: "ready" },
-  { id: "f8", name: "EU_Market_Sizing_Data.xlsx", type: "xlsx", size: 2100000, projectId: "p4", uploadedBy: "u1", uploadedAt: "2025-09-01T09:30:00Z", status: "ready" },
-  { id: "f9", name: "Sustainability_Survey.pdf", type: "pdf", size: 3400000, projectId: "p5", uploadedBy: "u2", uploadedAt: "2025-12-05T11:00:00Z", status: "processing" },
-  { id: "f10", name: "SaaS_Landscape_2026.pdf", type: "pdf", size: 8200000, projectId: "p6", uploadedBy: "u1", uploadedAt: "2025-07-10T10:00:00Z", status: "ready" },
-  { id: "f11", name: "Market_Sizing_Model.xlsx", type: "xlsx", size: 4100000, projectId: "p6", uploadedBy: "u1", uploadedAt: "2025-07-15T14:00:00Z", status: "ready" },
-  { id: "f12", name: "Competitive_Intelligence.csv", type: "csv", size: 1500000, projectId: "p6", uploadedBy: "u2", uploadedAt: "2025-08-01T09:00:00Z", status: "ready" },
-  { id: "f13", name: "DevTools_Benchmark_Report.pdf", type: "pdf", size: 5600000, projectId: "p7", uploadedBy: "u1", uploadedAt: "2025-10-05T10:00:00Z", status: "ready" },
-  { id: "f14", name: "Adoption_Rates_Data.csv", type: "csv", size: 900000, projectId: "p7", uploadedBy: "u2", uploadedAt: "2025-10-10T11:00:00Z", status: "ready" },
-  { id: "f15", name: "AI_Adoption_Q4_2025.pdf", type: "pdf", size: 4800000, projectId: "p8", uploadedBy: "u1", uploadedAt: "2025-09-20T10:00:00Z", status: "ready" },
+  { id: "f1", name: "UK_Grocery_Report_2025.pdf", type: "pdf", size: 4500000, projectId: "p1", uploadedBy: "u1", uploadedAt: "2025-09-05T10:00:00Z", status: "ready", sortOrder: 2 },
+  { id: "f2", name: "Competitor_Pricing_Data.csv", type: "csv", size: 1200000, projectId: "p1", uploadedBy: "u1", uploadedAt: "2025-09-05T10:15:00Z", status: "ready", sortOrder: 1 },
+  { id: "f3", name: "Consumer_Survey_Raw.xlsx", type: "xlsx", size: 3200000, projectId: "p1", uploadedBy: "u2", uploadedAt: "2025-09-10T09:00:00Z", status: "ready", sortOrder: 0 },
+  { id: "f4", name: "Sentiment_Wave1_Results.pdf", type: "pdf", size: 2800000, projectId: "p2", uploadedBy: "u1", uploadedAt: "2025-10-20T11:00:00Z", status: "ready", sortOrder: 1 },
+  { id: "f5", name: "Demographics_Breakdown.csv", type: "csv", size: 850000, projectId: "p2", uploadedBy: "u1", uploadedAt: "2025-10-22T14:00:00Z", status: "ready", sortOrder: 0 },
+  { id: "f6", name: "Holiday_Promo_Analysis.pdf", type: "pdf", size: 5100000, projectId: "p3", uploadedBy: "u2", uploadedAt: "2025-12-15T08:00:00Z", status: "ready", sortOrder: 0 },
+  { id: "f7", name: "Plant_Based_Market_Report.pdf", type: "pdf", size: 6700000, projectId: "p4", uploadedBy: "u1", uploadedAt: "2025-08-25T10:00:00Z", status: "ready", sortOrder: 1 },
+  { id: "f8", name: "EU_Market_Sizing_Data.xlsx", type: "xlsx", size: 2100000, projectId: "p4", uploadedBy: "u1", uploadedAt: "2025-09-01T09:30:00Z", status: "ready", sortOrder: 0 },
+  { id: "f9", name: "Sustainability_Survey.pdf", type: "pdf", size: 3400000, projectId: "p5", uploadedBy: "u2", uploadedAt: "2025-12-05T11:00:00Z", status: "processing", sortOrder: 0 },
+  { id: "f10", name: "SaaS_Landscape_2026.pdf", type: "pdf", size: 8200000, projectId: "p6", uploadedBy: "u1", uploadedAt: "2025-07-10T10:00:00Z", status: "ready", sortOrder: 2 },
+  { id: "f11", name: "Market_Sizing_Model.xlsx", type: "xlsx", size: 4100000, projectId: "p6", uploadedBy: "u1", uploadedAt: "2025-07-15T14:00:00Z", status: "ready", sortOrder: 1 },
+  { id: "f12", name: "Competitive_Intelligence.csv", type: "csv", size: 1500000, projectId: "p6", uploadedBy: "u2", uploadedAt: "2025-08-01T09:00:00Z", status: "ready", sortOrder: 0 },
+  { id: "f13", name: "DevTools_Benchmark_Report.pdf", type: "pdf", size: 5600000, projectId: "p7", uploadedBy: "u1", uploadedAt: "2025-10-05T10:00:00Z", status: "ready", sortOrder: 1 },
+  { id: "f14", name: "Adoption_Rates_Data.csv", type: "csv", size: 900000, projectId: "p7", uploadedBy: "u2", uploadedAt: "2025-10-10T11:00:00Z", status: "ready", sortOrder: 0 },
+  { id: "f15", name: "AI_Adoption_Q4_2025.pdf", type: "pdf", size: 4800000, projectId: "p8", uploadedBy: "u1", uploadedAt: "2025-09-20T10:00:00Z", status: "ready", sortOrder: 0 },
 ]
 
 // ── Conversations ──────────────────────────────────────

@@ -112,17 +112,25 @@ async function fetchDocumentIdsByProject(
 
   const { data, error } = await supabase
     .from("project_documents")
-    .select("id, project_id")
+    .select("id, project_id, sort_order")
     .in("project_id", projectIds)
 
   if (error) throw new Error(error.message)
 
-  for (const row of data ?? []) {
-    const pid = row.project_id as string
-    const docId = row.id as string
-    const list = map.get(pid) ?? []
-    list.push(docId)
-    map.set(pid, list)
+  type DocRow = { id: string; project_id: string; sort_order: number }
+  const byProject = new Map<string, DocRow[]>()
+  for (const row of (data ?? []) as DocRow[]) {
+    const pid = row.project_id
+    const list = byProject.get(pid) ?? []
+    list.push(row)
+    byProject.set(pid, list)
+  }
+  for (const [pid, list] of byProject) {
+    list.sort((a, b) => a.sort_order - b.sort_order)
+    map.set(
+      pid,
+      list.map((r) => r.id)
+    )
   }
   return map
 }

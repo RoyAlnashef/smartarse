@@ -88,6 +88,11 @@ export interface UploadedFile {
   uploadedBy: string
   uploadedAt: string
   status: "uploading" | "processing" | "ready" | "error"
+  /**
+   * Order within the project for display and context (0 = first / highest prominence).
+   * Supabase-backed rows use `project_documents.sort_order`.
+   */
+  sortOrder: number
   /** Set when `status` is `uploading` (mock or optimistic UI before persistence). */
   uploadProgress?: number
 }

@@ -36,10 +36,11 @@ type ProjectDocumentRow = {
   uploaded_by: string | null
   uploaded_at: string
   status: string
+  sort_order: number
 }
 
 const documentSelect =
-  "id,project_id,name,storage_path,size_bytes,mime_type,uploaded_by,uploaded_at,status"
+  "id,project_id,name,storage_path,size_bytes,mime_type,uploaded_by,uploaded_at,status,sort_order"
 
 /** Eight hyphenated hex groups — rejects mock ids like `u1`. */
 const UUID_REGEX =
@@ -76,6 +77,7 @@ function rowToUploadedFile(row: ProjectDocumentRow): UploadedFile {
     uploadedBy: row.uploaded_by ?? "",
     uploadedAt: row.uploaded_at,
     status: normalizedStatus,
+    sortOrder: typeof row.sort_order === "number" ? row.sort_order : 0,
   }
 }
 
@@ -91,6 +93,7 @@ export async function listProjectDocuments(
     .from("project_documents")
     .select(documentSelect)
     .eq("project_id", projectId)
+    .order("sort_order", { ascending: true })
     .order("uploaded_at", { ascending: false })
 
   if (error) throw new Error(error.message)
@@ -162,6 +165,24 @@ export async function uploadProjectDocument(input: {
     throw formatDocumentUploadError(uploadError.message, "storage")
   }
 
+  const { data: maxRow, error: maxErr } = await supabase
+    .from("project_documents")
+    .select("sort_order")
+    .eq("project_id", input.projectId)
+    .order("sort_order", { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (maxErr) {
+    await supabase.storage.from(PROJECT_DOCUMENTS_BUCKET).remove([path])
+    throw formatDocumentUploadError(maxErr.message, "database")
+  }
+
+  const nextSortOrder =
+    maxRow && typeof (maxRow as { sort_order: number }).sort_order === "number"
+      ? (maxRow as { sort_order: number }).sort_order + 1
+      : 0
+
   const { data, error: insertError } = await supabase
     .from("project_documents")
     .insert({
@@ -173,6 +194,7 @@ export async function uploadProjectDocument(input: {
       mime_type: input.file.type || null,
       uploaded_by: uploadedByRow,
       status: "ready",
+      sort_order: nextSortOrder,
     })
     .select(documentSelect)
     .single()
@@ -214,4 +236,33 @@ export async function deleteProjectDocument(documentId: string): Promise<void> {
   if (storageErr) {
     console.warn("Storage delete failed after DB row removed:", storageErr.message)
   }
+}
+
+/**
+ * Persists document order for a project. `orderedIds` must list every persisted
+ * document id for the project exactly once (same set as the server).
+ */
+export async function reorderProjectDocuments(
+  projectId: string,
+  orderedIds: string[]
+): Promise<void> {
+  const supabase = getSupabaseBrowserClient()
+  if (!supabase) throw new Error("Supabase is not configured.")
+
+  if (!isUuidString(projectId)) {
+    throw new Error("Invalid project id.")
+  }
+
+  for (const id of orderedIds) {
+    if (!isUuidString(id)) {
+      throw new Error("Invalid document id in order list.")
+    }
+  }
+
+  const { error } = await supabase.rpc("reorder_project_documents", {
+    p_project_id: projectId,
+    p_document_ids: orderedIds,
+  })
+
+  if (error) throw new Error(error.message)
 }
