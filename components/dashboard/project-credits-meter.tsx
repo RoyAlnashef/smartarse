@@ -51,7 +51,7 @@ export function ProjectCreditsMeter({
       className={cn(
         "flex min-w-0 items-center gap-2",
         variant === "header"
-          ? "w-full max-w-[400px] rounded-xl border border-border bg-white px-3 py-2 shadow-sm"
+          ? "w-fit max-w-[400px] rounded-xl border border-border bg-white px-3 py-2 shadow-sm"
           : "w-full",
         className
       )}
@@ -112,7 +112,8 @@ export function ProjectCreditsMeter({
       ) : (
         <p
           className={cn(
-            "min-w-0 flex-1 text-muted-foreground",
+            "min-w-0 text-muted-foreground",
+            variant !== "header" && "flex-1",
             variant === "header" ? "text-xs" : "text-[11px]"
           )}
         >
