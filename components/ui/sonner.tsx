@@ -12,11 +12,13 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps['theme']}
       className="toaster group"
+      richColors
       toastOptions={{
         classNames: {
-          toast:
-            'group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg',
-          description: 'group-[.toast]:text-muted-foreground',
+          // Avoid bg/text/border utilities here: they tie Sonner’s semantic
+          // `[data-rich-colors]` rules on specificity and flatten every toast.
+          toast: 'group toast group-[.toaster]:shadow-lg',
+          description: 'text-inherit opacity-90',
           actionButton:
             'group-[.toast]:bg-primary group-[.toast]:text-primary-foreground',
           cancelButton:
