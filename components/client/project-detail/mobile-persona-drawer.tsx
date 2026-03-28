@@ -11,7 +11,6 @@ import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProjectSidebarTabs } from "@/components/client/project-detail/project-sidebar-tabs"
 import type { PersonaMock } from "@/components/client/project-detail/persona-drawer"
-import type { HistoryItem } from "@/lib/chat-history-types"
 
 export function MobilePersonaDrawer({
   open,
@@ -19,9 +18,6 @@ export function MobilePersonaDrawer({
   appliedPersona,
   onApply,
   onClearPersona,
-  onHistoryQuestionSelect,
-  chatHistoryItems,
-  chatRequestLoading,
   onSidebarPointerDownCapture,
 }: {
   open: boolean
@@ -29,10 +25,7 @@ export function MobilePersonaDrawer({
   appliedPersona: PersonaMock | null
   onApply: (personaId: string) => void
   onClearPersona?: () => void
-  onHistoryQuestionSelect?: (question: string) => void
-  chatHistoryItems?: HistoryItem[]
-  chatRequestLoading?: boolean
-  /** When project chat is blocked (e.g. not live), intercept persona/history controls (not close/backdrop). */
+  /** When project chat is blocked (e.g. not live), intercept sidebar controls (not close/backdrop). */
   onSidebarPointerDownCapture?: PointerEventHandler<HTMLDivElement>
 }) {
   const [exiting, setExiting] = useState(false)
@@ -131,9 +124,6 @@ export function MobilePersonaDrawer({
               appliedPersona={appliedPersona}
               onApplyPersona={onApply}
               onClearPersona={onClearPersona}
-              onHistoryQuestionSelect={onHistoryQuestionSelect}
-              chatHistoryItems={chatHistoryItems}
-              chatRequestLoading={chatRequestLoading}
             />
           </div>
         </div>

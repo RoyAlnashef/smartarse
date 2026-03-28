@@ -94,18 +94,22 @@ async function pollForResult(requestId: string): Promise<{
   throw new Error("Polling timed out after ~7 minutes")
 }
 
-function firePersist(body: {
+async function postPersist(body: {
   request_id: string
   project_id: string
   user_query: string
   result: Record<string, unknown>
   status: "complete" | "error_fallback"
-}) {
-  void fetch("/api/chat/persist", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  }).catch(() => {})
+}): Promise<void> {
+  try {
+    await fetch("/api/chat/persist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    })
+  } catch {
+    /* non-blocking: chat result already shown */
+  }
 }
 
 export function useChatQuestion({
@@ -214,7 +218,7 @@ export function useChatQuestion({
           }
         }
 
-        firePersist({
+        await postPersist({
           request_id: requestId,
           project_id: projectId,
           user_query: question,

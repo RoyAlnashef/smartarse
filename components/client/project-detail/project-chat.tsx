@@ -158,7 +158,7 @@ export function ProjectChat({
         <button
           type="button"
           onClick={() => onOpenPersonas?.()}
-          aria-label="Open controls (chat history, personas, studio)"
+          aria-label="Open personas and studio controls"
           className="absolute right-3 top-3 z-10 inline-flex items-center gap-2 rounded-xl border-2 border-arse-black bg-white px-3 py-1.5 font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black shadow-[3px_3px_0_0_var(--arse-pink)] transition hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--arse-pink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink sm:right-4 sm:top-4 lg:hidden"
         >
           {appliedPersona ? (

@@ -7,11 +7,6 @@ import {
   PersonaPanel,
   type PersonaMock,
 } from "@/components/client/project-detail/persona-drawer"
-import { ChatHistoryMockList } from "@/components/chat/chat-history-mock-list"
-import type { HistoryItem } from "@/lib/chat-history-types"
-
-/** Set true when the Studio tab and pane are ready to ship. */
-const SHOW_STUDIO_TAB = false
 
 export type ProjectSidebarTabsProps = {
   appliedPersona: PersonaMock | null
@@ -19,12 +14,6 @@ export type ProjectSidebarTabsProps = {
   onClearPersona?: () => void
   /** When set, PersonaPanel shows header dismiss (e.g. mobile overlay). Omit on desktop column. */
   personaPanelOnClose?: () => void
-  /** Chat History tab: when user picks a past question (mock re-run / future API). */
-  onHistoryQuestionSelect?: (question: string) => void
-  /** When set, drives Chat History list; omit to use static mock default. */
-  chatHistoryItems?: HistoryItem[]
-  /** Sync sidebar rerun spinner with project chat request lifecycle. */
-  chatRequestLoading?: boolean
   className?: string
 }
 
@@ -40,14 +29,11 @@ export function ProjectSidebarTabs({
   onApplyPersona,
   onClearPersona,
   personaPanelOnClose,
-  onHistoryQuestionSelect,
-  chatHistoryItems,
-  chatRequestLoading,
   className,
 }: ProjectSidebarTabsProps) {
   return (
     <Tabs
-      defaultValue="chat-history"
+      defaultValue="personas"
       className={cn("flex min-h-0 flex-1 flex-col overflow-hidden", className)}
     >
       <div className="shrink-0 px-4">
@@ -56,32 +42,14 @@ export function ProjectSidebarTabs({
           className="!flex min-h-12 h-auto w-full items-end justify-center gap-6 rounded-none border-b-0 bg-transparent p-0"
           aria-label="Sidebar sections"
         >
-          <TabsTrigger value="chat-history" className={tabTriggerClass}>
-            Chat History
-          </TabsTrigger>
           <TabsTrigger value="personas" className={tabTriggerClass}>
             Personas
           </TabsTrigger>
-          {SHOW_STUDIO_TAB ? (
-            <TabsTrigger value="studio" className={tabTriggerClass}>
-              Studio
-            </TabsTrigger>
-          ) : null}
+          <TabsTrigger value="studio" className={tabTriggerClass}>
+            Studio
+          </TabsTrigger>
         </TabsList>
       </div>
-
-      <TabsContent value="chat-history" className={tabContentClass}>
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-arse-black/[0.02]">
-            <ChatHistoryMockList
-              items={chatHistoryItems}
-              onQuestionSelect={onHistoryQuestionSelect}
-              chatRequestLoading={chatRequestLoading}
-              className="min-h-0 flex-1"
-            />
-          </div>
-        </div>
-      </TabsContent>
 
       <TabsContent value="personas" className={tabContentClass}>
         <PersonaPanel
@@ -93,13 +61,11 @@ export function ProjectSidebarTabs({
         />
       </TabsContent>
 
-      {SHOW_STUDIO_TAB ? (
-        <TabsContent value="studio" className={tabContentClass}>
-          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-            <EmptyPane title="Studio" />
-          </div>
-        </TabsContent>
-      ) : null}
+      <TabsContent value="studio" className={tabContentClass}>
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+          <EmptyPane title="Studio" />
+        </div>
+      </TabsContent>
     </Tabs>
   )
 }

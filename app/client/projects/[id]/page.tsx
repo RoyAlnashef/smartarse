@@ -28,14 +28,16 @@ import { ClientProjectDetailSkeleton } from "@/components/client/project-detail/
 import { MOCK_SEGMENT_PERSONAS } from "@/components/client/project-detail/persona-drawer"
 import { MobilePersonaDrawer } from "@/components/client/project-detail/mobile-persona-drawer"
 import { ProjectRightSidebar } from "@/components/client/project-detail/project-right-sidebar"
-import { ProjectDetailCard } from "@/components/client/project-detail/project-detail-card"
 import { SourcesSelector } from "@/components/client/project-detail/sources-selector"
+import { ChatHistoryCard } from "@/components/client/project-detail/chat-history-card"
 import { ProjectChat } from "@/components/client/project-detail/project-chat"
 import {
   Popover,
   PopoverAnchor,
   PopoverContent,
 } from "@/components/ui/popover"
+
+const MOCK_HISTORY_PAGE_SIZE = 5
 
 const WORKSPACE_INTERACTIVE_SELECTOR =
   'button, a[href], [role="button"], [role="tab"], textarea, input, select, label[for]'
@@ -152,14 +154,41 @@ export default function ClientProjectDetailPage() {
     setMessages(seededMessages)
   }, [seededMessages])
 
-  const { history: apiHistory, refresh: refreshChatHistory } = useChatHistory({
+  const {
+    history: apiHistory,
+    pagination: apiHistoryPagination,
+    page: apiHistoryPage,
+    loading: apiHistoryLoading,
+    error: apiHistoryError,
+    fetch: fetchHistoryPage,
+    refresh: refreshChatHistory,
+  } = useChatHistory({
     projectId: id,
     enabled: useRemoteDetail && !!id,
   })
 
-  const chatHistoryItems = useMemo(
-    () => (useRemoteDetail ? apiHistory : [...MOCK_CHAT_HISTORY]),
-    [useRemoteDetail, apiHistory]
+  const [mockHistoryPage, setMockHistoryPage] = useState(1)
+  useEffect(() => {
+    setMockHistoryPage(1)
+  }, [id])
+
+  const mockHistoryTotal = MOCK_CHAT_HISTORY.length
+  const mockHistoryTotalPages = Math.max(
+    1,
+    Math.ceil(mockHistoryTotal / MOCK_HISTORY_PAGE_SIZE)
+  )
+  const mockHistorySlice = useMemo(() => {
+    const start = (mockHistoryPage - 1) * MOCK_HISTORY_PAGE_SIZE
+    return MOCK_CHAT_HISTORY.slice(start, start + MOCK_HISTORY_PAGE_SIZE)
+  }, [mockHistoryPage])
+  const mockHistoryPagination = useMemo(
+    () => ({
+      page: mockHistoryPage,
+      pageSize: MOCK_HISTORY_PAGE_SIZE,
+      totalItems: mockHistoryTotal,
+      totalPages: mockHistoryTotalPages,
+    }),
+    [mockHistoryPage, mockHistoryTotal, mockHistoryTotalPages]
   )
 
   const [sessionId, setSessionId] = useState(() => crypto.randomUUID())
@@ -446,8 +475,33 @@ export default function ClientProjectDetailPage() {
                 </div>
               </section>
             ) : null}
-            <ProjectDetailCard project={project} />
             <SourcesSelector files={readyDocuments} />
+            <ChatHistoryCard
+              items={useRemoteDetail ? apiHistory : mockHistorySlice}
+              pagination={
+                useRemoteDetail ? apiHistoryPagination : mockHistoryPagination
+              }
+              page={useRemoteDetail ? apiHistoryPage : mockHistoryPage}
+              loading={useRemoteDetail ? apiHistoryLoading : false}
+              onFetchPage={
+                useRemoteDetail
+                  ? (p) => {
+                      void fetchHistoryPage(p)
+                    }
+                  : (p) => {
+                      setMockHistoryPage((prev) => {
+                        const next = Math.min(
+                          Math.max(1, p),
+                          mockHistoryTotalPages
+                        )
+                        return next === prev ? prev : next
+                      })
+                    }
+              }
+              onQuestionSelect={handleHistoryQuestionSelect}
+              chatRequestLoading={useRealChat ? chatLoading : undefined}
+              error={useRemoteDetail ? apiHistoryError : null}
+            />
           </aside>
 
           <div
@@ -492,9 +546,6 @@ export default function ClientProjectDetailPage() {
               appliedPersona={appliedPersona}
               onApplyPersona={handleApplyPersona}
               onClearPersona={handleClearPersona}
-              onHistoryQuestionSelect={handleHistoryQuestionSelect}
-              chatHistoryItems={chatHistoryItems}
-              chatRequestLoading={useRealChat ? chatLoading : undefined}
             />
           </div>
         </div>
@@ -505,9 +556,6 @@ export default function ClientProjectDetailPage() {
           appliedPersona={appliedPersona}
           onApply={handleApplyPersona}
           onClearPersona={handleClearPersona}
-          onHistoryQuestionSelect={handleHistoryQuestionSelect}
-          chatHistoryItems={chatHistoryItems}
-          chatRequestLoading={useRealChat ? chatLoading : undefined}
           onSidebarPointerDownCapture={
             workspaceChatBlocked ? handleWorkspacePointerDownCapture : undefined
           }
