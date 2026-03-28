@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth-context"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { ArseLogoGroup } from "@/components/arse-logo-group"
 import { cn } from "@/lib/utils"
+import { SUPPORT_CONTACT_NEW_TAB_HREF } from "@/lib/support-contact"
 import type { UserRole } from "@/lib/types"
 
 function postLoginPath(role: UserRole) {
@@ -253,7 +254,7 @@ export function LoginPage() {
           </Link>
           <span className="text-arse-black/40">|</span>
           <a
-            href="https://mail.google.com/mail/?view=cm&fs=1&to=smart-arse@disrupt-insight.com"
+            href={SUPPORT_CONTACT_NEW_TAB_HREF}
             target="_blank"
             rel="noopener noreferrer"
             className="hover:text-arse-pink"

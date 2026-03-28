@@ -1,5 +1,7 @@
 import Link from "next/link"
 
+import { SUPPORT_CONTACT_NEW_TAB_HREF } from "@/lib/support-contact"
+
 export function ClientShellFooter() {
   return (
     <footer className="mt-auto flex w-full flex-col items-center justify-between gap-3 border-t-2 border-arse-black/10 bg-white px-4 py-6 font-arse-body text-[10px] font-medium uppercase tracking-wider text-arse-black sm:flex-row sm:px-8 sm:text-xs">
@@ -14,7 +16,7 @@ export function ClientShellFooter() {
         </Link>
         <span className="text-arse-black/40">|</span>
         <a
-          href="https://mail.google.com/mail/?view=cm&fs=1&to=smart-arse@disrupt-insight.com"
+          href={SUPPORT_CONTACT_NEW_TAB_HREF}
           target="_blank"
           rel="noopener noreferrer"
           className="hover:text-arse-pink"

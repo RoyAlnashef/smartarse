@@ -1,3 +1,5 @@
+import { SUPPORT_CONTACT_NEW_TAB_HREF } from "@/lib/support-contact"
+
 export default function PublicFaqPage() {
   return (
     <div className="mx-auto max-w-2xl px-4 py-16 font-sans text-foreground">
@@ -52,7 +54,7 @@ export default function PublicFaqPage() {
           <p className="mt-2 text-muted-foreground leading-relaxed">
             Email the team at{" "}
             <a
-              href="https://mail.google.com/mail/?view=cm&fs=1&to=smart-arse@disrupt-insight.com"
+              href={SUPPORT_CONTACT_NEW_TAB_HREF}
               target="_blank"
               rel="noopener noreferrer"
               className="font-semibold text-arse-pink hover:underline"

@@ -49,10 +49,10 @@ export function ProjectCreditsMeter({
   return (
     <div
       className={cn(
-        "flex min-w-0 items-center gap-2",
+        "flex items-center gap-2",
         variant === "header"
-          ? "w-fit max-w-[400px] rounded-xl border border-border bg-white px-3 py-2 shadow-sm"
-          : "w-full",
+          ? "w-fit min-w-[320px] max-w-[480px] rounded-xl border border-border bg-white px-3 py-2 shadow-sm"
+          : "min-w-0 w-full",
         className
       )}
     >

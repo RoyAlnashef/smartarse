@@ -1,8 +1,9 @@
 import type { Project } from "@/lib/types"
+import { SUPPORT_EMAIL } from "@/lib/support-contact"
 
 /** Plain copy for toasts, API errors, and non-HTML contexts. */
 export const PROJECT_NOT_LIVE_CHAT_MESSAGE =
-  "This project is currently paused. Contact the team at smart-arse@disrupt-insight.com."
+  `This project is currently paused. Contact the team at ${SUPPORT_EMAIL}.`
 
 export function projectStatusLabel(status: Project["status"]): string {
   switch (status) {
