@@ -15,7 +15,7 @@ export function ProjectDetailSkeleton() {
           </div>
           <Skeleton className="ml-2 h-5 w-16 shrink-0 rounded-full" />
         </div>
-        <Skeleton className="h-9 w-44 rounded-lg" />
+        <Skeleton className="h-9 w-full max-w-[320px] shrink-0 rounded-xl" />
       </div>
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
         <div className="flex shrink-0 flex-wrap gap-2 border-b border-border px-4 py-2 lg:px-6">

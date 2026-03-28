@@ -1,6 +1,13 @@
 "use client"
 
-import { useState, useCallback, useMemo, use, useEffect } from "react"
+import {
+  useState,
+  useCallback,
+  useMemo,
+  use,
+  useEffect,
+  type FormEvent,
+} from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import {
@@ -9,7 +16,6 @@ import {
   FileText,
   Users,
   Settings,
-  Coins,
   PanelRightOpen,
   PanelRightClose,
 } from "lucide-react"
@@ -26,7 +32,11 @@ import {
   deleteProjectDocument,
   listProjectDocuments,
 } from "@/lib/supabase/documents"
-import { deleteProject, getProjectById } from "@/lib/supabase/projects"
+import {
+  addProjectCredits,
+  deleteProject,
+  getProjectById,
+} from "@/lib/supabase/projects"
 import { listUsersForDashboard } from "@/lib/supabase/users"
 import { ChatWindow } from "@/components/chat/chat-window"
 import { ChatInput } from "@/components/chat/chat-input"
@@ -35,8 +45,8 @@ import { FileDropzone } from "@/components/upload/file-dropzone"
 import { FileList } from "@/components/upload/file-list"
 import { useMockProjectDocuments } from "@/components/upload/use-mock-project-documents"
 import { useSupabaseProjectUploadFlow } from "@/components/upload/use-supabase-project-upload-flow"
+import { ProjectCreditsMeter } from "@/components/dashboard/project-credits-meter"
 import { ProjectUsers } from "@/components/projects/project-users"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import type { ChatMessage, Conversation, Project, UploadedFile, User } from "@/lib/types"
 
@@ -197,6 +207,8 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const [isTyping, setIsTyping] = useState(false)
   const [showConvSidebar, setShowConvSidebar] = useState(true)
   const [isDeletingProject, setIsDeletingProject] = useState(false)
+  const [creditAmountInput, setCreditAmountInput] = useState("")
+  const [isAddingCredits, setIsAddingCredits] = useState(false)
   const isChatReadOnly = user?.role === "admin"
 
   const activeConversation = useMemo(
@@ -366,6 +378,38 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     }
   }, [useRemoteDetail, user?.role, project, id, router])
 
+  const handleAddCredits = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault()
+      if (!useRemoteDetail || user?.role !== "admin") return
+      const parsed = Number.parseInt(creditAmountInput.trim(), 10)
+      if (!Number.isFinite(parsed) || parsed <= 0) {
+        toast.error("Enter a positive whole number of credits.")
+        return
+      }
+      setIsAddingCredits(true)
+      try {
+        await addProjectCredits(id, parsed)
+        toast.success(`Added ${parsed.toLocaleString()} credits.`)
+        setCreditAmountInput("")
+        await refreshProjectFromServer()
+      } catch (err: unknown) {
+        toast.error(
+          err instanceof Error ? err.message : "Could not add credits."
+        )
+      } finally {
+        setIsAddingCredits(false)
+      }
+    },
+    [
+      useRemoteDetail,
+      user?.role,
+      creditAmountInput,
+      id,
+      refreshProjectFromServer,
+    ]
+  )
+
   if (!user) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -426,16 +470,12 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
             {project.status}
           </span>
         </div>
-        <div className="flex items-center gap-3">
-          <Badge
-            variant="outline"
-            className="gap-1.5 rounded-lg px-3 py-1.5 text-sm font-normal bg-white"
-          >
-            <Coins className="h-4 w-4 text-arse-pink" />
-            <span className="font-medium text-foreground">{project.usedCredits}</span>
-            <span className="text-muted-foreground">credits used</span>
-          </Badge>
-        </div>
+        <ProjectCreditsMeter
+          usedCredits={project.usedCredits}
+          totalCredits={project.totalCredits}
+          variant="header"
+          className="shrink-0"
+        />
       </div>
 
       {/* Workspace card — tabs + tab content share one white surface */}
@@ -589,15 +629,77 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                     </select>
                   </div>
                 </div>
+                <div className="flex justify-end pt-2">
+                  <button
+                    type="button"
+                    className="rounded-lg bg-dark-950 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-dark-800"
+                  >
+                    Save Changes
+                  </button>
+                </div>
               </div>
             </section>
 
-            {/* Save */}
-            <div className="flex justify-end">
-              <button className="rounded-lg bg-dark-950 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-dark-800">
-                Save Changes
-              </button>
-            </div>
+            {user.role === "admin" && useRemoteDetail && (
+              <section className="space-y-4">
+                <h2 className="text-lg font-semibold text-foreground">Credits</h2>
+                <div className="space-y-4 rounded-xl border border-border bg-card p-6">
+                  <dl className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <dt className="font-medium text-muted-foreground">
+                        Allocated balance
+                      </dt>
+                      <dd className="mt-1 tabular-nums text-foreground">
+                        {project.totalCredits.toLocaleString()}
+                      </dd>
+                    </div>
+                    <div>
+                      <dt className="font-medium text-muted-foreground">Used</dt>
+                      <dd className="mt-1 tabular-nums text-foreground">
+                        {project.usedCredits.toLocaleString()}
+                      </dd>
+                    </div>
+                  </dl>
+                  <p className="text-sm text-muted-foreground">
+                    Credits are allocated to this project only. Purchasing credits is not
+                    available here yet — use the field below to add to the balance
+                    manually.
+                  </p>
+                  <form
+                    onSubmit={(ev) => void handleAddCredits(ev)}
+                    className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end"
+                  >
+                    <div className="min-w-[12rem] flex-1">
+                      <label
+                        htmlFor="credit-top-up-amount"
+                        className="block text-sm font-medium text-foreground"
+                      >
+                        Amount to add
+                      </label>
+                      <input
+                        id="credit-top-up-amount"
+                        type="number"
+                        min={1}
+                        step={1}
+                        inputMode="numeric"
+                        value={creditAmountInput}
+                        onChange={(ev) => setCreditAmountInput(ev.target.value)}
+                        disabled={isAddingCredits}
+                        placeholder="e.g. 500"
+                        className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30 disabled:opacity-60"
+                      />
+                    </div>
+                    <Button
+                      type="submit"
+                      disabled={isAddingCredits}
+                      className="rounded-lg bg-dark-950 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-dark-800"
+                    >
+                      {isAddingCredits ? "Adding…" : "Add Credits"}
+                    </Button>
+                  </form>
+                </div>
+              </section>
+            )}
 
             {user.role === "admin" && useRemoteDetail && (
               <section className="space-y-4 rounded-xl border border-destructive/25 bg-destructive/5 p-6">
@@ -607,14 +709,16 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                     ? "Projects that have used credits cannot be deleted."
                     : "Permanently remove this project and its uploaded documents from storage. Users and the organization are not affected."}
                 </p>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  disabled={project.usedCredits > 0 || isDeletingProject}
-                  onClick={() => void handleDeleteProject()}
-                >
-                  {isDeletingProject ? "Deleting…" : "Delete project"}
-                </Button>
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    disabled={project.usedCredits > 0 || isDeletingProject}
+                    onClick={() => void handleDeleteProject()}
+                  >
+                    {isDeletingProject ? "Deleting…" : "Delete Project"}
+                  </Button>
+                </div>
               </section>
             )}
           </div>

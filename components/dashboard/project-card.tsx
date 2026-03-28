@@ -1,8 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { Calendar, Coins, FileText, Users } from "lucide-react"
+import { Calendar, FileText, Users } from "lucide-react"
 import type { Project } from "@/lib/types"
+import { ProjectCreditsMeter } from "@/components/dashboard/project-credits-meter"
 import { Skeleton } from "@/components/ui/skeleton"
 
 function formatDate(iso: string) {
@@ -11,10 +12,6 @@ function formatDate(iso: string) {
     month: "short",
     year: "numeric",
   })
-}
-
-function creditsUsedLabel(n: number) {
-  return `${n} credit${n === 1 ? "" : "s"} used`
 }
 
 export function ProjectCard({ project }: { project: Project }) {
@@ -66,14 +63,12 @@ export function ProjectCard({ project }: { project: Project }) {
         </div>
       </div>
 
-      {/* Credits used — matches project detail coin treatment */}
       <div className="border-t border-border px-5 py-3">
-        <span className="flex items-center gap-1.5 text-xs">
-          <Coins className="h-3.5 w-3.5 shrink-0 text-arse-pink" aria-hidden />
-          <span className="font-medium text-foreground">
-            {creditsUsedLabel(project.usedCredits)}
-          </span>
-        </span>
+        <ProjectCreditsMeter
+          usedCredits={project.usedCredits}
+          totalCredits={project.totalCredits}
+          variant="card"
+        />
       </div>
     </Link>
   )

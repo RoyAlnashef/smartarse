@@ -70,9 +70,7 @@ export interface Project {
   createdAt: string
   /** Maps to `projects.last_activity`, else `updated_at` / `created_at`. */
   lastActivity: string
-  /**
-   * Not stored on `projects`; when using Supabase, set from `organizations.credit_balance` for UI (e.g. progress vs used).
-   */
+  /** Maps to Supabase `projects.credit_balance` (allocated pool for this project). */
   totalCredits: number
   /** Maps to Supabase `projects.used_credits`. */
   usedCredits: number

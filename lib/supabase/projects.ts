@@ -9,6 +9,8 @@ import {
 
 const STORAGE_REMOVE_CHUNK = 50
 
+const MAX_PROJECT_CREDITS_TOP_UP = 10_000_000
+
 /** Row shape from `public.projects` plus embedded org (PostgREST). */
 type ProjectRow = {
   id: string
@@ -17,13 +19,11 @@ type ProjectRow = {
   organization_id: string
   status: string
   used_credits: number
+  credit_balance: number
   created_at: string
   updated_at: string
   last_activity: string | null
-  organizations:
-    | { name: string; credit_balance: number | null }
-    | { name: string; credit_balance: number | null }[]
-    | null
+  organizations: { name: string } | { name: string }[] | null
 }
 
 const projectSelect = `
@@ -33,18 +33,18 @@ const projectSelect = `
   organization_id,
   status,
   used_credits,
+  credit_balance,
   created_at,
   updated_at,
   last_activity,
   organizations (
-    name,
-    credit_balance
+    name
   )
 `
 
 function normalizeOrgEmbed(
   embed: ProjectRow["organizations"]
-): { name: string; credit_balance: number | null } | null {
+): { name: string } | null {
   if (!embed) return null
   return Array.isArray(embed) ? embed[0] ?? null : embed
 }
@@ -65,7 +65,7 @@ function rowToProject(
     status: row.status === "archived" ? "archived" : "live",
     createdAt: row.created_at,
     lastActivity,
-    totalCredits: org?.credit_balance ?? 0,
+    totalCredits: row.credit_balance,
     usedCredits: row.used_credits,
     assignedUserIds,
     uploadedFileIds,
@@ -270,6 +270,33 @@ export async function updateProject(input: {
   patch.updated_at = new Date().toISOString()
 
   const { error } = await supabase.from("projects").update(patch).eq("id", input.id)
+
+  if (error) throw new Error(error.message)
+}
+
+/**
+ * Atomically increases `projects.credit_balance` (dashboard admins only; enforced in RPC).
+ */
+export async function addProjectCredits(
+  projectId: string,
+  amount: number
+): Promise<void> {
+  const supabase = getSupabaseBrowserClient()
+  if (!supabase) throw new Error("Supabase is not configured.")
+  if (!isUuidString(projectId)) {
+    throw new Error("Invalid project id.")
+  }
+  if (!Number.isInteger(amount) || amount <= 0) {
+    throw new Error("Amount must be a positive whole number.")
+  }
+  if (amount > MAX_PROJECT_CREDITS_TOP_UP) {
+    throw new Error(`Amount cannot exceed ${MAX_PROJECT_CREDITS_TOP_UP.toLocaleString()}.`)
+  }
+
+  const { error } = await supabase.rpc("add_project_credits", {
+    p_project_id: projectId,
+    p_amount: amount,
+  })
 
   if (error) throw new Error(error.message)
 }
