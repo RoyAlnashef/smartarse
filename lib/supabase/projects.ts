@@ -6,6 +6,7 @@ import {
   isUuidString,
   PROJECT_DOCUMENTS_BUCKET,
 } from "@/lib/supabase/documents"
+import { PROJECT_PERSONAS_BUCKET } from "@/lib/supabase/personas"
 
 const STORAGE_REMOVE_CHUNK = 50
 
@@ -318,7 +319,7 @@ export async function addProjectCredits(
 
 /**
  * Deletes a project (admin + RLS: only when used_credits = 0).
- * Removes the DB row first, then deletes storage objects for project documents.
+ * Removes the DB row first, then deletes storage objects for project documents and personas.
  */
 export async function deleteProject(projectId: string): Promise<void> {
   const supabase = getSupabaseBrowserClient()
@@ -342,14 +343,28 @@ export async function deleteProject(projectId: string): Promise<void> {
     throw new Error("Cannot delete project while credits have been used on it.")
   }
 
-  const { data: docRows, error: docErr } = await supabase
-    .from("project_documents")
-    .select("storage_path")
-    .eq("project_id", projectId)
+  const [
+    { data: docRows, error: docErr },
+    { data: personaRows, error: personaErr },
+  ] = await Promise.all([
+    supabase
+      .from("project_documents")
+      .select("storage_path")
+      .eq("project_id", projectId),
+    supabase
+      .from("project_personas")
+      .select("storage_path")
+      .eq("project_id", projectId),
+  ])
 
   if (docErr) throw new Error(docErr.message)
+  if (personaErr) throw new Error(personaErr.message)
 
-  const storagePaths = (docRows ?? [])
+  const documentStoragePaths = (docRows ?? [])
+    .map((r) => (r as { storage_path: string }).storage_path)
+    .filter(Boolean)
+
+  const personaStoragePaths = (personaRows ?? [])
     .map((r) => (r as { storage_path: string }).storage_path)
     .filter(Boolean)
 
@@ -366,13 +381,26 @@ export async function deleteProject(projectId: string): Promise<void> {
     )
   }
 
-  for (let i = 0; i < storagePaths.length; i += STORAGE_REMOVE_CHUNK) {
-    const chunk = storagePaths.slice(i, i + STORAGE_REMOVE_CHUNK)
+  for (let i = 0; i < documentStoragePaths.length; i += STORAGE_REMOVE_CHUNK) {
+    const chunk = documentStoragePaths.slice(i, i + STORAGE_REMOVE_CHUNK)
     const { error: storageErr } = await supabase.storage
       .from(PROJECT_DOCUMENTS_BUCKET)
       .remove(chunk)
     if (storageErr) {
       console.warn("Storage delete failed after project removed:", storageErr.message)
+    }
+  }
+
+  for (let i = 0; i < personaStoragePaths.length; i += STORAGE_REMOVE_CHUNK) {
+    const chunk = personaStoragePaths.slice(i, i + STORAGE_REMOVE_CHUNK)
+    const { error: storageErr } = await supabase.storage
+      .from(PROJECT_PERSONAS_BUCKET)
+      .remove(chunk)
+    if (storageErr) {
+      console.warn(
+        "Persona storage delete failed after project removed:",
+        storageErr.message
+      )
     }
   }
 }

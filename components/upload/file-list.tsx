@@ -15,6 +15,7 @@ const fileIcons: Record<string, typeof FileText> = {
   pdf: FileText,
   csv: FileSpreadsheet,
   xlsx: FileSpreadsheet,
+  md: FileText,
 }
 
 const statusColors: Record<string, string> = {
@@ -82,7 +83,13 @@ function FileListEmptySkeleton({ showProjectColumn }: { showProjectColumn?: bool
   )
 }
 
-function FileListEmptyState({ showProjectColumn }: { showProjectColumn?: boolean }) {
+function FileListEmptyState({
+  showProjectColumn,
+  emptyMessage = "No documents match your filters.",
+}: {
+  showProjectColumn?: boolean
+  emptyMessage?: string
+}) {
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
       <table className="w-full text-left text-sm">
@@ -100,7 +107,7 @@ function FileListEmptyState({ showProjectColumn }: { showProjectColumn?: boolean
         </thead>
       </table>
       <p className="px-4 py-10 text-center text-sm text-muted-foreground">
-        No documents match your filters.
+        {emptyMessage}
       </p>
     </div>
   )
@@ -112,6 +119,7 @@ export function FileList({
   isInitialLoading = false,
   showProjectColumn = false,
   projectNamesById = {},
+  emptyMessage,
 }: {
   files: UploadedFile[]
   onDelete?: (id: string) => void
@@ -121,12 +129,19 @@ export function FileList({
   showProjectColumn?: boolean
   /** Resolved display names for `file.projectId` when `showProjectColumn` is true. */
   projectNamesById?: Record<string, string>
+  /** Empty-state body copy (e.g. Personas tab vs Documents). */
+  emptyMessage?: string
 }) {
   if (isInitialLoading) {
     return <FileListEmptySkeleton showProjectColumn={showProjectColumn} />
   }
   if (files.length === 0) {
-    return <FileListEmptyState showProjectColumn={showProjectColumn} />
+    return (
+      <FileListEmptyState
+        showProjectColumn={showProjectColumn}
+        emptyMessage={emptyMessage}
+      />
+    )
   }
 
   return (
@@ -179,7 +194,7 @@ export function FileList({
                     <div className="max-w-[10rem] space-y-1.5">
                       <Progress
                         value={file.uploadProgress ?? 0}
-                        className="h-2 bg-muted [&>div]:bg-arse-cyan"
+                        className="h-2 bg-muted [&>div]:bg-arse-pink"
                       />
                       <span className="text-xs text-muted-foreground">Uploading…</span>
                     </div>

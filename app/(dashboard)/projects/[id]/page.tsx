@@ -21,12 +21,14 @@ import {
   Settings,
   PanelRightOpen,
   PanelRightClose,
+  UserCircle,
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { ProjectDetailSkeleton } from "@/components/dashboard/project-detail-skeleton"
 import {
   projects as mockProjects,
   uploadedFiles,
+  uploadedPersonas,
   users as mockUsers,
   conversations as mockConversations,
 } from "@/lib/mock-data"
@@ -36,6 +38,11 @@ import {
   listProjectDocuments,
   reorderProjectDocuments,
 } from "@/lib/supabase/documents"
+import {
+  deleteProjectPersona,
+  listProjectPersonas,
+  reorderProjectPersonas,
+} from "@/lib/supabase/personas"
 import {
   projectStatusBadgeClassName,
   projectStatusLabel,
@@ -57,7 +64,13 @@ import {
   isPersistedProjectDocumentRow,
 } from "@/components/upload/sortable-project-documents-table"
 import { useMockProjectDocuments } from "@/components/upload/use-mock-project-documents"
+import { useMockProjectPersonas } from "@/components/upload/use-mock-project-personas"
 import { useSupabaseProjectUploadFlow } from "@/components/upload/use-supabase-project-upload-flow"
+import { useSupabaseProjectPersonasUploadFlow } from "@/components/upload/use-supabase-project-personas-upload-flow"
+import {
+  PERSONA_FILE_UPLOAD_ACCEPT,
+  PERSONA_FILE_UPLOAD_TYPES_DESCRIPTION,
+} from "@/components/upload/persona-upload-config"
 import { ProjectCreditsMeter } from "@/components/dashboard/project-credits-meter"
 import { ProjectUsers } from "@/components/projects/project-users"
 import { Button } from "@/components/ui/button"
@@ -74,6 +87,7 @@ import type { ChatMessage, Conversation, Project, UploadedFile, User } from "@/l
 const tabs = [
   { id: "chat", label: "Chat", icon: MessageSquare },
   { id: "uploads", label: "Documents", icon: FileText, adminOnly: true },
+  { id: "personas", label: "Personas", icon: UserCircle, adminOnly: true },
   { id: "members", label: "Members", icon: Users, adminOnly: true },
   { id: "settings", label: "Settings", icon: Settings },
 ] as const
@@ -89,6 +103,9 @@ const demoResponses = [
 
 const UNSAVED_DOCUMENT_ORDER_LEAVE_MESSAGE =
   "You haven't saved your document order yet. Leave this page anyway?"
+
+const UNSAVED_PERSONA_ORDER_LEAVE_MESSAGE =
+  "You haven't saved your persona order yet. Leave this page anyway?"
 
 export default function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -197,6 +214,34 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     }
   }, [id, user?.id, useRemoteDetail])
 
+  const [remotePersonas, setRemotePersonas] = useState<
+    UploadedFile[] | undefined
+  >(undefined)
+
+  useEffect(() => {
+    if (!useRemoteDetail || !user) {
+      setRemotePersonas(undefined)
+      return
+    }
+    let cancelled = false
+    setRemotePersonas(undefined)
+    listProjectPersonas(id)
+      .then((list) => {
+        if (!cancelled) setRemotePersonas(list)
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          toast.error(
+            err instanceof Error ? err.message : "Failed to load personas"
+          )
+          setRemotePersonas([])
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [id, user?.id, useRemoteDetail])
+
   const {
     mergedDocuments: remoteMergedDocuments,
     uploadFiles: runRemoteUploads,
@@ -208,7 +253,28 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     setRemoteDocuments,
   })
 
+  const {
+    mergedPersonas: remoteMergedPersonas,
+    uploadFiles: runRemotePersonaUploads,
+    dismissPendingUpload: dismissPendingPersonaUpload,
+    pendingCount: remotePersonaUploadPendingCount,
+  } = useSupabaseProjectPersonasUploadFlow({
+    projectId: id,
+    remotePersonas,
+    setRemotePersonas,
+  })
+
   const { localFiles, addFiles, removeFile, localIds } = useMockProjectDocuments({
+    projectId: id,
+    uploadedBy: user?.id ?? "unknown",
+  })
+
+  const {
+    localFiles: localPersonaFiles,
+    addFiles: addPersonaFiles,
+    removeFile: removePersonaFile,
+    localIds: localPersonaIds,
+  } = useMockProjectPersonas({
     projectId: id,
     uploadedBy: user?.id ?? "unknown",
   })
@@ -222,6 +288,16 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
       .sort((a, b) => a.sortOrder - b.sortOrder)
     return [...localFiles, ...seed]
   }, [useRemoteDetail, remoteMergedDocuments, id, localFiles])
+
+  const mergedProjectPersonas = useMemo(() => {
+    if (useRemoteDetail) {
+      return remoteMergedPersonas
+    }
+    const seed = uploadedPersonas
+      .filter((f) => f.projectId === id)
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+    return [...localPersonaFiles, ...seed]
+  }, [useRemoteDetail, remoteMergedPersonas, id, localPersonaFiles])
 
   const projectConversations = mockConversations.filter((c) => c.projectId === id)
 
@@ -245,12 +321,21 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   )
   const [isSavingDocumentOrder, setIsSavingDocumentOrder] = useState(false)
   const [uploadDocsModalOpen, setUploadDocsModalOpen] = useState(false)
+  const [personaOrderUnlocked, setPersonaOrderUnlocked] = useState(false)
+  const [draftStablePersonaIds, setDraftStablePersonaIds] = useState<string[]>(
+    []
+  )
+  const [isSavingPersonaOrder, setIsSavingPersonaOrder] = useState(false)
+  const [uploadPersonasModalOpen, setUploadPersonasModalOpen] = useState(false)
   const isChatReadOnly = user?.role === "admin"
 
   useEffect(() => {
     setDocumentOrderUnlocked(false)
     setDraftStableDocumentIds([])
     setUploadDocsModalOpen(false)
+    setPersonaOrderUnlocked(false)
+    setDraftStablePersonaIds([])
+    setUploadPersonasModalOpen(false)
   }, [id])
 
   useEffect(() => {
@@ -263,9 +348,26 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     })
   }, [remoteDocuments, documentOrderUnlocked])
 
+  useEffect(() => {
+    if (!personaOrderUnlocked || !remotePersonas) return
+    const orderedRemoteIds = remotePersonas.map((f) => f.id)
+    setDraftStablePersonaIds((prev) => {
+      const kept = prev.filter((personaId) => orderedRemoteIds.includes(personaId))
+      const extras = orderedRemoteIds.filter(
+        (personaId) => !kept.includes(personaId)
+      )
+      return [...kept, ...extras]
+    })
+  }, [remotePersonas, personaOrderUnlocked])
+
   const persistedDocumentCount = useMemo(
     () => mergedProjectFiles.filter(isPersistedProjectDocumentRow).length,
     [mergedProjectFiles]
+  )
+
+  const persistedPersonaCount = useMemo(
+    () => mergedProjectPersonas.filter(isPersistedProjectDocumentRow).length,
+    [mergedProjectPersonas]
   )
 
   const handleUnlockDocumentOrder = useCallback(() => {
@@ -298,18 +400,54 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     setDraftStableDocumentIds([])
   }, [])
 
-  const confirmLeaveIfUnsavedDocumentOrder = useCallback((): boolean => {
-    if (!documentOrderUnlocked || !useRemoteDetail) return true
-    return window.confirm(UNSAVED_DOCUMENT_ORDER_LEAVE_MESSAGE)
-  }, [documentOrderUnlocked, useRemoteDetail])
+  const handleUnlockPersonaOrder = useCallback(() => {
+    const stable = mergedProjectPersonas.filter(isPersistedProjectDocumentRow)
+    setDraftStablePersonaIds(stable.map((f) => f.id))
+    setPersonaOrderUnlocked(true)
+  }, [mergedProjectPersonas])
+
+  const handleLockPersonaOrder = useCallback(async () => {
+    if (!useRemoteDetail) return
+    setIsSavingPersonaOrder(true)
+    try {
+      await reorderProjectPersonas(id, draftStablePersonaIds)
+      const list = await listProjectPersonas(id)
+      setRemotePersonas(list)
+      setPersonaOrderUnlocked(false)
+      setDraftStablePersonaIds([])
+      toast.success("Persona order saved")
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Could not save persona order"
+      )
+    } finally {
+      setIsSavingPersonaOrder(false)
+    }
+  }, [useRemoteDetail, id, draftStablePersonaIds])
+
+  const handleCancelPersonaOrder = useCallback(() => {
+    setPersonaOrderUnlocked(false)
+    setDraftStablePersonaIds([])
+  }, [])
+
+  const confirmLeaveIfUnsavedOrder = useCallback((): boolean => {
+    if (documentOrderUnlocked && useRemoteDetail) {
+      if (!window.confirm(UNSAVED_DOCUMENT_ORDER_LEAVE_MESSAGE)) return false
+    }
+    if (personaOrderUnlocked && useRemoteDetail) {
+      if (!window.confirm(UNSAVED_PERSONA_ORDER_LEAVE_MESSAGE)) return false
+    }
+    return true
+  }, [documentOrderUnlocked, personaOrderUnlocked, useRemoteDetail])
 
   const handleBackToProjects = useCallback(() => {
-    if (!confirmLeaveIfUnsavedDocumentOrder()) return
+    if (!confirmLeaveIfUnsavedOrder()) return
     router.push("/projects")
-  }, [confirmLeaveIfUnsavedDocumentOrder, router])
+  }, [confirmLeaveIfUnsavedOrder, router])
 
   useEffect(() => {
-    const shouldWarn = documentOrderUnlocked && useRemoteDetail
+    const shouldWarn =
+      useRemoteDetail && (documentOrderUnlocked || personaOrderUnlocked)
     if (!shouldWarn) return
 
     const onBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -318,7 +456,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     }
     window.addEventListener("beforeunload", onBeforeUnload)
     return () => window.removeEventListener("beforeunload", onBeforeUnload)
-  }, [documentOrderUnlocked, useRemoteDetail])
+  }, [documentOrderUnlocked, personaOrderUnlocked, useRemoteDetail])
 
   /**
    * Next.js `<Link>` calls `router.push` from a click handler; the Navigation API’s
@@ -326,7 +464,8 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
    * capture phase so Cancel on `confirm` keeps the user on this project page.
    */
   useEffect(() => {
-    const shouldWarn = documentOrderUnlocked && useRemoteDetail
+    const shouldWarn =
+      useRemoteDetail && (documentOrderUnlocked || personaOrderUnlocked)
     if (!shouldWarn) return
 
     const projectPath = `/projects/${id}`
@@ -362,14 +501,21 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
       e.preventDefault()
       e.stopPropagation()
       e.stopImmediatePropagation()
-      if (window.confirm(UNSAVED_DOCUMENT_ORDER_LEAVE_MESSAGE)) {
+      if (confirmLeaveIfUnsavedOrder()) {
         router.push(`${url.pathname}${url.search}${url.hash}`)
       }
     }
 
     document.addEventListener("click", onClickCapture, true)
     return () => document.removeEventListener("click", onClickCapture, true)
-  }, [documentOrderUnlocked, useRemoteDetail, id, router])
+  }, [
+    documentOrderUnlocked,
+    personaOrderUnlocked,
+    useRemoteDetail,
+    id,
+    router,
+    confirmLeaveIfUnsavedOrder,
+  ])
 
   useEffect(() => {
     if (!project) return
@@ -450,6 +596,62 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
       localIds,
       removeFile,
       mergedProjectFiles,
+    ]
+  )
+
+  const handleAddPersonaFiles = useCallback(
+    (files: File[]) => {
+      if (useRemoteDetail) {
+        if (!user) return
+        void runRemotePersonaUploads(files)
+        return
+      }
+      addPersonaFiles(files)
+    },
+    [useRemoteDetail, user, runRemotePersonaUploads, addPersonaFiles]
+  )
+
+  const handlePersonaDelete = useCallback(
+    (fileId: string) => {
+      const meta = mergedProjectPersonas.find((f) => f.id === fileId)
+
+      if (useRemoteDetail) {
+        if (dismissPendingPersonaUpload(fileId)) {
+          toast.success(
+            meta?.name ? `Removed “${meta.name}”` : "Upload removed"
+          )
+          return
+        }
+        void (async () => {
+          try {
+            await deleteProjectPersona(fileId)
+            setRemotePersonas((prev) => (prev ?? []).filter((f) => f.id !== fileId))
+            toast.success(
+              meta?.name ? `Deleted “${meta.name}”` : "Persona deleted"
+            )
+          } catch (err: unknown) {
+            toast.error(
+              err instanceof Error ? err.message : "Failed to delete persona"
+            )
+          }
+        })()
+        return
+      }
+      if (localPersonaIds.has(fileId)) {
+        removePersonaFile(fileId)
+        toast.success(
+          meta?.name ? `Deleted “${meta.name}”` : "Persona deleted"
+        )
+        return
+      }
+      toast.info("Built-in demo personas can’t be removed from this view.")
+    },
+    [
+      useRemoteDetail,
+      dismissPendingPersonaUpload,
+      localPersonaIds,
+      removePersonaFile,
+      mergedProjectPersonas,
     ]
   )
 
@@ -838,6 +1040,117 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                       files={mergedProjectFiles}
                       onDelete={handleDocumentDelete}
                       isInitialLoading={false}
+                    />
+                  )}
+                </div>
+              </section>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "personas" && (
+          <div className="min-h-0 flex-1 overflow-y-auto p-4 lg:p-6">
+            <div className="mx-auto max-w-2xl space-y-8">
+              <section className="space-y-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <h2 className="text-lg font-semibold text-foreground">
+                    Personas
+                  </h2>
+                  <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                    {useRemoteDetail && persistedPersonaCount > 0 ? (
+                      !personaOrderUnlocked ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleUnlockPersonaOrder}
+                        >
+                          <ArrowUpDown className="h-4 w-4" aria-hidden />
+                          Sort Rows
+                        </Button>
+                      ) : (
+                        <>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            disabled={isSavingPersonaOrder}
+                            onClick={handleCancelPersonaOrder}
+                          >
+                            Cancel
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="border-2 border-arse-pink hover:border-arse-pink focus-visible:ring-arse-pink/40"
+                            disabled={isSavingPersonaOrder}
+                            onClick={() => void handleLockPersonaOrder()}
+                          >
+                            <Save className="h-4 w-4" aria-hidden />
+                            Save Order
+                          </Button>
+                        </>
+                      )
+                    ) : null}
+                    {!personaOrderUnlocked ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="rounded-lg border-0 bg-dark-950 px-4 text-white shadow-none hover:bg-dark-800 hover:text-white focus-visible:ring-dark-950/40"
+                        onClick={() => setUploadPersonasModalOpen(true)}
+                      >
+                        <Upload className="h-4 w-4" aria-hidden />
+                        Upload
+                      </Button>
+                    ) : null}
+                  </div>
+                </div>
+                <Dialog
+                  open={uploadPersonasModalOpen}
+                  onOpenChange={setUploadPersonasModalOpen}
+                >
+                  <DialogContent className="max-w-lg">
+                    <DialogHeader>
+                      <DialogTitle>Upload personas</DialogTitle>
+                      <DialogDescription>
+                        Add markdown persona files (.md). Upload starts as soon
+                        as you add files.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <FileDropzone
+                      accept={PERSONA_FILE_UPLOAD_ACCEPT}
+                      typesDescription={PERSONA_FILE_UPLOAD_TYPES_DESCRIPTION}
+                      onUpload={(files) => {
+                        handleAddPersonaFiles(files)
+                        setUploadPersonasModalOpen(false)
+                      }}
+                    />
+                  </DialogContent>
+                </Dialog>
+                <div className="space-y-6">
+                  {useRemoteDetail ? (
+                    <SortableProjectDocumentsTable
+                      files={mergedProjectPersonas}
+                      onDelete={handlePersonaDelete}
+                      isInitialLoading={
+                        remotePersonas === undefined &&
+                        remotePersonaUploadPendingCount === 0
+                      }
+                      reorderUnlocked={personaOrderUnlocked}
+                      draftStableIds={draftStablePersonaIds}
+                      onDraftStableIdsChange={setDraftStablePersonaIds}
+                      labels={{
+                        emptyMessage: "No personas uploaded for this project yet.",
+                        footerHint: "Markdown personas will appear here.",
+                      }}
+                    />
+                  ) : (
+                    <FileList
+                      files={mergedProjectPersonas}
+                      onDelete={handlePersonaDelete}
+                      isInitialLoading={false}
+                      emptyMessage="No personas uploaded for this project yet."
                     />
                   )}
                 </div>

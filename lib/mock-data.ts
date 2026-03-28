@@ -286,6 +286,65 @@ export const uploadedFiles: UploadedFile[] = [
   { id: "f15", name: "AI_Adoption_Q4_2025.pdf", type: "pdf", size: 4800000, projectId: "p8", uploadedBy: "u1", uploadedAt: "2025-09-20T10:00:00Z", status: "ready", sortOrder: 0 },
 ]
 
+/** Demo markdown personas for dashboard Personas tab when Supabase is offline. */
+export const uploadedPersonas: UploadedFile[] = [
+  {
+    id: "per1",
+    name: "Primary_Shopper_Persona.md",
+    type: "md",
+    size: 8200,
+    projectId: "p1",
+    uploadedBy: "u1",
+    uploadedAt: "2025-09-06T09:00:00Z",
+    status: "ready",
+    sortOrder: 1,
+  },
+  {
+    id: "per2",
+    name: "Deal_Seeker_Segment.md",
+    type: "md",
+    size: 6400,
+    projectId: "p1",
+    uploadedBy: "u2",
+    uploadedAt: "2025-09-07T11:30:00Z",
+    status: "ready",
+    sortOrder: 0,
+  },
+  {
+    id: "per3",
+    name: "Enterprise_Buyer_ICP.md",
+    type: "md",
+    size: 12000,
+    projectId: "p6",
+    uploadedBy: "u1",
+    uploadedAt: "2025-07-12T08:00:00Z",
+    status: "ready",
+    sortOrder: 0,
+  },
+  {
+    id: "per4",
+    name: "Social_Listening_Persona.md",
+    type: "md",
+    size: 5100,
+    projectId: "p2",
+    uploadedBy: "u1",
+    uploadedAt: "2025-10-21T09:00:00Z",
+    status: "ready",
+    sortOrder: 0,
+  },
+  {
+    id: "per5",
+    name: "Flexitarian_Shopper.md",
+    type: "md",
+    size: 7800,
+    projectId: "p4",
+    uploadedBy: "u2",
+    uploadedAt: "2025-08-26T14:00:00Z",
+    status: "ready",
+    sortOrder: 0,
+  },
+]
+
 // ── Conversations ──────────────────────────────────────
 export const conversations: Conversation[] = [
   {

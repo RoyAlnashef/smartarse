@@ -1,8 +1,9 @@
 /** Shown on dropzones and upload dialogs; keep in sync with `FILE_UPLOAD_ACCEPT`. */
 export const FILE_UPLOAD_TYPES_DESCRIPTION =
-  ".pdf .pptx .doc .docx .xls .xlsx and .csv files up to 50MB"
+  ".pdf .pptx .doc .docx .xls .xlsx .csv and .md files up to 50MB"
 
-export const FILE_UPLOAD_ACCEPT = ".pdf,.pptx,.doc,.docx,.xls,.xlsx,.csv"
+export const FILE_UPLOAD_ACCEPT =
+  ".pdf,.pptx,.doc,.docx,.xls,.xlsx,.csv,.md"
 
 /** 50 MiB — keep copy in `FILE_UPLOAD_TYPES_DESCRIPTION` aligned. */
 export const FILE_UPLOAD_MAX_BYTES = 50 * 1024 * 1024
@@ -15,6 +16,7 @@ const ALLOWED_EXTENSIONS = new Set([
   "xls",
   "xlsx",
   "csv",
+  "md",
 ])
 
 function fileExtension(name: string): string {
@@ -22,12 +24,13 @@ function fileExtension(name: string): string {
   return dot >= 0 ? name.slice(dot + 1).toLowerCase() : ""
 }
 
-/** Map extension to coarse `UploadedFile.type` for icons (pdf, csv, xlsx, …). */
+/** Map extension to coarse `UploadedFile.type` for icons (pdf, csv, xlsx, md, …). */
 export function inferUploadedFileType(extension: string): string {
   const e = extension.toLowerCase()
   if (e === "csv") return "csv"
   if (e === "xls" || e === "xlsx") return "xlsx"
   if (e === "pdf") return "pdf"
+  if (e === "md" || e === "markdown") return "md"
   return "doc"
 }
 

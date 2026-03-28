@@ -38,6 +38,7 @@ const fileIcons: Record<string, typeof FileText> = {
   pdf: FileText,
   csv: FileSpreadsheet,
   xlsx: FileSpreadsheet,
+  md: FileText,
 }
 
 const statusColors: Record<string, string> = {
@@ -56,7 +57,17 @@ export function isPersistedProjectDocumentRow(f: UploadedFile): boolean {
   return !f.id.startsWith("pending-") && f.status !== "uploading"
 }
 
-function DocumentsTableSkeleton() {
+const defaultSortableProjectDocumentsTableLabels = {
+  emptyMessage: "No documents match your filters.",
+  footerHint: "Uploaded files will appear here.",
+} as const
+
+export type SortableProjectDocumentsTableLabels = {
+  emptyMessage?: string
+  footerHint?: string
+}
+
+function DocumentsTableSkeleton({ footerHint }: { footerHint: string }) {
   const rows = [0, 1, 2]
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
@@ -95,13 +106,13 @@ function DocumentsTableSkeleton() {
         </tbody>
       </table>
       <p className="border-t border-border bg-muted/20 px-4 py-2.5 text-center text-xs text-muted-foreground">
-        Uploaded files will appear here.
+        {footerHint}
       </p>
     </div>
   )
 }
 
-function EmptyState() {
+function EmptyState({ emptyMessage }: { emptyMessage: string }) {
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
       <table className="w-full text-left text-sm">
@@ -116,7 +127,7 @@ function EmptyState() {
         </thead>
       </table>
       <p className="px-4 py-10 text-center text-sm text-muted-foreground">
-        No documents match your filters.
+        {emptyMessage}
       </p>
     </div>
   )
@@ -158,7 +169,7 @@ function StaticDocumentRow({
           <div className="max-w-[10rem] space-y-1.5">
             <Progress
               value={file.uploadProgress ?? 0}
-              className="h-2 bg-muted [&>div]:bg-arse-cyan"
+              className="h-2 bg-muted [&>div]:bg-arse-pink"
             />
             <span className="text-xs text-muted-foreground">Uploading…</span>
           </div>
@@ -255,7 +266,7 @@ function SortableDocumentRow({
           <div className="max-w-[10rem] space-y-1.5">
             <Progress
               value={file.uploadProgress ?? 0}
-              className="h-2 bg-muted [&>div]:bg-arse-cyan"
+              className="h-2 bg-muted [&>div]:bg-arse-pink"
             />
             <span className="text-xs text-muted-foreground">Uploading…</span>
           </div>
@@ -302,6 +313,7 @@ export function SortableProjectDocumentsTable({
   reorderUnlocked,
   draftStableIds,
   onDraftStableIdsChange,
+  labels: labelsProp,
 }: {
   files: UploadedFile[]
   onDelete?: (id: string) => void
@@ -309,7 +321,13 @@ export function SortableProjectDocumentsTable({
   reorderUnlocked: boolean
   draftStableIds: string[]
   onDraftStableIdsChange: (ids: string[]) => void
+  /** Empty table copy and skeleton footer (e.g. personas vs documents). */
+  labels?: SortableProjectDocumentsTableLabels
 }) {
+  const labels = {
+    ...defaultSortableProjectDocumentsTableLabels,
+    ...labelsProp,
+  }
   const byId = useMemo(() => new Map(files.map((f) => [f.id, f])), [files])
 
   const { pendingRows, stableInFileOrder } = useMemo(() => {
@@ -336,10 +354,10 @@ export function SortableProjectDocumentsTable({
   }
 
   if (isInitialLoading) {
-    return <DocumentsTableSkeleton />
+    return <DocumentsTableSkeleton footerHint={labels.footerHint} />
   }
   if (files.length === 0) {
-    return <EmptyState />
+    return <EmptyState emptyMessage={labels.emptyMessage} />
   }
 
   const showDragColumn = reorderUnlocked && draftStableIds.length > 0

@@ -7,6 +7,7 @@ const fileIcons: Record<string, typeof FileText> = {
   pdf: FileText,
   csv: FileSpreadsheet,
   xlsx: FileSpreadsheet,
+  md: FileText,
 }
 
 export function DocumentSelector({

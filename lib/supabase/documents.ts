@@ -151,7 +151,9 @@ export async function uploadProjectDocument(input: {
       ? "text/csv"
       : ext === "pdf"
         ? "application/pdf"
-        : undefined)
+        : ext === "md" || ext === "markdown"
+          ? "text/markdown"
+          : undefined)
 
   const { error: uploadError } = await supabase.storage
     .from(PROJECT_DOCUMENTS_BUCKET)
@@ -191,7 +193,9 @@ export async function uploadProjectDocument(input: {
       name: input.file.name,
       storage_path: path,
       size_bytes: input.file.size,
-      mime_type: input.file.type || null,
+      mime_type:
+        input.file.type ||
+        (ext === "md" || ext === "markdown" ? "text/markdown" : null),
       uploaded_by: uploadedByRow,
       status: "ready",
       sort_order: nextSortOrder,
