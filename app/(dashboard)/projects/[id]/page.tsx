@@ -6,6 +6,7 @@ import {
   useMemo,
   use,
   useEffect,
+  useRef,
   type FormEvent,
 } from "react"
 import { useRouter } from "next/navigation"
@@ -304,6 +305,19 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const projectConversations = mockConversations.filter((c) => c.projectId === id)
 
   const [activeTab, setActiveTab] = useState<TabId>("chat")
+  const projectTabScrollRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const root = projectTabScrollRef.current
+    if (!root) return
+    const trigger = root.querySelector<HTMLElement>(`[data-project-tab="${activeTab}"]`)
+    trigger?.scrollIntoView({
+      inline: "nearest",
+      block: "nearest",
+      behavior: "smooth",
+    })
+  }, [activeTab])
+
   const [conversations, setConversations] = useState<Conversation[]>(projectConversations)
   const [activeConversationId, setActiveConversationId] = useState<string | null>(
     projectConversations[0]?.id ?? null
@@ -887,22 +901,37 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
 
       {/* Workspace card — tabs + tab content share one white surface */}
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
-        <div className="flex shrink-0 flex-wrap items-center gap-1 border-b border-border px-4 lg:px-6">
-          {visibleTabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors ${
-                activeTab === tab.id
-                  ? "border-dark-950 text-foreground"
-                  : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
-              }`}
+        <div className="min-w-0 w-full shrink-0 border-b border-border">
+          <div
+            ref={projectTabScrollRef}
+            className="overflow-x-auto overflow-y-hidden overscroll-x-contain [-webkit-overflow-scrolling:touch]"
+          >
+            <div
+              className="flex w-max flex-nowrap items-center gap-1 px-4 lg:px-6"
+              role="tablist"
+              aria-label="Project sections"
             >
-              <tab.icon className="h-4 w-4" />
-              {tab.label}
-            </button>
-          ))}
+              {visibleTabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === tab.id}
+                  data-project-tab={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-medium transition-colors",
+                    activeTab === tab.id
+                      ? "border-dark-950 text-foreground"
+                      : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
+                  )}
+                >
+                  <tab.icon className="h-4 w-4 shrink-0" />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -1199,7 +1228,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                   </>
                 )}
               </TabsList>
-              <div className="min-w-0 flex-1 self-start">
+              <div className="min-w-0 w-full flex-1 self-start">
                 <TabsContent value="info" className="mt-0 outline-none">
                   <section className="space-y-4">
                     <form
