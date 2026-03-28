@@ -82,7 +82,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { DASHBOARD_MAIN_ACCENT_CLASS } from "@/lib/constants"
 import type { ChatMessage, Conversation, Project, UploadedFile, User } from "@/lib/types"
+import { cn } from "@/lib/utils"
 
 const tabs = [
   { id: "chat", label: "Chat", icon: MessageSquare },
@@ -1006,7 +1008,9 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                   open={uploadDocsModalOpen}
                   onOpenChange={setUploadDocsModalOpen}
                 >
-                  <DialogContent className="max-w-lg">
+                  <DialogContent
+                    className={cn("max-w-lg", DASHBOARD_MAIN_ACCENT_CLASS)}
+                  >
                     <DialogHeader>
                       <DialogTitle>Upload documents</DialogTitle>
                       <DialogDescription>
@@ -1110,7 +1114,9 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                   open={uploadPersonasModalOpen}
                   onOpenChange={setUploadPersonasModalOpen}
                 >
-                  <DialogContent className="max-w-lg">
+                  <DialogContent
+                    className={cn("max-w-lg", DASHBOARD_MAIN_ACCENT_CLASS)}
+                  >
                     <DialogHeader>
                       <DialogTitle>Upload personas</DialogTitle>
                       <DialogDescription>

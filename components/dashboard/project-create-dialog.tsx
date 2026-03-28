@@ -14,8 +14,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { DASHBOARD_MAIN_ACCENT_CLASS } from "@/lib/constants"
 import { listOrganizationsForDashboard } from "@/lib/supabase/organizations"
 import { createProject } from "@/lib/supabase/projects"
+import { cn } from "@/lib/utils"
 import type { Organization } from "@/lib/types"
 
 export function ProjectCreateDialog({
@@ -77,7 +79,9 @@ export function ProjectCreateDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent
+        className={cn("sm:max-w-md", DASHBOARD_MAIN_ACCENT_CLASS)}
+      >
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Add project</DialogTitle>

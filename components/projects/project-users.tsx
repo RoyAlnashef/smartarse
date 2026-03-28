@@ -10,6 +10,7 @@ import {
   PopoverContent,
 } from "@/components/ui/popover"
 import { Switch } from "@/components/ui/switch"
+import { DASHBOARD_MAIN_ACCENT_CLASS } from "@/lib/constants"
 import {
   assignProjectUser,
   unassignProjectUser,
@@ -201,7 +202,7 @@ export function ProjectUsers({
                       align="center"
                       side="left"
                       sideOffset={8}
-                      className="w-80 p-4"
+                      className={cn("w-80 p-4", DASHBOARD_MAIN_ACCENT_CLASS)}
                       onOpenAutoFocus={(e) => e.preventDefault()}
                     >
                       {pendingToggle?.user.id === user.id ? (

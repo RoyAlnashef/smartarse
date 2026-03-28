@@ -6,6 +6,8 @@ import { Menu } from "lucide-react"
 import { Sidebar } from "@/components/layout/sidebar"
 import { MobileSidebar } from "@/components/layout/mobile-sidebar"
 import { useAuth } from "@/lib/auth-context"
+import { DASHBOARD_MAIN_ACCENT_CLASS } from "@/lib/constants"
+import { cn } from "@/lib/utils"
 
 export default function DashboardLayout({
   children,
@@ -65,7 +67,12 @@ export default function DashboardLayout({
       <MobileSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Main content */}
-      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div
+        className={cn(
+          "relative flex min-h-0 flex-1 flex-col overflow-hidden",
+          DASHBOARD_MAIN_ACCENT_CLASS,
+        )}
+      >
         <button
           type="button"
           onClick={() => setSidebarOpen(true)}
