@@ -33,9 +33,14 @@ import {
   listProjectDocuments,
 } from "@/lib/supabase/documents"
 import {
+  projectStatusBadgeClassName,
+  projectStatusLabel,
+} from "@/lib/project-status"
+import {
   addProjectCredits,
   deleteProject,
   getProjectById,
+  updateProject,
 } from "@/lib/supabase/projects"
 import { listUsersForDashboard } from "@/lib/supabase/users"
 import { ChatWindow } from "@/components/chat/chat-window"
@@ -48,6 +53,7 @@ import { useSupabaseProjectUploadFlow } from "@/components/upload/use-supabase-p
 import { ProjectCreditsMeter } from "@/components/dashboard/project-credits-meter"
 import { ProjectUsers } from "@/components/projects/project-users"
 import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { ChatMessage, Conversation, Project, UploadedFile, User } from "@/lib/types"
 
 const tabs = [
@@ -209,7 +215,18 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const [isDeletingProject, setIsDeletingProject] = useState(false)
   const [creditAmountInput, setCreditAmountInput] = useState("")
   const [isAddingCredits, setIsAddingCredits] = useState(false)
+  const [settingsName, setSettingsName] = useState("")
+  const [settingsDescription, setSettingsDescription] = useState("")
+  const [settingsStatus, setSettingsStatus] = useState<Project["status"]>("live")
+  const [isSavingSettings, setIsSavingSettings] = useState(false)
   const isChatReadOnly = user?.role === "admin"
+
+  useEffect(() => {
+    if (!project) return
+    setSettingsName(project.name)
+    setSettingsDescription(project.description)
+    setSettingsStatus(project.status)
+  }, [project?.id, project?.name, project?.description, project?.status])
 
   const activeConversation = useMemo(
     () => conversations.find((c) => c.id === activeConversationId) ?? null,
@@ -378,6 +395,45 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     }
   }, [useRemoteDetail, user?.role, project, id, router])
 
+  const handleSaveProjectSettings = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault()
+      if (!useRemoteDetail || user?.role !== "admin" || !project) return
+      const name = settingsName.trim()
+      if (!name) {
+        toast.error("Project name is required.")
+        return
+      }
+      setIsSavingSettings(true)
+      try {
+        await updateProject({
+          id,
+          name,
+          description: settingsDescription.trim(),
+          status: settingsStatus,
+        })
+        toast.success("Project updated.")
+        await refreshProjectFromServer()
+      } catch (err: unknown) {
+        toast.error(
+          err instanceof Error ? err.message : "Could not save changes."
+        )
+      } finally {
+        setIsSavingSettings(false)
+      }
+    },
+    [
+      useRemoteDetail,
+      user?.role,
+      project,
+      id,
+      settingsName,
+      settingsDescription,
+      settingsStatus,
+      refreshProjectFromServer,
+    ]
+  )
+
   const handleAddCredits = useCallback(
     async (e: FormEvent) => {
       e.preventDefault()
@@ -461,13 +517,9 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
             <p className="text-xs text-muted-foreground">{project.clientName}</p>
           </div>
           <span
-            className={`ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-              project.status === "live"
-                ? "bg-mint-100 text-mint-700"
-                : "bg-dark-100 text-dark-500"
-            }`}
+            className={`ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${projectStatusBadgeClassName(project.status)}`}
           >
-            {project.status}
+            {projectStatusLabel(project.status)}
           </span>
         </div>
         <ProjectCreditsMeter
@@ -578,151 +630,178 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         )}
 
         {activeTab === "settings" && (
-          <div className="min-h-0 flex-1 overflow-y-auto p-4 lg:p-6">
-            <div className="mx-auto max-w-2xl space-y-8">
-            {/* Project Info */}
-            <section className="space-y-4">
-              <h2 className="text-lg font-semibold text-foreground">Project Information</h2>
-              <div className="space-y-4 rounded-xl border border-border bg-card p-6">
-                <div>
-                  <label className="block text-sm font-medium text-foreground">
-                    Project Name
-                  </label>
-                  <input
-                    type="text"
-                    defaultValue={project.name}
-                    className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-foreground">
-                    Description
-                  </label>
-                  <textarea
-                    rows={3}
-                    defaultValue={project.description}
-                    className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-foreground">
-                      Organization
-                    </label>
-                    <input
-                      type="text"
-                      defaultValue={project.clientName}
-                      disabled
-                      className="mt-1.5 block w-full rounded-lg border border-border bg-muted px-3.5 py-2.5 text-sm text-muted-foreground"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-foreground">
-                      Status
-                    </label>
-                    <select
-                      defaultValue={project.status}
-                      className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30"
-                    >
-                      <option value="live">Live</option>
-                      <option value="archived">Archived</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="flex justify-end pt-2">
-                  <button
-                    type="button"
-                    className="rounded-lg bg-dark-950 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-dark-800"
-                  >
-                    Save Changes
-                  </button>
-                </div>
+          <div className="flex min-h-0 flex-1 flex-col justify-start overflow-y-auto p-4 lg:p-6">
+            <Tabs
+              defaultValue="info"
+              orientation="vertical"
+              className="mx-auto flex w-full max-w-4xl flex-col items-start gap-6 md:flex-row md:gap-10"
+            >
+              <TabsList
+                variant="vertical"
+                aria-label="Project settings sections"
+                className="md:sticky md:top-4"
+              >
+                <TabsTrigger value="info">Project information</TabsTrigger>
+                {user.role === "admin" && useRemoteDetail && (
+                  <>
+                    <TabsTrigger value="credits">Credits</TabsTrigger>
+                    <TabsTrigger value="delete">Delete project</TabsTrigger>
+                  </>
+                )}
+              </TabsList>
+              <div className="min-w-0 flex-1 self-start">
+                <TabsContent value="info" className="mt-0 outline-none">
+                  <section className="space-y-4">
+                    <div className="space-y-4 rounded-xl border border-border bg-card p-6">
+                      <div>
+                        <label className="block text-sm font-medium text-foreground">
+                          Project Name
+                        </label>
+                        <input
+                          type="text"
+                          defaultValue={project.name}
+                          className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-foreground">
+                          Description
+                        </label>
+                        <textarea
+                          rows={3}
+                          defaultValue={project.description}
+                          className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30"
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                          <label className="block text-sm font-medium text-foreground">
+                            Organization
+                          </label>
+                          <input
+                            type="text"
+                            defaultValue={project.clientName}
+                            disabled
+                            className="mt-1.5 block w-full rounded-lg border border-border bg-muted px-3.5 py-2.5 text-sm text-muted-foreground"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-foreground">
+                            Status
+                          </label>
+                          <select
+                            defaultValue={project.status}
+                            className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30"
+                          >
+                            <option value="live">Live</option>
+                            <option value="archived">Archived</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="flex justify-end pt-2">
+                        <button
+                          type="button"
+                          className="rounded-lg bg-dark-950 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-dark-800"
+                        >
+                          Save Changes
+                        </button>
+                      </div>
+                    </div>
+                  </section>
+                </TabsContent>
+
+                {user.role === "admin" && useRemoteDetail && (
+                  <>
+                    <TabsContent value="credits" className="mt-0 outline-none">
+                      <section className="space-y-4">
+                        <div className="space-y-4 rounded-xl border border-border bg-card p-6">
+                          <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
+                            <div>
+                              <dt className="font-medium text-muted-foreground">
+                                Allocated balance
+                              </dt>
+                              <dd className="mt-1 tabular-nums text-foreground">
+                                {project.totalCredits.toLocaleString()}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="font-medium text-muted-foreground">
+                                Used
+                              </dt>
+                              <dd className="mt-1 tabular-nums text-foreground">
+                                {project.usedCredits.toLocaleString()}
+                              </dd>
+                            </div>
+                          </dl>
+                          <p className="text-sm text-muted-foreground">
+                            Credits are allocated to this project only.
+                            Purchasing credits is not available here yet — use the
+                            field below to add to the balance manually.
+                          </p>
+                          <form
+                            onSubmit={(ev) => void handleAddCredits(ev)}
+                            className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end"
+                          >
+                            <div className="min-w-[12rem] flex-1">
+                              <label
+                                htmlFor="credit-top-up-amount"
+                                className="block text-sm font-medium text-foreground"
+                              >
+                                Amount to add
+                              </label>
+                              <input
+                                id="credit-top-up-amount"
+                                type="number"
+                                min={1}
+                                step={1}
+                                inputMode="numeric"
+                                value={creditAmountInput}
+                                onChange={(ev) =>
+                                  setCreditAmountInput(ev.target.value)
+                                }
+                                disabled={isAddingCredits}
+                                placeholder="e.g. 500"
+                                className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30 disabled:opacity-60"
+                              />
+                            </div>
+                            <Button
+                              type="submit"
+                              disabled={isAddingCredits}
+                              className="rounded-lg bg-dark-950 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-dark-800"
+                            >
+                              {isAddingCredits ? "Adding…" : "Add Credits"}
+                            </Button>
+                          </form>
+                        </div>
+                      </section>
+                    </TabsContent>
+
+                    <TabsContent value="delete" className="mt-0 outline-none">
+                      <section className="space-y-4 rounded-xl border border-destructive/25 bg-destructive/5 p-6">
+                        <p className="text-sm text-muted-foreground">
+                          {project.usedCredits > 0
+                            ? "Projects that have used credits cannot be deleted."
+                            : "Permanently remove this project and its uploaded documents from storage. Users and the organization are not affected."}
+                        </p>
+                        <div className="flex justify-end">
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            disabled={
+                              project.usedCredits > 0 || isDeletingProject
+                            }
+                            onClick={() => void handleDeleteProject()}
+                          >
+                            {isDeletingProject ? "Deleting…" : "Delete Project"}
+                          </Button>
+                        </div>
+                      </section>
+                    </TabsContent>
+                  </>
+                )}
               </div>
-            </section>
-
-            {user.role === "admin" && useRemoteDetail && (
-              <section className="space-y-4">
-                <h2 className="text-lg font-semibold text-foreground">Credits</h2>
-                <div className="space-y-4 rounded-xl border border-border bg-card p-6">
-                  <dl className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <dt className="font-medium text-muted-foreground">
-                        Allocated balance
-                      </dt>
-                      <dd className="mt-1 tabular-nums text-foreground">
-                        {project.totalCredits.toLocaleString()}
-                      </dd>
-                    </div>
-                    <div>
-                      <dt className="font-medium text-muted-foreground">Used</dt>
-                      <dd className="mt-1 tabular-nums text-foreground">
-                        {project.usedCredits.toLocaleString()}
-                      </dd>
-                    </div>
-                  </dl>
-                  <p className="text-sm text-muted-foreground">
-                    Credits are allocated to this project only. Purchasing credits is not
-                    available here yet — use the field below to add to the balance
-                    manually.
-                  </p>
-                  <form
-                    onSubmit={(ev) => void handleAddCredits(ev)}
-                    className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end"
-                  >
-                    <div className="min-w-[12rem] flex-1">
-                      <label
-                        htmlFor="credit-top-up-amount"
-                        className="block text-sm font-medium text-foreground"
-                      >
-                        Amount to add
-                      </label>
-                      <input
-                        id="credit-top-up-amount"
-                        type="number"
-                        min={1}
-                        step={1}
-                        inputMode="numeric"
-                        value={creditAmountInput}
-                        onChange={(ev) => setCreditAmountInput(ev.target.value)}
-                        disabled={isAddingCredits}
-                        placeholder="e.g. 500"
-                        className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30 disabled:opacity-60"
-                      />
-                    </div>
-                    <Button
-                      type="submit"
-                      disabled={isAddingCredits}
-                      className="rounded-lg bg-dark-950 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-dark-800"
-                    >
-                      {isAddingCredits ? "Adding…" : "Add Credits"}
-                    </Button>
-                  </form>
-                </div>
-              </section>
-            )}
-
-            {user.role === "admin" && useRemoteDetail && (
-              <section className="space-y-4 rounded-xl border border-destructive/25 bg-destructive/5 p-6">
-                <h2 className="text-lg font-semibold text-foreground">Delete project</h2>
-                <p className="text-sm text-muted-foreground">
-                  {project.usedCredits > 0
-                    ? "Projects that have used credits cannot be deleted."
-                    : "Permanently remove this project and its uploaded documents from storage. Users and the organization are not affected."}
-                </p>
-                <div className="flex justify-end">
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    disabled={project.usedCredits > 0 || isDeletingProject}
-                    onClick={() => void handleDeleteProject()}
-                  >
-                    {isDeletingProject ? "Deleting…" : "Delete Project"}
-                  </Button>
-                </div>
-              </section>
-            )}
+            </Tabs>
           </div>
-        </div>
         )}
         </div>
       </div>

@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 
-const statuses = ["all", "live", "archived"] as const
+const statuses = ["all", "live", "paused", "archived"] as const
 
 /** cmdk list sentinel; must match the "all" CommandItem `value` */
 const ALL_ORGANIZATIONS = "all organizations."

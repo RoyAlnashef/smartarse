@@ -6,16 +6,18 @@ import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '@/lib/utils'
 
-const TabsListVariantContext = React.createContext<'default' | 'line'>(
-  'default',
-)
+const TabsListVariantContext = React.createContext<
+  'default' | 'line' | 'vertical'
+>('default')
 
-const tabsListVariants = cva('inline-flex items-center text-muted-foreground', {
+const tabsListVariants = cva('items-center text-muted-foreground', {
   variants: {
     variant: {
-      default:
-        'h-10 justify-center rounded-md bg-muted p-1',
-      line: 'h-10 w-full justify-start gap-6 rounded-none border-b border-border bg-transparent p-0',
+      default: 'inline-flex h-10 justify-center rounded-md bg-muted p-1',
+      line:
+        'inline-flex h-10 w-full justify-start gap-6 rounded-none border-b border-border bg-transparent p-0',
+      vertical:
+        'flex h-fit w-full shrink-0 flex-col items-stretch justify-start gap-0.5 self-start rounded-none bg-transparent p-0 sm:w-48',
     },
   },
   defaultVariants: {
@@ -31,6 +33,8 @@ const tabsTriggerVariants = cva(
         default:
           'rounded-sm px-3 py-1.5 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm',
         line: '-mb-px rounded-none border-b-2 border-transparent bg-transparent px-0 py-2 text-muted-foreground shadow-none data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:font-semibold data-[state=active]:text-foreground data-[state=active]:shadow-none',
+        vertical:
+          'w-full justify-start rounded-md border-2 border-transparent bg-transparent px-3 py-2 text-left transition-colors data-[state=active]:border-arse-pink data-[state=active]:bg-transparent data-[state=active]:text-foreground',
       },
     },
     defaultVariants: {

@@ -11,6 +11,13 @@ const STORAGE_REMOVE_CHUNK = 50
 
 const MAX_PROJECT_CREDITS_TOP_UP = 10_000_000
 
+function normalizeProjectStatus(raw: string): Project["status"] {
+  if (raw === "live" || raw === "paused" || raw === "archived") {
+    return raw
+  }
+  return "paused"
+}
+
 /** Row shape from `public.projects` plus embedded org (PostgREST). */
 type ProjectRow = {
   id: string
@@ -62,7 +69,7 @@ function rowToProject(
     description: row.description,
     clientId: row.organization_id,
     clientName: org?.name ?? "",
-    status: row.status === "archived" ? "archived" : "live",
+    status: normalizeProjectStatus(row.status),
     createdAt: row.created_at,
     lastActivity,
     totalCredits: row.credit_balance,

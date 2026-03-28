@@ -65,7 +65,8 @@ export interface Project {
   clientId: string
   /** From joined `organizations.name` when loaded via Supabase. */
   clientName: string
-  status: "live" | "archived"
+  /** Maps to Supabase `projects.status` (`live` | `paused` | `archived`). */
+  status: "live" | "paused" | "archived"
   /** Maps to Supabase `projects.created_at`. */
   createdAt: string
   /** Maps to `projects.last_activity`, else `updated_at` / `created_at`. */

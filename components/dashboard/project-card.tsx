@@ -3,6 +3,10 @@
 import Link from "next/link"
 import { Calendar, FileText, Users } from "lucide-react"
 import type { Project } from "@/lib/types"
+import {
+  projectStatusBadgeClassName,
+  projectStatusLabel,
+} from "@/lib/project-status"
 import { ProjectCreditsMeter } from "@/components/dashboard/project-credits-meter"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -30,13 +34,9 @@ export function ProjectCard({ project }: { project: Project }) {
             <p className="mt-0.5 text-xs text-muted-foreground">{project.clientName}</p>
           </div>
           <span
-            className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-              project.status === "live"
-                ? "bg-mint-100 text-mint-700"
-                : "bg-dark-100 text-dark-500"
-            }`}
+            className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-xs font-medium ${projectStatusBadgeClassName(project.status)}`}
           >
-            {project.status === "live" ? "Live" : "Archived"}
+            {projectStatusLabel(project.status)}
           </span>
         </div>
 
