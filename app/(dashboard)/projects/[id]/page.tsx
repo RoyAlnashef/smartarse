@@ -12,8 +12,11 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import {
   ArrowLeft,
+  ArrowUpDown,
   MessageSquare,
   FileText,
+  Save,
+  Upload,
   Users,
   Settings,
   PanelRightOpen,
@@ -83,6 +86,9 @@ const demoResponses = [
   "Cross-referencing the available data sources, the key findings suggest that market penetration in the target segment has grown by 15.7% year-over-year. The strongest growth is concentrated in the 25-34 age bracket.",
   "The analysis reveals three primary trends: (1) increased price sensitivity among premium consumers, (2) growing demand for sustainable alternatives, and (3) a notable shift toward subscription-based models in this category.",
 ]
+
+const UNSAVED_DOCUMENT_ORDER_LEAVE_MESSAGE =
+  "You haven't saved your document order yet. Leave this page anyway?"
 
 export default function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
@@ -286,6 +292,79 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
       setIsSavingDocumentOrder(false)
     }
   }, [useRemoteDetail, id, draftStableDocumentIds])
+
+  const confirmLeaveIfUnsavedDocumentOrder = useCallback((): boolean => {
+    if (!documentOrderUnlocked || !useRemoteDetail) return true
+    return window.confirm(UNSAVED_DOCUMENT_ORDER_LEAVE_MESSAGE)
+  }, [documentOrderUnlocked, useRemoteDetail])
+
+  const handleBackToProjects = useCallback(() => {
+    if (!confirmLeaveIfUnsavedDocumentOrder()) return
+    router.push("/projects")
+  }, [confirmLeaveIfUnsavedDocumentOrder, router])
+
+  useEffect(() => {
+    const shouldWarn = documentOrderUnlocked && useRemoteDetail
+    if (!shouldWarn) return
+
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault()
+      e.returnValue = ""
+    }
+    window.addEventListener("beforeunload", onBeforeUnload)
+    return () => window.removeEventListener("beforeunload", onBeforeUnload)
+  }, [documentOrderUnlocked, useRemoteDetail])
+
+  /**
+   * Next.js `<Link>` calls `router.push` from a click handler; the Navigation API’s
+   * `preventDefault` does not stop that. Intercept same-origin `<a href>` clicks in the
+   * capture phase so Cancel on `confirm` keeps the user on this project page.
+   */
+  useEffect(() => {
+    const shouldWarn = documentOrderUnlocked && useRemoteDetail
+    if (!shouldWarn) return
+
+    const projectPath = `/projects/${id}`
+    const normalizePath = (p: string) => {
+      const t = p.replace(/\/$/, "") || "/"
+      return t
+    }
+    const here = normalizePath(projectPath)
+
+    const onClickCapture = (e: MouseEvent) => {
+      if (e.defaultPrevented) return
+      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+        return
+      }
+      const el = e.target
+      if (!(el instanceof Element)) return
+      const a = el.closest("a[href]")
+      if (!a || !(a instanceof HTMLAnchorElement)) return
+      if (a.hasAttribute("download")) return
+      const href = a.getAttribute("href")
+      if (!href || href.startsWith("#")) return
+
+      let url: URL
+      try {
+        url = new URL(href, window.location.href)
+      } catch {
+        return
+      }
+      if (url.protocol !== "http:" && url.protocol !== "https:") return
+      if (url.origin !== window.location.origin) return
+      if (normalizePath(url.pathname) === here) return
+
+      e.preventDefault()
+      e.stopPropagation()
+      e.stopImmediatePropagation()
+      if (window.confirm(UNSAVED_DOCUMENT_ORDER_LEAVE_MESSAGE)) {
+        router.push(`${url.pathname}${url.search}${url.hash}`)
+      }
+    }
+
+    document.addEventListener("click", onClickCapture, true)
+    return () => document.removeEventListener("click", onClickCapture, true)
+  }, [documentOrderUnlocked, useRemoteDetail, id, router])
 
   useEffect(() => {
     if (!project) return
@@ -572,7 +651,8 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
       <div className="flex flex-col gap-3 py-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => router.push("/projects")}
+            type="button"
+            onClick={handleBackToProjects}
             className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -674,6 +754,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                           size="sm"
                           onClick={handleUnlockDocumentOrder}
                         >
+                          <ArrowUpDown className="h-4 w-4" aria-hidden />
                           Sort Rows
                         </Button>
                       ) : (
@@ -681,9 +762,11 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                           type="button"
                           variant="outline"
                           size="sm"
+                          className="border-2 border-arse-pink hover:border-arse-pink focus-visible:ring-arse-pink/40"
                           disabled={isSavingDocumentOrder}
                           onClick={() => void handleLockDocumentOrder()}
                         >
+                          <Save className="h-4 w-4" aria-hidden />
                           Save Order
                         </Button>
                       )
@@ -694,6 +777,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                       className="rounded-lg border-0 bg-dark-950 px-4 text-white shadow-none hover:bg-dark-800 hover:text-white focus-visible:ring-dark-950/40"
                       onClick={() => setUploadDocsModalOpen(true)}
                     >
+                      <Upload className="h-4 w-4" aria-hidden />
                       Upload
                     </Button>
                   </div>
