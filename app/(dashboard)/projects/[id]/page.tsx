@@ -907,7 +907,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
             className="overflow-x-auto overflow-y-hidden overscroll-x-contain [-webkit-overflow-scrolling:touch]"
           >
             <div
-              className="flex w-max flex-nowrap items-center gap-1 px-4 lg:px-6"
+              className="flex w-max flex-nowrap items-center gap-2 px-4 lg:px-6"
               role="tablist"
               aria-label="Project sections"
             >
@@ -920,7 +920,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                   data-project-tab={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={cn(
-                    "flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-medium transition-colors",
+                    "flex min-h-11 shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-4 py-3 text-sm font-medium transition-colors",
                     activeTab === tab.id
                       ? "border-dark-950 text-foreground"
                       : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
