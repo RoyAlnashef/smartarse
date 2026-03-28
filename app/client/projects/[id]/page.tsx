@@ -571,7 +571,6 @@ export default function ClientProjectDetailPage() {
                 </div>
               </section>
             ) : null}
-            <SourcesSelector files={readyDocuments} />
             <ChatHistoryCard
               items={chatHistorySlice}
               pagination={chatHistoryPagination}
@@ -589,6 +588,7 @@ export default function ClientProjectDetailPage() {
               onQuestionSelect={handleHistoryQuestionSelect}
               chatRequestLoading={useRealChat ? chatLoading : undefined}
             />
+            <SourcesSelector files={readyDocuments} />
           </aside>
 
           <div
