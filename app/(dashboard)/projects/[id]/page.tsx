@@ -652,15 +652,24 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
               <div className="min-w-0 flex-1 self-start">
                 <TabsContent value="info" className="mt-0 outline-none">
                   <section className="space-y-4">
-                    <div className="space-y-4 rounded-xl border border-border bg-card p-6">
+                    <form
+                      className="space-y-4 rounded-xl border border-border bg-card p-6"
+                      onSubmit={(ev) => void handleSaveProjectSettings(ev)}
+                    >
                       <div>
                         <label className="block text-sm font-medium text-foreground">
                           Project Name
                         </label>
                         <input
                           type="text"
-                          defaultValue={project.name}
-                          className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30"
+                          value={
+                            user.role === "admin" && useRemoteDetail
+                              ? settingsName
+                              : project.name
+                          }
+                          onChange={(ev) => setSettingsName(ev.target.value)}
+                          disabled={user.role !== "admin" || !useRemoteDetail}
+                          className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
                         />
                       </div>
                       <div>
@@ -669,8 +678,14 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                         </label>
                         <textarea
                           rows={3}
-                          defaultValue={project.description}
-                          className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30"
+                          value={
+                            user.role === "admin" && useRemoteDetail
+                              ? settingsDescription
+                              : project.description
+                          }
+                          onChange={(ev) => setSettingsDescription(ev.target.value)}
+                          disabled={user.role !== "admin" || !useRemoteDetail}
+                          className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
                         />
                       </div>
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -690,23 +705,35 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                             Status
                           </label>
                           <select
-                            defaultValue={project.status}
-                            className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30"
+                            value={
+                              user.role === "admin" && useRemoteDetail
+                                ? settingsStatus
+                                : project.status
+                            }
+                            onChange={(ev) =>
+                              setSettingsStatus(ev.target.value as Project["status"])
+                            }
+                            disabled={user.role !== "admin" || !useRemoteDetail}
+                            className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30 disabled:cursor-not-allowed disabled:bg-muted disabled:text-muted-foreground"
                           >
                             <option value="live">Live</option>
+                            <option value="paused">Paused</option>
                             <option value="archived">Archived</option>
                           </select>
                         </div>
                       </div>
-                      <div className="flex justify-end pt-2">
-                        <button
-                          type="button"
-                          className="rounded-lg bg-dark-950 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-dark-800"
-                        >
-                          Save Changes
-                        </button>
-                      </div>
-                    </div>
+                      {user.role === "admin" && useRemoteDetail && (
+                        <div className="flex justify-end pt-2">
+                          <Button
+                            type="submit"
+                            disabled={isSavingSettings}
+                            className="rounded-lg bg-dark-950 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-dark-800"
+                          >
+                            {isSavingSettings ? "Saving…" : "Save Changes"}
+                          </Button>
+                        </div>
+                      )}
+                    </form>
                   </section>
                 </TabsContent>
 

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import type { ApiError } from "@/lib/api/require-dashboard-admin"
 import { requireChatSession } from "@/lib/api/require-chat-session"
+import { PROJECT_NOT_LIVE_CHAT_MESSAGE } from "@/lib/project-status"
 import { getSupabaseAdminClient } from "@/lib/supabase/admin"
 
 const persistBodySchema = z.object({
@@ -45,7 +46,7 @@ export async function POST(request: Request) {
 
   const { data: project, error: projectError } = await supabase
     .from("projects")
-    .select("id, organization_id")
+    .select("id, organization_id, status")
     .eq("id", body.project_id)
     .maybeSingle()
 
@@ -53,6 +54,13 @@ export async function POST(request: Request) {
     return NextResponse.json<ApiError>(
       { error: "Project not found." },
       { status: 404 }
+    )
+  }
+
+  if ((project as { status: string }).status !== "live") {
+    return NextResponse.json<ApiError>(
+      { error: PROJECT_NOT_LIVE_CHAT_MESSAGE },
+      { status: 403 }
     )
   }
 

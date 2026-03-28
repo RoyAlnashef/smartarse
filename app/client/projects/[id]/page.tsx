@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState, type PointerEvent } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useParams } from "next/navigation"
@@ -14,6 +14,8 @@ import { useChatHistory } from "@/hooks/useChatHistory"
 import { useChatQuestion } from "@/hooks/useChatQuestion"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { listProjectDocuments } from "@/lib/supabase/documents"
+import { ProjectPausedContactMessage } from "@/components/client/project-paused-contact-message"
+import { isProjectLiveForChat } from "@/lib/project-status"
 import { getProjectById } from "@/lib/supabase/projects"
 import type {
   ChatMessage,
@@ -29,6 +31,14 @@ import { ProjectRightSidebar } from "@/components/client/project-detail/project-
 import { ProjectDetailCard } from "@/components/client/project-detail/project-detail-card"
 import { SourcesSelector } from "@/components/client/project-detail/sources-selector"
 import { ProjectChat } from "@/components/client/project-detail/project-chat"
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+} from "@/components/ui/popover"
+
+const WORKSPACE_INTERACTIVE_SELECTOR =
+  'button, a[href], [role="button"], [role="tab"], textarea, input, select, label[for]'
 
 export default function ClientProjectDetailPage() {
   const params = useParams()
@@ -169,6 +179,39 @@ export default function ClientProjectDetailPage() {
   const orgId = project?.clientId ?? user?.clientId ?? ""
   const useRealChat = Boolean(useRemoteDetail && project && orgId)
 
+  const workspaceChatBlocked =
+    Boolean(useRealChat && project && !isProjectLiveForChat(project.status))
+
+  const [blockedPopoverOpen, setBlockedPopoverOpen] = useState(false)
+  const [popoverAnchor, setPopoverAnchor] = useState<{
+    left: number
+    top: number
+  } | null>(null)
+
+  const handleWorkspacePointerDownCapture = useCallback(
+    (e: PointerEvent<HTMLDivElement>) => {
+      if (!workspaceChatBlocked) return
+      const target = e.target
+      if (!(target instanceof Element)) return
+      if (target.closest("[data-radix-popover-content]")) return
+
+      const clickable = target.closest(WORKSPACE_INTERACTIVE_SELECTOR)
+      if (!clickable) return
+
+      e.preventDefault()
+      e.stopPropagation()
+
+      const el = clickable as HTMLElement
+      const rect = el.getBoundingClientRect()
+      setPopoverAnchor({
+        left: Math.round(rect.left + rect.width / 2),
+        top: Math.round(rect.top),
+      })
+      setBlockedPopoverOpen(true)
+    },
+    [workspaceChatBlocked]
+  )
+
   const refreshHistory = useCallback(() => {
     void refreshChatHistory()
   }, [refreshChatHistory])
@@ -195,6 +238,7 @@ export default function ClientProjectDetailPage() {
       orgId,
       userId: user?.id ?? "",
       projectId: id,
+      projectStatus: project?.status ?? "live",
       sessionId,
       orgSettings,
       onResult: onChatResult,
@@ -317,6 +361,36 @@ export default function ClientProjectDetailPage() {
         </span>
       </nav>
 
+      {workspaceChatBlocked ? (
+        <Popover
+          open={blockedPopoverOpen}
+          onOpenChange={(open) => {
+            setBlockedPopoverOpen(open)
+            if (!open) setPopoverAnchor(null)
+          }}
+        >
+          <PopoverAnchor asChild>
+            <span
+              aria-hidden
+              className="pointer-events-none fixed z-[60] block h-0 w-0"
+              style={{
+                left: popoverAnchor?.left ?? 0,
+                top: popoverAnchor?.top ?? 0,
+              }}
+            />
+          </PopoverAnchor>
+          <PopoverContent
+            side="top"
+            align="center"
+            sideOffset={8}
+            className="z-[70] max-w-xs border-amber-200 bg-amber-50 text-center text-sm text-amber-950 shadow-md dark:border-amber-900/50 dark:bg-amber-950/90 dark:text-amber-50"
+            onOpenAutoFocus={(ev) => ev.preventDefault()}
+          >
+            <ProjectPausedContactMessage />
+          </PopoverContent>
+        </Popover>
+      ) : null}
+
       <div className="mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] lg:gap-8">
           <aside className="min-w-0 space-y-6">
             {client ? (
@@ -376,12 +450,19 @@ export default function ClientProjectDetailPage() {
             <SourcesSelector files={readyDocuments} />
           </aside>
 
-          <div className="order-first min-h-0 min-w-0 lg:order-none">
+          <div
+            className="order-first min-h-0 min-w-0 lg:order-none"
+            onPointerDownCapture={handleWorkspacePointerDownCapture}
+          >
             <ProjectChat
               messages={messages}
               personaEvents={personaEvents}
               appliedPersonaId={appliedPersonaId}
-              disabled={useRealChat && chatLoading}
+              disabled={
+                useRealChat &&
+                (chatLoading ||
+                  (project ? !isProjectLiveForChat(project.status) : true))
+              }
               onOpenPersonas={() => setMobilePersonasOpen(true)}
               onSend={(content) => {
                 const ts = new Date().toISOString()
@@ -403,7 +484,10 @@ export default function ClientProjectDetailPage() {
             />
           </div>
 
-          <div className="hidden min-h-0 min-w-0 lg:block">
+          <div
+            className="hidden min-h-0 min-w-0 lg:block"
+            onPointerDownCapture={handleWorkspacePointerDownCapture}
+          >
             <ProjectRightSidebar
               appliedPersona={appliedPersona}
               onApplyPersona={handleApplyPersona}
@@ -424,6 +508,9 @@ export default function ClientProjectDetailPage() {
           onHistoryQuestionSelect={handleHistoryQuestionSelect}
           chatHistoryItems={chatHistoryItems}
           chatRequestLoading={useRealChat ? chatLoading : undefined}
+          onSidebarPointerDownCapture={
+            workspaceChatBlocked ? handleWorkspacePointerDownCapture : undefined
+          }
         />
     </div>
   )

@@ -2,8 +2,13 @@
 
 import { useCallback, useState } from "react"
 import { resultPayloadToClientShape, type ChatResultForClient } from "@/lib/api/chat-payload"
+import {
+  isProjectLiveForChat,
+  PROJECT_NOT_LIVE_CHAT_MESSAGE,
+} from "@/lib/project-status"
 import { getN8nWebhookUrl } from "@/lib/n8n-webhook-url"
 import { sanitiseQuery } from "@/lib/sanitise"
+import type { Project } from "@/lib/types"
 
 const TIMEOUT_MS = 85_000
 const POLL_MAX_ATTEMPTS = 80
@@ -107,6 +112,7 @@ export function useChatQuestion({
   orgId,
   userId,
   projectId,
+  projectStatus,
   sessionId,
   orgSettings,
   onResult,
@@ -115,6 +121,8 @@ export function useChatQuestion({
   orgId: string
   userId: string
   projectId: string
+  /** When not `live`, outbound chat is blocked (server enforces on persist as well). */
+  projectStatus: Project["status"]
   sessionId: string
   orgSettings: OrgSettings
   onResult?: (result: ChatResultForClient, question: string) => void
@@ -132,6 +140,11 @@ export function useChatQuestion({
 
       if (!userId) {
         setError("You must be signed in to send a message.")
+        return
+      }
+
+      if (!isProjectLiveForChat(projectStatus)) {
+        setError(PROJECT_NOT_LIVE_CHAT_MESSAGE)
         return
       }
 
@@ -221,6 +234,7 @@ export function useChatQuestion({
       orgId,
       userId,
       projectId,
+      projectStatus,
       sessionId,
       orgSettings.weighted,
       orgSettings.data_source_mode,

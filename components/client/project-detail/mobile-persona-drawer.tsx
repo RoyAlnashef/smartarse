@@ -1,6 +1,12 @@
 "use client"
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react"
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PointerEventHandler,
+} from "react"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ProjectSidebarTabs } from "@/components/client/project-detail/project-sidebar-tabs"
@@ -16,6 +22,7 @@ export function MobilePersonaDrawer({
   onHistoryQuestionSelect,
   chatHistoryItems,
   chatRequestLoading,
+  onSidebarPointerDownCapture,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -25,6 +32,8 @@ export function MobilePersonaDrawer({
   onHistoryQuestionSelect?: (question: string) => void
   chatHistoryItems?: HistoryItem[]
   chatRequestLoading?: boolean
+  /** When project chat is blocked (e.g. not live), intercept persona/history controls (not close/backdrop). */
+  onSidebarPointerDownCapture?: PointerEventHandler<HTMLDivElement>
 }) {
   const [exiting, setExiting] = useState(false)
   const [entering, setEntering] = useState(false)
@@ -113,15 +122,20 @@ export function MobilePersonaDrawer({
               <X className="h-4 w-4" strokeWidth={2.5} />
             </button>
           </div>
-          <ProjectSidebarTabs
-            className="min-h-0 flex-1"
-            appliedPersona={appliedPersona}
-            onApplyPersona={onApply}
-            onClearPersona={onClearPersona}
-            onHistoryQuestionSelect={onHistoryQuestionSelect}
-            chatHistoryItems={chatHistoryItems}
-            chatRequestLoading={chatRequestLoading}
-          />
+          <div
+            className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
+            onPointerDownCapture={onSidebarPointerDownCapture}
+          >
+            <ProjectSidebarTabs
+              className="min-h-0 flex-1"
+              appliedPersona={appliedPersona}
+              onApplyPersona={onApply}
+              onClearPersona={onClearPersona}
+              onHistoryQuestionSelect={onHistoryQuestionSelect}
+              chatHistoryItems={chatHistoryItems}
+              chatRequestLoading={chatRequestLoading}
+            />
+          </div>
         </div>
       </div>
     </div>
