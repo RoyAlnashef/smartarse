@@ -1,6 +1,13 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState, type PointerEvent } from "react"
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type PointerEvent,
+} from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useParams } from "next/navigation"
@@ -17,6 +24,7 @@ import { listProjectDocuments } from "@/lib/supabase/documents"
 import { ProjectPausedContactMessage } from "@/components/client/project-paused-contact-message"
 import { isProjectLiveForChat } from "@/lib/project-status"
 import { getProjectById } from "@/lib/supabase/projects"
+import type { HistoryItem } from "@/lib/chat-history-types"
 import type {
   ChatMessage,
   PersonaActivatedEvent,
@@ -38,6 +46,19 @@ import {
 } from "@/components/ui/popover"
 
 const MOCK_HISTORY_PAGE_SIZE = 5
+const MOCK_CHAT_REPLY_MS = 750
+
+function dedupeHistoryByQuery(items: HistoryItem[]): HistoryItem[] {
+  const seen = new Set<string>()
+  const out: HistoryItem[] = []
+  for (const it of items) {
+    const k = it.user_query.trim().toLowerCase()
+    if (seen.has(k)) continue
+    seen.add(k)
+    out.push(it)
+  }
+  return out
+}
 
 const WORKSPACE_INTERACTIVE_SELECTOR =
   'button, a[href], [role="button"], [role="tab"], textarea, input, select, label[for]'
@@ -156,39 +177,72 @@ export default function ClientProjectDetailPage() {
 
   const {
     history: apiHistory,
-    pagination: apiHistoryPagination,
-    page: apiHistoryPage,
     loading: apiHistoryLoading,
     error: apiHistoryError,
-    fetch: fetchHistoryPage,
     refresh: refreshChatHistory,
   } = useChatHistory({
     projectId: id,
     enabled: useRemoteDetail && !!id,
   })
 
-  const [mockHistoryPage, setMockHistoryPage] = useState(1)
+  const [sessionHistoryItems, setSessionHistoryItems] = useState<HistoryItem[]>(
+    []
+  )
+  const [chatHistoryUIPage, setChatHistoryUIPage] = useState(1)
+  const prevSessionHistoryCountRef = useRef(0)
+
   useEffect(() => {
-    setMockHistoryPage(1)
+    setSessionHistoryItems([])
   }, [id])
 
-  const mockHistoryTotal = MOCK_CHAT_HISTORY.length
-  const mockHistoryTotalPages = Math.max(
-    1,
-    Math.ceil(mockHistoryTotal / MOCK_HISTORY_PAGE_SIZE)
+  useEffect(() => {
+    setChatHistoryUIPage(1)
+  }, [id])
+
+  useEffect(() => {
+    if (sessionHistoryItems.length > prevSessionHistoryCountRef.current) {
+      setChatHistoryUIPage(1)
+    }
+    prevSessionHistoryCountRef.current = sessionHistoryItems.length
+  }, [sessionHistoryItems.length])
+
+  const historyBaseList = useMemo(() => {
+    if (useRemoteDetail && !apiHistoryError && apiHistory.length > 0) {
+      return apiHistory
+    }
+    return MOCK_CHAT_HISTORY
+  }, [useRemoteDetail, apiHistoryError, apiHistory])
+
+  const mergedChatHistory = useMemo(
+    () => dedupeHistoryByQuery([...sessionHistoryItems, ...historyBaseList]),
+    [sessionHistoryItems, historyBaseList]
   )
-  const mockHistorySlice = useMemo(() => {
-    const start = (mockHistoryPage - 1) * MOCK_HISTORY_PAGE_SIZE
-    return MOCK_CHAT_HISTORY.slice(start, start + MOCK_HISTORY_PAGE_SIZE)
-  }, [mockHistoryPage])
-  const mockHistoryPagination = useMemo(
+
+  const chatHistoryTotalPages = Math.max(
+    1,
+    Math.ceil(mergedChatHistory.length / MOCK_HISTORY_PAGE_SIZE)
+  )
+
+  const chatHistorySlice = useMemo(() => {
+    const start = (chatHistoryUIPage - 1) * MOCK_HISTORY_PAGE_SIZE
+    return mergedChatHistory.slice(start, start + MOCK_HISTORY_PAGE_SIZE)
+  }, [mergedChatHistory, chatHistoryUIPage])
+
+  const chatHistoryPagination = useMemo(
     () => ({
-      page: mockHistoryPage,
+      page: chatHistoryUIPage,
       pageSize: MOCK_HISTORY_PAGE_SIZE,
-      totalItems: mockHistoryTotal,
-      totalPages: mockHistoryTotalPages,
+      totalItems: mergedChatHistory.length,
+      totalPages: chatHistoryTotalPages,
     }),
-    [mockHistoryPage, mockHistoryTotal, mockHistoryTotalPages]
+    [chatHistoryUIPage, mergedChatHistory.length, chatHistoryTotalPages]
+  )
+
+  const showHistoryLoading = Boolean(
+    useRemoteDetail &&
+      apiHistoryLoading &&
+      apiHistory.length === 0 &&
+      !apiHistoryError
   )
 
   const [sessionId, setSessionId] = useState(() => crypto.randomUUID())
@@ -245,8 +299,38 @@ export default function ClientProjectDetailPage() {
     void refreshChatHistory()
   }, [refreshChatHistory])
 
+  const appendMockAssistantAndHistory = useCallback(
+    (rawQuestion: string) => {
+      const question = rawQuestion.trim()
+      if (!question) return
+      window.setTimeout(() => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `msg-${crypto.randomUUID()}`,
+            conversationId: `conv-${id}`,
+            role: "assistant",
+            content:
+              "Here’s a quick demo reply — in production this comes back from your n8n workflow.",
+            timestamp: new Date().toISOString(),
+          },
+        ])
+        setSessionHistoryItems((prev) => [
+          {
+            id: -Date.now(),
+            user_query: question,
+            created_at: new Date().toISOString(),
+            status: "complete",
+          },
+          ...prev,
+        ])
+      }, MOCK_CHAT_REPLY_MS)
+    },
+    [id]
+  )
+
   const onChatResult = useCallback(
-    (result: ChatResultForClient) => {
+    (result: ChatResultForClient, question: string) => {
       const text = result.answer.trim() || "No answer returned."
       setMessages((prev) => [
         ...prev,
@@ -258,6 +342,18 @@ export default function ClientProjectDetailPage() {
           timestamp: new Date().toISOString(),
         },
       ])
+      const q = question.trim()
+      if (q) {
+        setSessionHistoryItems((prev) => [
+          {
+            id: -Date.now(),
+            user_query: q,
+            created_at: new Date().toISOString(),
+            status: "complete",
+          },
+          ...prev,
+        ])
+      }
     },
     [id]
   )
@@ -382,7 +478,7 @@ export default function ClientProjectDetailPage() {
           /
         </span>
         <span
-          className="min-w-0 truncate font-arse-title text-sm font-bold uppercase tracking-wide text-arse-black"
+          className="min-w-0 truncate font-arse-title text-sm font-bold tracking-tight text-arse-black"
           title={project.name}
           aria-current="page"
         >
@@ -424,8 +520,8 @@ export default function ClientProjectDetailPage() {
           <aside className="min-w-0 space-y-6">
             {client ? (
               <section className="w-full overflow-hidden rounded-3xl bg-arse-cyan">
-                <div className="bg-arse-pink px-4 py-2 text-center font-arse-title text-xs font-bold uppercase tracking-[0.35em] text-arse-white">
-                  CREDITS
+                <div className="bg-arse-pink px-4 py-2 text-center font-arse-title text-xs font-bold tracking-wide text-arse-white">
+                  Credits
                 </div>
                 <div className="px-4 py-4">
                   <div className="rounded-2xl bg-arse-cyan text-arse-black">
@@ -443,7 +539,7 @@ export default function ClientProjectDetailPage() {
                             />
                           </span>
                           <div>
-                            <p className="font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black/65">
+                            <p className="font-arse-title text-[10px] font-bold tracking-wide text-arse-black/65">
                               Remaining
                             </p>
                             <p className="font-arse-title text-[16px] font-bold text-arse-black">
@@ -454,7 +550,7 @@ export default function ClientProjectDetailPage() {
                       </div>
 
                       <div className="pl-4">
-                        <p className="font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black/65">
+                        <p className="font-arse-title text-[10px] font-bold tracking-wide text-arse-black/65">
                           Total
                         </p>
                         <p className="font-arse-title text-[16px] font-bold text-arse-black">
@@ -477,30 +573,21 @@ export default function ClientProjectDetailPage() {
             ) : null}
             <SourcesSelector files={readyDocuments} />
             <ChatHistoryCard
-              items={useRemoteDetail ? apiHistory : mockHistorySlice}
-              pagination={
-                useRemoteDetail ? apiHistoryPagination : mockHistoryPagination
-              }
-              page={useRemoteDetail ? apiHistoryPage : mockHistoryPage}
-              loading={useRemoteDetail ? apiHistoryLoading : false}
-              onFetchPage={
-                useRemoteDetail
-                  ? (p) => {
-                      void fetchHistoryPage(p)
-                    }
-                  : (p) => {
-                      setMockHistoryPage((prev) => {
-                        const next = Math.min(
-                          Math.max(1, p),
-                          mockHistoryTotalPages
-                        )
-                        return next === prev ? prev : next
-                      })
-                    }
-              }
+              items={chatHistorySlice}
+              pagination={chatHistoryPagination}
+              page={chatHistoryUIPage}
+              loading={showHistoryLoading}
+              onFetchPage={(p) => {
+                setChatHistoryUIPage((prev) => {
+                  const next = Math.min(
+                    Math.max(1, p),
+                    chatHistoryTotalPages
+                  )
+                  return next === prev ? prev : next
+                })
+              }}
               onQuestionSelect={handleHistoryQuestionSelect}
               chatRequestLoading={useRealChat ? chatLoading : undefined}
-              error={useRemoteDetail ? apiHistoryError : null}
             />
           </aside>
 
@@ -534,6 +621,7 @@ export default function ClientProjectDetailPage() {
                   return
                 }
                 setMessages((prev) => [...prev, userMsg])
+                appendMockAssistantAndHistory(content)
               }}
             />
           </div>

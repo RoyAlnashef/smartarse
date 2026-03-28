@@ -22,7 +22,7 @@ const tabContentClass =
 
 /** Match panel shell `border-4`; inactive keeps transparent border-b-4 so layout does not shift. */
 const tabTriggerClass =
-  "shrink-0 border-b-4 border-transparent font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black/50 data-[state=active]:border-arse-pink data-[state=active]:text-arse-black"
+  "shrink-0 border-b-4 border-transparent font-arse-title text-[10px] font-bold tracking-wide text-arse-black/50 data-[state=active]:border-arse-pink data-[state=active]:text-arse-black"
 
 export function ProjectSidebarTabs({
   appliedPersona,

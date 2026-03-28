@@ -12,6 +12,7 @@ import type {
   HistoryItem as ChatHistoryRow,
   HistoryResponse,
 } from "@/lib/chat-history-types"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 const RERUN_SIM_MS = 600
@@ -28,7 +29,6 @@ export type ChatHistoryCardProps = {
    * When omitted, a short mock delay is used after select.
    */
   chatRequestLoading?: boolean
-  error?: string | null
   className?: string
 }
 
@@ -40,7 +40,6 @@ export function ChatHistoryCard({
   onFetchPage,
   onQuestionSelect,
   chatRequestLoading,
-  error,
   className,
 }: ChatHistoryCardProps) {
   const [isRerunning, setIsRerunning] = useState(false)
@@ -106,7 +105,7 @@ export function ChatHistoryCard({
         className,
       )}
     >
-      <div className="bg-arse-pink px-4 py-2 text-center font-arse-title text-xs font-bold uppercase tracking-[0.35em] text-arse-white">
+      <div className="bg-arse-pink px-4 py-2 text-center font-arse-title text-xs font-bold tracking-wide text-arse-white">
         Chat History
       </div>
       <div className="relative px-4 py-4">
@@ -124,19 +123,16 @@ export function ChatHistoryCard({
           </div>
         ) : null}
 
-        {error ? (
-          <p className="mb-3 text-sm text-arse-white/80" role="alert">
-            {error}
-          </p>
-        ) : null}
-
-        <p className="mb-3 text-xs text-arse-white/70">Past questions</p>
-
         <div className="space-y-0">
           {items.length === 0 && !loading ? (
-            <p className="text-sm leading-relaxed text-arse-white/70">
-              No questions yet. Ask something to get started.
-            </p>
+            <div className="space-y-2 text-left">
+              <p className="font-arse-title text-sm font-bold tracking-tight text-arse-white">
+                Nothing here yet
+              </p>
+              <p className="font-arse-body text-sm leading-relaxed text-arse-white/75">
+                Ask smartARSE a question about this project.
+              </p>
+            </div>
           ) : (
             items.map((item) => {
               const animateEnter = enteringItemIds.has(item.id)
@@ -148,28 +144,25 @@ export function ChatHistoryCard({
                   disabled={isRerunning || loading}
                   onClick={() => handleSelect(item)}
                   className={cn(
-                    "flex w-full items-start gap-3 rounded-xl px-2 py-2 text-left",
+                    "flex w-full items-center gap-2 rounded-lg px-1 py-1.5 text-left transition-colors",
+                    "font-arse-body text-xs font-semibold leading-snug",
+                    "text-arse-white hover:text-arse-cyan",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950",
-                    (isRerunning || loading) && "cursor-not-allowed opacity-60",
-                    isActiveRow && isRerunning && "opacity-100",
+                    (isRerunning || loading) &&
+                      "cursor-not-allowed opacity-60 text-arse-white/45 hover:text-arse-white/45",
+                    isActiveRow && isRerunning && "opacity-100 text-arse-cyan",
                     animateEnter &&
                       "motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-top-4 motion-safe:duration-300 motion-safe:ease-out",
                     animateEnter &&
                       "motion-reduce:animate-none motion-reduce:opacity-100",
                   )}
                 >
-                  <span
-                    aria-hidden
-                    className="mt-1 h-2 w-2 shrink-0 rounded-full bg-arse-cyan"
-                  />
-                  <span className="min-w-0 flex-1">
-                    <span className="line-clamp-3 block whitespace-normal break-words font-arse-title text-xs font-bold uppercase tracking-wide text-arse-white">
-                      {item.user_query}
-                    </span>
+                  <span className="min-w-0 flex-1 truncate text-left">
+                    {item.user_query}
                   </span>
                   {isRerunning && isActiveRow ? (
                     <Loader2
-                      className="mt-0.5 h-4 w-4 shrink-0 animate-spin text-arse-cyan"
+                      className="h-4 w-4 shrink-0 animate-spin text-arse-cyan"
                       aria-hidden
                     />
                   ) : null}
@@ -180,36 +173,30 @@ export function ChatHistoryCard({
         </div>
 
         {showPagination ? (
-          <div className="mt-4 flex items-center justify-between gap-2 border-t border-arse-white/10 pt-3 font-arse-body text-xs text-arse-white/60">
-            <button
+          <div className="mt-4 flex items-center justify-between gap-2 font-arse-body text-xs text-arse-white/70">
+            <Button
               type="button"
+              variant="secondary"
+              size="sm"
               disabled={!canPrev}
               onClick={() => onFetchPage(page - 1)}
-              className={cn(
-                "rounded-md px-2 py-1 font-arse-title text-[10px] font-bold uppercase tracking-wide",
-                canPrev
-                  ? "text-arse-cyan hover:text-arse-white"
-                  : "text-arse-white/35",
-              )}
+              className="h-8 rounded-lg border-arse-cyan/15 bg-arse-cyan/10 font-arse-title text-[10px] font-bold tracking-wide text-arse-cyan hover:text-arse-white hover:bg-arse-cyan/18"
             >
               Previous
-            </button>
+            </Button>
             <span className="tabular-nums text-arse-white/70">
               Page {page} of {totalPages}
             </span>
-            <button
+            <Button
               type="button"
+              variant="secondary"
+              size="sm"
               disabled={!canNext}
               onClick={() => onFetchPage(page + 1)}
-              className={cn(
-                "rounded-md px-2 py-1 font-arse-title text-[10px] font-bold uppercase tracking-wide",
-                canNext
-                  ? "text-arse-cyan hover:text-arse-white"
-                  : "text-arse-white/35",
-              )}
+              className="h-8 rounded-lg border-arse-cyan/15 bg-arse-cyan/10 font-arse-title text-[10px] font-bold tracking-wide text-arse-cyan hover:text-arse-white hover:bg-arse-cyan/18"
             >
               Next
-            </button>
+            </Button>
           </div>
         ) : null}
       </div>

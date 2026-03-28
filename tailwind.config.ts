@@ -76,10 +76,13 @@ const config: Config = {
           '4': '#cc00b8',
           '5': '#009999',
         },
-        /** Client + dashboard accents: cyan (1st), pink (2nd) */
+        /**
+         * Client + dashboard accents: cyan (1st), pink (2nd).
+         * RGB form enables opacity modifiers: `bg-arse-cyan/10`, `border-arse-pink/20`, etc.
+         */
         arse: {
-          cyan: 'var(--arse-cyan)',
-          pink: 'var(--arse-pink)',
+          cyan: 'rgb(var(--arse-cyan-rgb) / <alpha-value>)',
+          pink: 'rgb(var(--arse-pink-rgb) / <alpha-value>)',
           'pink-muted': 'var(--arse-pink-muted)',
           black: 'var(--arse-black)',
           white: 'var(--arse-white)',

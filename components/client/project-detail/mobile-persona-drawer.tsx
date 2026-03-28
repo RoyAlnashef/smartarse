@@ -103,7 +103,7 @@ export function MobilePersonaDrawer({
           )}
         >
           <div className="flex shrink-0 items-center justify-between gap-2 border-b border-arse-black/10 px-3 py-2.5">
-            <p className="font-arse-title text-xs font-bold uppercase tracking-wide text-arse-black">
+            <p className="font-arse-title text-xs font-bold tracking-wide text-arse-black">
               Controls
             </p>
             <button
