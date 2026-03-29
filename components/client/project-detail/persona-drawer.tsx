@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronRight, X } from "lucide-react"
+import { X } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
@@ -341,15 +341,12 @@ export function PersonaPanel({
   onClearPersona,
   /** Mobile overlay only — header dismiss (X). */
   onClose,
-  /** Desktop column — collapse to narrow rail (no X). */
-  onCollapseToRail,
   className,
 }: {
   appliedPersona: PersonaMock | null
   onApply: (personaId: string) => void
   onClearPersona?: () => void
   onClose?: () => void
-  onCollapseToRail?: () => void
   className?: string
 }) {
   return (
@@ -361,25 +358,13 @@ export function PersonaPanel({
       aria-label="Persona"
     >
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-arse-black/10 px-0 py-3">
-        <div className="flex min-w-0 flex-1 items-start gap-2">
-          {onCollapseToRail ? (
-            <button
-              type="button"
-              onClick={onCollapseToRail}
-              className="mt-0.5 flex h-8 w-6 shrink-0 items-center justify-center rounded-xl border-2 border-arse-black/15 bg-white text-arse-black transition hover:border-arse-pink hover:bg-arse-black/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink"
-              aria-label="Collapse personas column"
-            >
-              <ChevronRight className="h-4 w-4" strokeWidth={2.5} aria-hidden />
-            </button>
-          ) : null}
-          <div className="min-w-0">
-            <p className="font-arse-title text-xs font-bold uppercase tracking-wide text-arse-black">
-              Personas
-            </p>
-            <p className="font-arse-body text-[11px] text-arse-black/50">
-              Choose how smartA.R.S.E speaks to you.
-            </p>
-          </div>
+        <div className="min-w-0 flex-1">
+          <p className="font-arse-title text-xs font-bold uppercase tracking-wide text-arse-black">
+            Personas
+          </p>
+          <p className="font-arse-body text-[11px] text-arse-black/50">
+            Choose how smartA.R.S.E speaks to you.
+          </p>
         </div>
         {onClose ? (
           <button
@@ -516,14 +501,12 @@ export function PersonaPanel({
 export function PersonaDrawer({
   open,
   onClose,
-  onCollapseToRail,
   appliedPersona,
   onApply,
   onClearPersona,
 }: {
   open: boolean
   onClose?: () => void
-  onCollapseToRail?: () => void
   appliedPersona: PersonaMock | null
   onApply: (personaId: string) => void
   onClearPersona?: () => void
@@ -535,7 +518,6 @@ export function PersonaDrawer({
       onApply={onApply}
       onClearPersona={onClearPersona}
       onClose={onClose}
-      onCollapseToRail={onCollapseToRail}
     />
   )
 }

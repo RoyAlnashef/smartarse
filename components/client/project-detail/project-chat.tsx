@@ -102,6 +102,7 @@ export function ProjectChat({
   appliedPersonaId,
   onSend,
   onOpenPersonas,
+  personasColumnCollapsed = false,
   onPersonaActivated,
   onPersonaEnded,
 }: {
@@ -111,6 +112,8 @@ export function ProjectChat({
   appliedPersonaId: string | null
   onSend?: (content: string) => void
   onOpenPersonas?: () => void
+  /** When true at lg+, show Controls to restore the inline personas column. */
+  personasColumnCollapsed?: boolean
   onPersonaActivated?: (personaId: string) => void
   onPersonaEnded?: (personaId: string) => void
 }) {
@@ -159,7 +162,10 @@ export function ProjectChat({
           type="button"
           onClick={() => onOpenPersonas?.()}
           aria-label="Open personas and studio controls"
-          className="absolute right-3 top-3 z-10 inline-flex items-center gap-2 rounded-xl border-2 border-arse-black bg-white px-3 py-1.5 font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black shadow-[3px_3px_0_0_var(--arse-pink)] transition hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--arse-pink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink sm:right-4 sm:top-4 lg:hidden"
+          className={cn(
+            "absolute right-3 top-3 z-10 inline-flex items-center gap-2 rounded-xl border-2 border-arse-black bg-white px-3 py-1.5 font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black shadow-[3px_3px_0_0_var(--arse-pink)] transition hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--arse-pink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink sm:right-4 sm:top-4",
+            !personasColumnCollapsed && "lg:hidden"
+          )}
         >
           {appliedPersona ? (
             <span className="relative flex h-2 w-2 shrink-0" aria-hidden>

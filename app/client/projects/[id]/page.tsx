@@ -24,6 +24,7 @@ import { listProjectDocuments } from "@/lib/supabase/documents"
 import { ProjectPausedContactMessage } from "@/components/client/project-paused-contact-message"
 import { isProjectLiveForChat } from "@/lib/project-status"
 import { getProjectById } from "@/lib/supabase/projects"
+import { cn } from "@/lib/utils"
 import type { HistoryItem } from "@/lib/chat-history-types"
 import type {
   ChatMessage,
@@ -383,6 +384,24 @@ export default function ClientProjectDetailPage() {
   >([])
   const [appliedPersonaId, setAppliedPersonaId] = useState<string | null>(null)
   const [mobilePersonasOpen, setMobilePersonasOpen] = useState(false)
+  const [desktopPersonasCollapsed, setDesktopPersonasCollapsed] =
+    useState(false)
+
+  const handleOpenPersonasControls = useCallback(() => {
+    if (
+      typeof window !== "undefined" &&
+      window.matchMedia("(min-width: 1024px)").matches &&
+      desktopPersonasCollapsed
+    ) {
+      setDesktopPersonasCollapsed(false)
+      return
+    }
+    setMobilePersonasOpen(true)
+  }, [desktopPersonasCollapsed])
+
+  useEffect(() => {
+    if (!desktopPersonasCollapsed) setMobilePersonasOpen(false)
+  }, [desktopPersonasCollapsed])
 
   const appliedPersona = useMemo(
     () =>
@@ -516,7 +535,14 @@ export default function ClientProjectDetailPage() {
         </Popover>
       ) : null}
 
-      <div className="mt-6 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)] lg:gap-8">
+      <div
+        className={cn(
+          "mt-6 grid grid-cols-1 items-start gap-6 lg:gap-8",
+          desktopPersonasCollapsed
+            ? "lg:grid-cols-[minmax(0,1fr)_minmax(0,3fr)]"
+            : "lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1fr)]"
+        )}
+      >
           <aside className="min-w-0 space-y-6">
             {client ? (
               <section className="w-full overflow-hidden rounded-3xl bg-arse-cyan">
@@ -604,7 +630,8 @@ export default function ClientProjectDetailPage() {
                 (chatLoading ||
                   (project ? !isProjectLiveForChat(project.status) : true))
               }
-              onOpenPersonas={() => setMobilePersonasOpen(true)}
+              personasColumnCollapsed={desktopPersonasCollapsed}
+              onOpenPersonas={handleOpenPersonasControls}
               onSend={(content) => {
                 const ts = new Date().toISOString()
                 const userMsg: ChatMessage = {
@@ -626,16 +653,19 @@ export default function ClientProjectDetailPage() {
             />
           </div>
 
-          <div
-            className="hidden min-h-0 min-w-0 lg:block"
-            onPointerDownCapture={handleWorkspacePointerDownCapture}
-          >
-            <ProjectRightSidebar
-              appliedPersona={appliedPersona}
-              onApplyPersona={handleApplyPersona}
-              onClearPersona={handleClearPersona}
-            />
-          </div>
+          {!desktopPersonasCollapsed ? (
+            <div
+              className="hidden min-h-0 min-w-0 lg:block"
+              onPointerDownCapture={handleWorkspacePointerDownCapture}
+            >
+              <ProjectRightSidebar
+                appliedPersona={appliedPersona}
+                onApplyPersona={handleApplyPersona}
+                onClearPersona={handleClearPersona}
+                onCollapseColumn={() => setDesktopPersonasCollapsed(true)}
+              />
+            </div>
+          ) : null}
         </div>
 
         <MobilePersonaDrawer
