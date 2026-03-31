@@ -5,6 +5,8 @@
 | Resource | Role |
 | -------- | ---- |
 | [`disrupt-n8n-coordination.md`](disrupt-n8n-coordination.md) | Stable webhook JSON (`answer` / `output` / `response`, `sources`), **no n8n writes to `chat_results`**, optional **`POST /api/chat/n8n-complete`** for async + poll. |
+| [`n8n-engineer-handoff.md`](n8n-engineer-handoff.md) | Short TL;DR for the n8n engineer: webhook env names, sync vs async, link to full coordination doc. |
+| [`smoke-test-checklist.md`](smoke-test-checklist.md) | Manual QA: admin → assign user → chat → verify `chat_results.project_id`. |
 
 ## Product & data contracts
 
@@ -43,9 +45,5 @@
 | File | Role |
 | ---- | ---- |
 | [`supabase/migrations/202603241900_projects_project_users_rls.sql`](../../../supabase/migrations/202603241900_projects_project_users_rls.sql) | Pattern for org + `project_users` visibility; model `chat_results` RLS after this. |
-
-## Planned additions (per [`plan.md`](plan.md))
-
-- Migration: **`chat_results`** + **`project_id`** + indexes + RLS.
-- `lib/sanitise.ts` (or equivalent) — `sanitiseQuery` per chat-history-spec.
-- `lib/chat-history.ts`, hooks: `useChatHistory`, `useChatQuestion` (send, rerun, poll, persist).
+| [`supabase/migrations/202603311200_chat_results.sql`](../../../supabase/migrations/202603311200_chat_results.sql) | `chat_results` table + RLS select policy. |
+| [`supabase/migrations/202604011200_chat_results_cache_index_status_complete.sql`](../../../supabase/migrations/202604011200_chat_results_cache_index_status_complete.sql) | Fix legacy cache index using `completed` → app vocabulary **`complete`**. |

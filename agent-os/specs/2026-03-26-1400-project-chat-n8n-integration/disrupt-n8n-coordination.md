@@ -1,6 +1,6 @@
 # Disrupt / n8n coordination — project chat webhook
 
-Handoff for workflows that serve the smartARSE project-detail chat. **Code reference:** [`lib/api/chat-payload.ts`](../../../lib/api/chat-payload.ts) (`resultPayloadToClientShape`), [`hooks/useChatQuestion.ts`](../../../hooks/useChatQuestion.ts) (request body + timeout → poll).
+Handoff for workflows that serve the smartARSE project-detail chat. For a short engineer-facing summary (webhook URL env names, sync vs async), see [`n8n-engineer-handoff.md`](n8n-engineer-handoff.md). **Code reference:** [`lib/api/chat-payload.ts`](../../../lib/api/chat-payload.ts) (`resultPayloadToClientShape`), [`hooks/useChatQuestion.ts`](../../../hooks/useChatQuestion.ts) (request body + timeout → poll).
 
 ## 1. Do not write `chat_results` from n8n
 
