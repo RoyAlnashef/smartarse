@@ -15,12 +15,12 @@ Status legend: ✅ built, 🟡 partial/in progress, ⚪ planned/not built yet
 - 🟡 **Client portal**: Branded client experience with project search, project detail, and AI chat
 - ✅ **Supabase auth + session**: Sign in/out and session hydration via Supabase Auth
 - ✅ **Supabase organizations management**: Admin can create, update, and deactivate organizations from the dashboard
-- ✅ **Admin user provisioning API**: Admin can create users with temporary passwords via secure server route
+- ✅ **Admin user provisioning API**: Admin can create users with temporary passwords via secure server route; user removal via `DELETE /api/admin/users/[id]`
 - ✅ **RLS-backed admin workflows**: Policies and constraints enforce role checks and org-safe data relationships
 - ✅ **Forgot password flow**: Send reset email from sign-in, recover session from email link, and land on settings to update password
-- 🟡 **AI chat with personas**: Persona UX is implemented; full AI/RAG integration is still evolving
+- 🟡 **Project chat + n8n**: Client chat POSTs to an n8n webhook (`NEXT_PUBLIC_N8N_URL` or `NEXT_PUBLIC_N8N_WEBHOOK_URL`), then `POST /api/chat/persist` and polling via `GET /api/chat/poll` until `chat_results` completes. Long-running workflows can call `POST /api/chat/n8n-complete` when `CHAT_N8N_CALLBACK_SECRET` is set (see `agent-os/specs/2026-03-26-1400-project-chat-n8n-integration/`).
 - 🟡 **Tabbed project sidebar (client)**: Right column uses **Chat History** and **Personas** tabs (line-style tabs); **Studio** is scaffolded but hidden until ready. Mobile uses the same tabbed shell inside the overlay drawer.
-- 🟡 **Chat history (past questions)**: Grouped list UI and mock data (`HistoryGroup`, `HistoryItem`, `ChatHistoryMockList`); server routes, polling, and n8n re-run flow are specified in product notes and still to wire end-to-end.
+- 🟡 **Chat history (past questions)**: `GET /api/chat/history` backed by `chat_results`; client page uses `useChatHistory` and merges API rows with in-session items (falls back to mock data when Supabase is off or the list is empty). Spec-level pagination/re-run polish may still evolve.
 - 🟡 **Document-based queries**: Upload and selection UX exists; production document-grounded query backend is still evolving
 - 🟡 **Credit system**: Balance and management surfaces exist; end-to-end consumption lifecycle is still evolving
 
@@ -30,27 +30,29 @@ Status legend: ✅ built, 🟡 partial/in progress, ⚪ planned/not built yet
   - Auth/session routing with admin/client role-aware redirects
   - Organizations dashboard wired to Supabase (create/update/soft delete via status)
   - Users dashboard wired to Supabase for org assignment and admin-only user creation
-  - Server route for admin user creation: `POST /api/admin/users`
+  - Server routes: `POST /api/admin/users`, `DELETE /api/admin/users/[id]`
+  - Chat routes: `GET /api/chat/history`, `GET /api/chat/poll`, `POST /api/chat/persist`, `POST /api/chat/n8n-complete`
+  - Client hooks: `hooks/useChatHistory.ts`, `hooks/useChatQuestion.ts`
   - Supabase migrations for admin RLS and active-with-organization constraints
 - **Recent client UX**:
   - `components/ui/tabs.tsx` supports a **`line`** variant on `TabsList` for underline-style tabs (default pill tabs unchanged for persona sub-tabs).
-  - Client project detail: `ProjectSidebarTabs` in `components/client/project-detail/` drives the right column; chat history selection can call back into the main chat (mock re-run hookup until APIs land).
+  - Client project detail: `ProjectSidebarTabs` in `components/client/project-detail/` drives the right column; history list is API-backed when the client runs against Supabase.
 - **Still evolving**:
-  - Chat history: `GET /api/chat/history`, poll/claim endpoints, hooks, and org-scoped webhook payloads per `agent-os/product/dev-notes/chat-history-spec.md` (see also `agent-os/specs/2026-03-26-tabbed-sidebar-chat-history/`).
-  - Full AI/RAG backend integration and credit consumption lifecycle
+  - Chat UX: full spec alignment for history pagination, re-run-from-history, and edge cases per `agent-os/product/dev-notes/chat-history-spec.md`
+  - Full AI/RAG depth and credit consumption lifecycle
   - Expanded analytics beyond current shell/reporting surfaces
 
 ### Product specs (agent-os)
 
-Detailed feature plans, standards, and references live under [`agent-os/`](agent-os/) (e.g. chat history, Supabase admin flows, client project detail). Use those folders when implementing or extending a feature beyond what this README summarizes.
+Detailed feature plans, standards, and references live under [`agent-os/`](agent-os/) (e.g. chat history, n8n coordination, Supabase admin flows, client project detail). For end-to-end chat + n8n QA, see [`agent-os/specs/2026-03-26-1400-project-chat-n8n-integration/smoke-test-checklist.md`](agent-os/specs/2026-03-26-1400-project-chat-n8n-integration/smoke-test-checklist.md).
 
 ## Tech Stack
 
-- **Framework**: [Next.js 16](https://nextjs.org/) (App Router, Turbopack)
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router, Turbopack via `next dev --turbo`)
 - **UI**: React 19, [Tailwind CSS](https://tailwindcss.com/), [Radix UI](https://www.radix-ui.com/)
 - **Forms**: React Hook Form, Zod, `@hookform/resolvers`
 - **State**: React Context (auth), local component state
-- **Auth**: [Supabase Auth](https://supabase.com/docs/guides/auth)
+- **Auth & data**: [Supabase Auth](https://supabase.com/docs/guides/auth), Supabase client + RLS-backed tables
 - **Package manager**: pnpm
 
 ## Getting Started
@@ -113,31 +115,42 @@ The sign-in form includes a `Forgot password?` flow:
 │   │   └── privacy/          # Internal privacy
 │   ├── client/               # Client-facing area (branded shell)
 │   │   ├── projects/         # Project list + search
-│   │   └── projects/[id]/    # Client project detail (chat + tabbed sidebar: history / personas)
+│   │   └── projects/[id]/    # Client project detail (chat + tabbed sidebar)
 │   ├── auth/
 │   │   └── reset-password/   # Supabase recovery callback + redirect to settings
 │   ├── api/
-│   │   └── admin/users/      # Admin-only user creation endpoint
+│   │   ├── admin/users/      # Admin user creation
+│   │   ├── admin/users/[id]/ # Admin user DELETE
+│   │   └── chat/             # history, poll, persist, n8n-complete
 │   ├── help/                 # Public help pages (FAQ, privacy, contact)
 │   ├── layout.tsx            # Root layout, fonts, AuthProvider
 │   └── page.tsx              # Login / redirect
 ├── components/
-│   ├── client/               # Client-specific UI (project cards, chat, persona drawer, project sidebar tabs)
-│   ├── chat/                 # Admin chat + shared history UI (window, input, sidebar, document selector, history groups/items, mock list)
+│   ├── client/               # Client UI (project cards, chat, persona drawer, sidebar tabs)
+│   ├── chat/                 # Chat window, input, document selector, history list UI
+│   ├── dashboard/            # Admin project cards, filters, dialogs
 │   ├── layout/               # Dashboard sidebar, header, mobile sidebar
+│   ├── organizations/        # Org table + modals
+│   ├── projects/             # Shared project UI (e.g. project users)
 │   ├── settings/             # Settings sections
-│   ├── upload/               # File dropzone, file list
+│   ├── upload/               # File dropzone, documents/personas upload flows
 │   └── ui/                   # Radix-based UI primitives
+├── hooks/                    # useChatHistory, useChatQuestion, etc.
 ├── lib/
+│   ├── api/                  # Route helpers (chat history, payloads, require-* guards)
 │   ├── auth-context.tsx      # Auth state, login/logout, role-aware helpers
-│   ├── mock-data.ts          # Users, clients, projects, files, conversations
+│   ├── mock-data.ts          # Fallback users, clients, projects, files, conversations
 │   ├── supabase/
 │   │   ├── client.ts         # Browser Supabase client
-│   │   ├── organizations.ts  # Organizations dashboard data/mutations
-│   │   ├── users.ts          # Users dashboard data/mutations
 │   │   ├── server.ts         # Server-side Supabase client from cookies
-│   │   └── admin.ts          # Service-role Supabase admin client
-│   │   └── fetch-user-profile.ts  # Load `public.users` row after auth
+│   │   ├── admin.ts          # Service-role Supabase admin client
+│   │   ├── fetch-user-profile.ts
+│   │   ├── organizations.ts
+│   │   ├── users.ts
+│   │   ├── projects.ts
+│   │   ├── documents.ts
+│   │   └── personas.ts
+│   ├── chat-history.ts       # Client fetch helper for /api/chat/history
 │   ├── types.ts              # Shared TypeScript types
 │   └── utils.ts              # Utilities (cn, etc.)
 ├── supabase/
@@ -176,11 +189,21 @@ NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-Optional (server-side integrations only):
+**Client project chat (n8n)** — required for real webhook calls from the browser (either variable is accepted):
+
+```env
+NEXT_PUBLIC_N8N_URL=https://your-n8n-instance/webhook/...
+# or
+NEXT_PUBLIC_N8N_WEBHOOK_URL=https://your-n8n-instance/webhook/...
+```
+
+**Server-only** (admin provisioning, service role, long-running chat completion):
 
 ```env
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-N8N_WEBHOOK_URL=your_n8n_webhook_url
+# Optional: n8n → app callback for async / long workflows (see agent-os n8n coordination doc)
+CHAT_N8N_CALLBACK_SECRET=your_shared_secret
+# Alias also supported: N8N_CHAT_CALLBACK_SECRET
 ```
 
 Important notes:
