@@ -205,8 +205,8 @@ export default function ClientProjectDetailPage() {
   }, [sessionHistoryItems.length])
 
   const historyBaseList = useMemo(() => {
-    if (useRemoteDetail && !apiHistoryError && apiHistory.length > 0) {
-      return apiHistory
+    if (useRemoteDetail) {
+      return apiHistoryError ? [] : apiHistory
     }
     return MOCK_CHAT_HISTORY
   }, [useRemoteDetail, apiHistoryError, apiHistory])

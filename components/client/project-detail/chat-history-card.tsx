@@ -125,14 +125,9 @@ export function ChatHistoryCard({
 
         <div className="space-y-0">
           {items.length === 0 && !loading ? (
-            <div className="space-y-2 text-left">
-              <p className="font-arse-title text-sm font-bold tracking-tight text-arse-white">
-                Nothing here yet
-              </p>
-              <p className="font-arse-body text-sm leading-relaxed text-arse-white/75">
-                Ask smartARSE a question about this project.
-              </p>
-            </div>
+            <p className="text-left font-arse-body text-sm leading-relaxed text-arse-white/75">
+              Ask smartARSE a question to start your first chat.
+            </p>
           ) : (
             items.map((item) => {
               const animateEnter = enteringItemIds.has(item.id)
