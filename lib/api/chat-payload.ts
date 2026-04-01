@@ -16,18 +16,103 @@ function asRecord(value: unknown): Record<string, unknown> {
     : {}
 }
 
+/** Keys that may hold the assistant string (Disrupt + common n8n / LLM shapes). */
+const ANSWER_STRING_KEYS = [
+  "answer",
+  "response",
+  "output",
+  "text",
+  "content",
+  "message",
+  "markdown",
+  "result",
+] as const
+
+const MAX_ANSWER_DEPTH = 8
+
+function extractAnswerTextInner(node: unknown, depth: number): string {
+  if (depth < 0) return ""
+  if (typeof node === "string") {
+    const t = node.trim()
+    return t
+  }
+
+  if (Array.isArray(node)) {
+    if (node.length === 1) return extractAnswerTextInner(node[0], depth - 1)
+    return ""
+  }
+
+  if (node === null || typeof node !== "object") return ""
+
+  const p = node as Record<string, unknown>
+
+  for (const key of ANSWER_STRING_KEYS) {
+    const v = p[key]
+    if (typeof v === "string" && v.trim()) return v
+  }
+
+  for (const key of ANSWER_STRING_KEYS) {
+    const v = p[key]
+    if (v !== null && typeof v === "object") {
+      const inner = extractAnswerTextInner(v, depth - 1)
+      if (inner) return inner
+    }
+  }
+
+  for (const wrap of ["json", "body", "data"] as const) {
+    const w = p[wrap]
+    if (w !== null && typeof w === "object") {
+      const inner = extractAnswerTextInner(w, depth - 1)
+      if (inner) return inner
+    }
+  }
+
+  const choices = p.choices
+  if (Array.isArray(choices) && choices.length > 0) {
+    const inner = extractAnswerTextInner(choices[0], depth - 1)
+    if (inner) return inner
+  }
+
+  const message = p.message
+  if (message !== null && typeof message === "object") {
+    const inner = extractAnswerTextInner(message, depth - 1)
+    if (inner) return inner
+  }
+
+  return ""
+}
+
+function unwrapRootPayload(payload: unknown): unknown {
+  if (Array.isArray(payload) && payload.length === 1) {
+    return payload[0]
+  }
+  return payload
+}
+
+/** Merge n8n-style wrappers so `sources`, `route`, etc. resolve from inner `json` / `body`. */
+function widenPayloadRoot(payload: unknown): Record<string, unknown> {
+  const top = asRecord(payload ?? undefined)
+  const fromData =
+    top.data !== null && typeof top.data === "object" && !Array.isArray(top.data)
+      ? (top.data as Record<string, unknown>)
+      : {}
+  const fromBody =
+    top.body !== null && typeof top.body === "object" && !Array.isArray(top.body)
+      ? (top.body as Record<string, unknown>)
+      : {}
+  const fromJson =
+    top.json !== null && typeof top.json === "object" && !Array.isArray(top.json)
+      ? (top.json as Record<string, unknown>)
+      : {}
+  return { ...fromData, ...fromBody, ...fromJson, ...top }
+}
+
 export function resultPayloadToClientShape(
   payload: unknown | null | undefined
 ): ChatResultForClient {
-  const p = asRecord(payload ?? undefined)
-  const answer =
-    typeof p.answer === "string"
-      ? p.answer
-      : typeof p.response === "string"
-        ? p.response
-        : typeof p.output === "string"
-          ? p.output
-          : ""
+  const root = unwrapRootPayload(payload ?? undefined)
+  const p = widenPayloadRoot(root)
+  const answer = extractAnswerTextInner(root, MAX_ANSWER_DEPTH)
 
   const sources = Array.isArray(p.sources) ? p.sources : []
   const visualizations = Array.isArray(p.visualizations) ? p.visualizations : []

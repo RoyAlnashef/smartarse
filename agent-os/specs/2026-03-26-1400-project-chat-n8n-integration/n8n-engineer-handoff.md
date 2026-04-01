@@ -4,15 +4,15 @@ Send this page plus **[`disrupt-n8n-coordination.md`](disrupt-n8n-coordination.m
 
 ## Webhook URL
 
-- smartARSE reads **`NEXT_PUBLIC_N8N_URL`** or **`NEXT_PUBLIC_N8N_WEBHOOK_URL`** (see [`lib/n8n-webhook-url.ts`](../../../lib/n8n-webhook-url.ts)).  
+- smartARSE reads **`NEXT_PUBLIC_N8N_URL`** or **`NEXT_PUBLIC_N8N_WEBHOOK_URL`** (see [`lib/n8n-webhook-url.ts`](../../../lib/n8n-webhook-url.ts)).
 - **You** provide the production/staging **Webhook** URL from n8n; the app team pastes it into Vercel / `.env.local`.
 
 ## Sync vs async (decide once)
 
-| Path | When to use | Your work |
-| ---- | ----------- | --------- |
-| **Sync** | Workflow usually finishes in **under ~85 seconds** | Respond **200** with JSON body (see below). Nothing else required. |
-| **Async** | Can exceed **85s** or unreliable HTTP keep-alive | App team sets **`CHAT_N8N_CALLBACK_SECRET`** on Next. You add **HTTP Request** node(s) to **`POST {APP_ORIGIN}/api/chat/n8n-complete`** with the shared secret (Bearer or `X-Chat-N8n-Secret`). Optionally call early with `status: "processing"`, then final `complete` / `error_fallback`. |
+| Path      | When to use                                        | Your work                                                                                                                                                                                                                                                                                    |
+| --------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Sync**  | Workflow usually finishes in **under ~85 seconds** | Respond **200** with JSON body (see below). Nothing else required.                                                                                                                                                                                                                           |
+| **Async** | Can exceed **85s** or unreliable HTTP keep-alive   | App team sets **`CHAT_N8N_CALLBACK_SECRET`** on Next. You add **HTTP Request** node(s) to **`POST {APP_ORIGIN}/api/chat/n8n-complete`** with the shared secret (Bearer or `X-Chat-N8n-Secret`). Optionally call early with `status: "processing"`, then final `complete` / `error_fallback`. |
 
 If async is not wired, the browser will poll **`GET /api/chat/poll`** but **will not** see completion unless a `chat_results` row exists for that `request_id` — so **`n8n-complete` is required** for long jobs.
 

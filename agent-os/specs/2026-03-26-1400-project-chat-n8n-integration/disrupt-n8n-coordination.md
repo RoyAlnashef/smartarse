@@ -14,17 +14,17 @@ If an existing workflow has a Supabase node targeting `chat_results`, remove or 
 
 The browser POSTs JSON with at least:
 
-| Field | Type | Notes |
-| ----- | ---- | ----- |
-| `chatInput` | string | User question (already sanitised client-side). |
-| `org_id` | string (UUID) | Caller org; **not** `organization_id`. |
-| `user_id` | string (UUID) | End-user (`users.id`); required for **`POST /api/chat/n8n-complete`** correlation and poll ownership. |
-| `request_id` | string (UUID) | **Idempotency key** — echo in any async callback; must match poll/persist. |
-| `sessionId` | string (UUID) | Stable for the project-detail session. |
-| `project_id` | string (UUID) | Project scope for routing/logging / future RAG. |
-| `weighted` | boolean | Org setting. |
-| `data_source_mode` | string | Org setting. |
-| `qual_enabled` | boolean | Org setting. |
+| Field              | Type          | Notes                                                                                                 |
+| ------------------ | ------------- | ----------------------------------------------------------------------------------------------------- |
+| `chatInput`        | string        | User question (already sanitised client-side).                                                        |
+| `org_id`           | string (UUID) | Caller org; **not** `organization_id`.                                                                |
+| `user_id`          | string (UUID) | End-user (`users.id`); required for **`POST /api/chat/n8n-complete`** correlation and poll ownership. |
+| `request_id`       | string (UUID) | **Idempotency key** — echo in any async callback; must match poll/persist.                            |
+| `sessionId`        | string (UUID) | Stable for the project-detail session.                                                                |
+| `project_id`       | string (UUID) | Project scope for routing/logging / future RAG.                                                       |
+| `weighted`         | boolean       | Org setting.                                                                                          |
+| `data_source_mode` | string        | Org setting.                                                                                          |
+| `qual_enabled`     | boolean       | Org setting.                                                                                          |
 
 URL: from `NEXT_PUBLIC_N8N_URL` or `NEXT_PUBLIC_N8N_WEBHOOK_URL` (see [`lib/n8n-webhook-url.ts`](../../../lib/n8n-webhook-url.ts)).
 
@@ -85,15 +85,15 @@ If the secret is unset, the route responds **503** (disabled).
 
 ### 4.2 Request body (JSON)
 
-| Field | Required | Notes |
-| ----- | -------- | ----- |
-| `request_id` | yes | Same UUID the client sent in the webhook payload. |
-| `user_id` | yes | Same end-user as the chat session (`users.id`). |
-| `organization_id` | yes | Must match `users.organization_id` for `user_id`. |
-| `project_id` | no | If set, must reference a project in the same `organization_id`. |
-| `user_query` | yes | Same text as `chatInput` for that turn (for audit/history). |
-| `status` | yes | `pending`, `processing`, `complete`, or `error_fallback`. |
-| `result` | no | Object stored as `result_payload` (use the same keys as §3.2). |
+| Field             | Required | Notes                                                           |
+| ----------------- | -------- | --------------------------------------------------------------- |
+| `request_id`      | yes      | Same UUID the client sent in the webhook payload.               |
+| `user_id`         | yes      | Same end-user as the chat session (`users.id`).                 |
+| `organization_id` | yes      | Must match `users.organization_id` for `user_id`.               |
+| `project_id`      | no       | If set, must reference a project in the same `organization_id`. |
+| `user_query`      | yes      | Same text as `chatInput` for that turn (for audit/history).     |
+| `status`          | yes      | `pending`, `processing`, `complete`, or `error_fallback`.       |
+| `result`          | no       | Object stored as `result_payload` (use the same keys as §3.2).  |
 
 Optional denormalised columns (same as persist): `weighted`, `data_source_mode`, `system_version`, `is_cacheable`, `cache_hit_count`.
 

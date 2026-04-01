@@ -22,12 +22,12 @@ Run this once per environment (local or staging) after env vars and migrations a
 4. **Client chat**  
    Sign in as the **user** → `/client/projects` → open the project → send a short question.
 
-5. **Expectations**  
-   - Assistant reply appears (from n8n JSON `answer` / `output` / `response`).  
-   - **Chat History** sidebar refreshes and shows the question (from `GET /api/chat/history?project_id=…`).  
+5. **Expectations**
+   - Assistant reply appears (from n8n JSON `answer` / `output` / `response`).
+   - **Chat History** sidebar refreshes and shows the question (from `GET /api/chat/history?project_id=…`).
    - In Supabase **Table Editor** → `chat_results`: newest row has matching `user_id`, `project_id`, `organization_id`, and `request_id` unique.
 
-6. **Failure hints**  
-   - Toast about webhook URL → missing `NEXT_PUBLIC_N8N_URL`.  
-   - Persist fails silently in UI but no history row → check browser Network for `POST /api/chat/persist` (500 often = missing service role key on server).  
+6. **Failure hints**
+   - Toast about webhook URL → missing `NEXT_PUBLIC_N8N_URL`.
+   - Persist fails silently in UI but no history row → check browser Network for `POST /api/chat/persist` (500 often = missing service role key on server).
    - 404 on project or empty history → RLS or user not assigned to project.
