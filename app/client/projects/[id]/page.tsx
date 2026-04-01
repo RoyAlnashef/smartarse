@@ -9,11 +9,14 @@ import {
   type PointerEvent,
 } from "react"
 import Link from "next/link"
+import { Plus } from "lucide-react"
 import { useParams } from "next/navigation"
 import { toast } from "sonner"
 import type { ChatResultForClient } from "@/lib/api/chat-payload"
 import { useAuth } from "@/lib/auth-context"
 import { uploadedFiles, conversations as mockConversations } from "@/lib/mock-data"
+import { chatMessagesFromStoredResult } from "@/lib/chat-thread"
+import { getChatResult } from "@/lib/chat-result"
 import { MOCK_CHAT_HISTORY } from "@/lib/mock-chat-history"
 import { useChatHistory } from "@/hooks/useChatHistory"
 import { useChatQuestion } from "@/hooks/useChatQuestion"
@@ -211,10 +214,12 @@ export default function ClientProjectDetailPage() {
     return MOCK_CHAT_HISTORY
   }, [useRemoteDetail, apiHistoryError, apiHistory])
 
-  const mergedChatHistory = useMemo(
-    () => dedupeHistoryByQuery([...sessionHistoryItems, ...historyBaseList]),
-    [sessionHistoryItems, historyBaseList]
-  )
+  const mergedChatHistory = useMemo(() => {
+    if (useRemoteDetail) {
+      return historyBaseList
+    }
+    return dedupeHistoryByQuery([...sessionHistoryItems, ...historyBaseList])
+  }, [useRemoteDetail, sessionHistoryItems, historyBaseList])
 
   const chatHistoryTotalPages = Math.max(
     1,
@@ -301,6 +306,7 @@ export default function ClientProjectDetailPage() {
     (rawQuestion: string) => {
       const question = rawQuestion.trim()
       if (!question) return
+      const rid = crypto.randomUUID()
       window.setTimeout(() => {
         setMessages((prev) => [
           ...prev,
@@ -316,6 +322,7 @@ export default function ClientProjectDetailPage() {
         setSessionHistoryItems((prev) => [
           {
             id: -Date.now(),
+            request_id: rid,
             user_query: question,
             created_at: new Date().toISOString(),
             status: "complete",
@@ -327,8 +334,23 @@ export default function ClientProjectDetailPage() {
     [id]
   )
 
+  const [activeThreadRequestId, setActiveThreadRequestId] = useState<
+    string | null
+  >(null)
+  const [historyLoadingRequestId, setHistoryLoadingRequestId] = useState<
+    string | null
+  >(null)
+
+  useEffect(() => {
+    setActiveThreadRequestId(null)
+  }, [id])
+
   const onChatResult = useCallback(
-    (result: ChatResultForClient, question: string) => {
+    (
+      result: ChatResultForClient,
+      question: string,
+      meta?: { threadAnchorRequestId?: string; jobRequestId: string }
+    ) => {
       const text = result.answer.trim() || "No answer returned."
       setMessages((prev) => [
         ...prev,
@@ -340,11 +362,15 @@ export default function ClientProjectDetailPage() {
           timestamp: new Date().toISOString(),
         },
       ])
+      if (useRealChat && meta?.jobRequestId && !meta.threadAnchorRequestId) {
+        setActiveThreadRequestId(meta.jobRequestId)
+      }
       const q = question.trim()
-      if (q) {
+      if (!useRealChat && q) {
         setSessionHistoryItems((prev) => [
           {
             id: -Date.now(),
+            request_id: crypto.randomUUID(),
             user_query: q,
             created_at: new Date().toISOString(),
             status: "complete",
@@ -353,7 +379,7 @@ export default function ClientProjectDetailPage() {
         ])
       }
     },
-    [id]
+    [id, useRealChat]
   )
 
   const { submitQuestion, loading: chatLoading, error: chatError } =
@@ -436,26 +462,63 @@ export default function ClientProjectDetailPage() {
     ])
   }
 
-  const handleHistoryQuestionSelect = useCallback(
-    (question: string) => {
-      const ts = new Date().toISOString()
-      const userMsg: ChatMessage = {
-        id: `msg-${crypto.randomUUID()}`,
-        conversationId: `conv-${id}`,
-        role: "user",
-        content: question,
-        timestamp: ts,
-        documentIds: sourceDocumentIds,
-      }
+  const handleHistoryItemSelect = useCallback(
+    async (item: HistoryItem) => {
       if (useRealChat) {
-        setMessages((prev) => [...prev, userMsg])
-        void submitQuestion(question)
+        setHistoryLoadingRequestId(item.request_id)
+        try {
+          const row = await getChatResult(item.request_id, id)
+          const loaded = chatMessagesFromStoredResult({
+            user_query: row.user_query,
+            created_at: row.created_at,
+            result_payload: row.result_payload,
+            conversationId: `conv-${id}`,
+          })
+          setMessages(
+            loaded.map((m) => ({
+              ...m,
+              documentIds: m.role === "user" ? sourceDocumentIds : undefined,
+            }))
+          )
+          setActiveThreadRequestId(row.request_id)
+        } catch (err) {
+          toast.error(
+            err instanceof Error ? err.message : "Failed to load conversation"
+          )
+        } finally {
+          setHistoryLoadingRequestId(null)
+        }
         return
       }
-      setMessages((prev) => [...prev, userMsg])
+
+      const ts = new Date().toISOString()
+      setActiveThreadRequestId(null)
+      setMessages([
+        {
+          id: `msg-${crypto.randomUUID()}`,
+          conversationId: `conv-${id}`,
+          role: "user",
+          content: item.user_query,
+          timestamp: ts,
+          documentIds: sourceDocumentIds,
+        },
+        {
+          id: `msg-${crypto.randomUUID()}`,
+          conversationId: `conv-${id}`,
+          role: "assistant",
+          content:
+            "Demo mode: connect Supabase and n8n to load saved answers for this thread.",
+          timestamp: ts,
+        },
+      ])
     },
-    [id, sourceDocumentIds, submitQuestion, useRealChat]
+    [id, sourceDocumentIds, useRealChat]
   )
+
+  const handleNewChat = useCallback(() => {
+    setActiveThreadRequestId(null)
+    setMessages([])
+  }, [])
 
   if (loadingRemote) {
     return <ClientProjectDetailSkeleton />
@@ -541,6 +604,14 @@ export default function ClientProjectDetailPage() {
         )}
       >
           <aside className="min-w-0 space-y-6">
+            <button
+              type="button"
+              onClick={handleNewChat}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border-2 border-arse-black bg-white px-4 py-2.5 font-arse-title text-[10px] font-bold uppercase tracking-wide text-arse-black shadow-[3px_3px_0_0_var(--arse-pink)] transition hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0_0_var(--arse-pink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink"
+            >
+              <Plus className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} aria-hidden />
+              New chat
+            </button>
             <ChatHistoryCard
               items={chatHistorySlice}
               pagination={chatHistoryPagination}
@@ -555,8 +626,10 @@ export default function ClientProjectDetailPage() {
                   return next === prev ? prev : next
                 })
               }}
-              onQuestionSelect={handleHistoryQuestionSelect}
-              chatRequestLoading={useRealChat ? chatLoading : undefined}
+              onHistoryItemSelect={handleHistoryItemSelect}
+              loadingRequestId={historyLoadingRequestId}
+              selectedRequestId={activeThreadRequestId}
+              disableSelect={useRealChat ? chatLoading : false}
             />
             <SourcesSelector files={readyDocuments} />
             {client ? (
@@ -582,6 +655,7 @@ export default function ClientProjectDetailPage() {
               disabled={
                 useRealChat &&
                 (chatLoading ||
+                  historyLoadingRequestId != null ||
                   (project ? !isProjectLiveForChat(project.status) : true))
               }
               personasColumnCollapsed={desktopPersonasCollapsed}
@@ -597,8 +671,22 @@ export default function ClientProjectDetailPage() {
                   documentIds: sourceDocumentIds,
                 }
                 if (useRealChat) {
+                  const prior = messages.filter(
+                    (m) => m.role === "user" || m.role === "assistant"
+                  )
+                  const chatHistoryForWebhook = [...prior, userMsg].map(
+                    (m) => ({
+                      role: m.role,
+                      content: m.content,
+                    })
+                  )
                   setMessages((prev) => [...prev, userMsg])
-                  void submitQuestion(content)
+                  void submitQuestion(content, {
+                    threadAnchorRequestId: activeThreadRequestId,
+                    chatHistoryForWebhook: activeThreadRequestId
+                      ? chatHistoryForWebhook
+                      : undefined,
+                  })
                   return
                 }
                 setMessages((prev) => [...prev, userMsg])

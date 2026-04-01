@@ -28,7 +28,17 @@ Run this once per environment (local or staging) after env vars and migrations a
    - **Chat History** sidebar refreshes and shows the question (from `GET /api/chat/history?project_id=…`).
    - In Supabase **Table Editor** → `chat_results`: newest row has matching `user_id`, `project_id`, `organization_id`, and `request_id` unique.
 
-6. **Failure hints**
+6. **Thread load (no duplicate query)**  
+   Click a **Chat History** row → the main pane shows the saved conversation (user + assistant from `chat_results`) and **does not** fire a new n8n run. Only the clicked row should show a brief loading spinner.
+
+7. **Continue thread (single history row)**  
+   With a thread open (from history or after a new question), send a **follow-up** message → sidebar should still show **one** line for that conversation (the anchor row is updated; the ephemeral `request_id` for the job is removed after merge). In Supabase, `result_payload` may include `arse_message_thread` with multiple turns.
+
+8. **New chat**  
+   Click **New chat** → main pane clears; the next question creates a **new** `chat_results` row (new `request_id`).
+
+9. **Failure hints**
    - Toast about webhook URL → missing `NEXT_PUBLIC_N8N_URL`.
    - Persist fails silently in UI but no history row → check browser Network for `POST /api/chat/persist` (500 often = missing service role key on server).
    - 404 on project or empty history → RLS or user not assigned to project.
+   - “Failed to load conversation” on history click → check `GET /api/chat/result` (404 = wrong `request_id` / project / user).

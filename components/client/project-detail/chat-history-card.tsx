@@ -3,7 +3,6 @@
 import { Loader2 } from "lucide-react"
 import {
   useCallback,
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -15,20 +14,20 @@ import type {
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-const RERUN_SIM_MS = 600
-
 export type ChatHistoryCardProps = {
   items: ChatHistoryRow[]
   pagination: HistoryResponse["pagination"] | null
   page: number
   loading: boolean
   onFetchPage: (targetPage: number) => void
-  onQuestionSelect?: (question: string) => void
-  /**
-   * When set, rerun spinner clears when this goes from true → false (real chat pipeline).
-   * When omitted, a short mock delay is used after select.
-   */
-  chatRequestLoading?: boolean
+  /** Load thread in the main pane (no automatic re-query). */
+  onHistoryItemSelect?: (item: ChatHistoryRow) => void | Promise<void>
+  /** Show spinner on the row being hydrated. */
+  loadingRequestId?: string | null
+  /** Highlight the active conversation anchor. */
+  selectedRequestId?: string | null
+  /** Block history clicks (e.g. while a chat request is in flight). */
+  disableSelect?: boolean
   className?: string
 }
 
@@ -38,65 +37,60 @@ export function ChatHistoryCard({
   page,
   loading,
   onFetchPage,
-  onQuestionSelect,
-  chatRequestLoading,
+  onHistoryItemSelect,
+  loadingRequestId,
+  selectedRequestId,
+  disableSelect = false,
   className,
 }: ChatHistoryCardProps) {
-  const [isRerunning, setIsRerunning] = useState(false)
-  const [activeItemId, setActiveItemId] = useState<number | null>(null)
+  const [internalBusy, setInternalBusy] = useState(false)
   const prevItemsKeyRef = useRef("")
-  const prevChatLoadingRef = useRef(false)
-
-  useEffect(() => {
-    if (chatRequestLoading === undefined) return
-    const was = prevChatLoadingRef.current
-    prevChatLoadingRef.current = chatRequestLoading
-    if (was && !chatRequestLoading) {
-      setIsRerunning(false)
-      setActiveItemId(null)
-    }
-  }, [chatRequestLoading])
 
   const enteringItemIds = useMemo(() => {
-    const key = items.map((i) => i.id).join(",")
+    const key = items.map((i) => i.request_id).join(",")
     const prev = prevItemsKeyRef.current
     if (prev === "") {
       prevItemsKeyRef.current = key
-      return new Set<number>()
+      return new Set<string>()
     }
     if (prev === key) {
-      return new Set<number>()
+      return new Set<string>()
     }
-    const prevIds = new Set(
-      prev.split(",").filter(Boolean).map((s) => Number(s)),
-    )
+    const prevIds = new Set(prev.split(",").filter(Boolean))
     const added = new Set(
-      items.filter((i) => !prevIds.has(i.id)).map((i) => i.id),
+      items.filter((i) => !prevIds.has(i.request_id)).map((i) => i.request_id),
     )
     prevItemsKeyRef.current = key
     return added
   }, [items])
 
   const handleSelect = useCallback(
-    (item: ChatHistoryRow) => {
-      if (isRerunning || loading) return
-      setIsRerunning(true)
-      setActiveItemId(item.id)
-      onQuestionSelect?.(item.user_query)
-      if (chatRequestLoading === undefined) {
-        window.setTimeout(() => {
-          setIsRerunning(false)
-          setActiveItemId(null)
-        }, RERUN_SIM_MS)
+    async (item: ChatHistoryRow) => {
+      if (disableSelect || loading || loadingRequestId != null || internalBusy) {
+        return
+      }
+      setInternalBusy(true)
+      try {
+        await onHistoryItemSelect?.(item)
+      } finally {
+        setInternalBusy(false)
       }
     },
-    [isRerunning, loading, onQuestionSelect, chatRequestLoading],
+    [
+      disableSelect,
+      loading,
+      loadingRequestId,
+      internalBusy,
+      onHistoryItemSelect,
+    ],
   )
 
   const totalPages = pagination?.totalPages ?? 1
   const showPagination = totalPages > 1
   const canPrev = page > 1 && !loading
   const canNext = page < totalPages && !loading
+  const selectBlocked =
+    disableSelect || loading || loadingRequestId != null || internalBusy
 
   return (
     <section
@@ -130,22 +124,26 @@ export function ChatHistoryCard({
             </p>
           ) : (
             items.map((item) => {
-              const animateEnter = enteringItemIds.has(item.id)
-              const isActiveRow = activeItemId === item.id
+              const animateEnter = enteringItemIds.has(item.request_id)
+              const rowLoading = loadingRequestId === item.request_id
+              const isSelected = selectedRequestId === item.request_id
               return (
                 <button
-                  key={item.id}
+                  key={item.request_id}
                   type="button"
-                  disabled={isRerunning || loading}
-                  onClick={() => handleSelect(item)}
+                  disabled={selectBlocked}
+                  onClick={() => void handleSelect(item)}
                   className={cn(
                     "flex w-full items-center gap-2 rounded-lg px-1 py-1.5 text-left transition-colors",
                     "font-arse-body text-xs font-semibold leading-snug",
                     "text-arse-white hover:text-arse-cyan",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950",
-                    (isRerunning || loading) &&
+                    selectBlocked &&
                       "cursor-not-allowed opacity-60 text-arse-white/45 hover:text-arse-white/45",
-                    isActiveRow && isRerunning && "opacity-100 text-arse-cyan",
+                    rowLoading && "opacity-100 text-arse-cyan",
+                    isSelected &&
+                      !selectBlocked &&
+                      "bg-arse-cyan/15 text-arse-cyan ring-1 ring-arse-cyan/35",
                     animateEnter &&
                       "motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-top-4 motion-safe:duration-300 motion-safe:ease-out",
                     animateEnter &&
@@ -155,7 +153,7 @@ export function ChatHistoryCard({
                   <span className="min-w-0 flex-1 truncate text-left">
                     {item.user_query}
                   </span>
-                  {isRerunning && isActiveRow ? (
+                  {rowLoading ? (
                     <Loader2
                       className="h-4 w-4 shrink-0 animate-spin text-arse-cyan"
                       aria-hidden

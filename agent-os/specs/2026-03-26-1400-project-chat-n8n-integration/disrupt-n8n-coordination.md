@@ -25,6 +25,8 @@ The browser POSTs JSON with at least:
 | `weighted`         | boolean       | Org setting.                                                                                          |
 | `data_source_mode` | string        | Org setting.                                                                                          |
 | `qual_enabled`     | boolean       | Org setting.                                                                                          |
+| `thread_anchor_request_id` | string (UUID) | **Optional (Path A).** When the user is continuing a thread, the **`request_id`** of the first `chat_results` row for that conversation. Omit for a brand-new thread. |
+| `chatHistory`      | array         | **Optional (Path A).** Prior turns as `{ "role": "user" \| "assistant", "content": string }[]` (plus the current user message). Workflows that ignore this field still run; multi-turn quality improves when the model receives it. |
 
 URL: from `NEXT_PUBLIC_N8N_URL` or `NEXT_PUBLIC_N8N_WEBHOOK_URL` (see [`lib/n8n-webhook-url.ts`](../../../lib/n8n-webhook-url.ts)).
 

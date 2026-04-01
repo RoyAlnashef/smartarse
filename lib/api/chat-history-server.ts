@@ -13,6 +13,7 @@ export type ChatHistorySourceRow = {
 
 export type HistoryItemResponse = {
   id: number
+  request_id: string
   user_query: string
   created_at: string
   status: string
@@ -34,7 +35,7 @@ function hasMeaningfulPayload(payload: unknown): boolean {
 }
 
 /**
- * Dedupe by trimmed question text (first occurrence = most recent), cap at 20, then paginate (5 per page, max 4 pages).
+ * One sidebar row per `chat_results` row (no dedupe by question text). Cap at 20, paginate (5 per page, max 4 pages).
  */
 export function buildHistoryResponse(
   rows: ChatHistorySourceRow[],
@@ -48,15 +49,11 @@ export function buildHistoryResponse(
     totalPages: number
   }
 } {
-  const seen = new Set<string>()
   const unique: ChatHistorySourceRow[] = []
 
   for (const row of rows) {
     if (row.status !== "complete") continue
     if (!hasMeaningfulPayload(row.result_payload)) continue
-    const key = row.user_query.trim()
-    if (seen.has(key)) continue
-    seen.add(key)
     unique.push(row)
     if (unique.length >= HISTORY_MAX_ITEMS) break
   }
@@ -78,6 +75,7 @@ export function buildHistoryResponse(
 
   const history: HistoryItemResponse[] = slice.map((row) => ({
     id: stableIdFromRequestId(row.request_id),
+    request_id: row.request_id,
     user_query: row.user_query,
     created_at: row.created_at,
     status: "complete",
