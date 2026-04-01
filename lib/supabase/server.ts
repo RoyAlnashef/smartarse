@@ -1,27 +1,28 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr"
+import { createServerClient } from "@supabase/ssr"
 import { cookies } from "next/headers"
+import { getSupabaseAnonConfig } from "@/lib/supabase/config"
 
 export async function getSupabaseServerClient() {
-  const cookieStore = await cookies()
-
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL
-  const anonKey =
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.SUPABASE_ANON_KEY
-
-  if (!url || !anonKey) {
+  const config = getSupabaseAnonConfig()
+  if (!config) {
     throw new Error("Supabase server client env vars are missing.")
   }
 
-  return createServerClient(url, anonKey, {
+  const cookieStore = await cookies()
+
+  return createServerClient(config.url, config.anonKey, {
     cookies: {
-      get(name: string) {
-        return cookieStore.get(name)?.value
+      getAll() {
+        return cookieStore.getAll()
       },
-      set(name: string, value: string, options: CookieOptions) {
-        cookieStore.set({ name, value, ...options })
-      },
-      remove(name: string, options: CookieOptions) {
-        cookieStore.set({ name, value: "", ...options, maxAge: 0 })
+      setAll(cookiesToSet) {
+        try {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            cookieStore.set(name, value, options)
+          })
+        } catch {
+          /* Server Components cannot set cookies; middleware refreshes session. */
+        }
       },
     },
   })

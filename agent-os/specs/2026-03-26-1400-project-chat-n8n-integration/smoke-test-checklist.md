@@ -4,6 +4,7 @@ Run this once per environment (local or staging) after env vars and migrations a
 
 ## Prerequisites
 
+- After enabling cookie-based Supabase SSR (`middleware.ts` + `createBrowserClient`), **sign out and sign in once** so the session is stored in cookies (old sessions lived only in `localStorage` and `/api/chat/*` returned 401).
 - `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` set where the app runs (Vercel + local for API routes).
 - `NEXT_PUBLIC_N8N_URL` or `NEXT_PUBLIC_N8N_WEBHOOK_URL` points at a workflow that returns JSON within ~85s (or long-run path + `CHAT_N8N_CALLBACK_SECRET` + n8n calling `/api/chat/n8n-complete` per [`disrupt-n8n-coordination.md`](disrupt-n8n-coordination.md)).
 - Supabase migrations applied, including [`chat_results` RLS](../../../supabase/migrations/202603311200_chat_results.sql) and [`202604011200_chat_results_cache_index_status_complete.sql`](../../../supabase/migrations/202604011200_chat_results_cache_index_status_complete.sql) if you had a legacy `idx_chat_results_cache` using `completed`.
