@@ -50,26 +50,29 @@ function MessageBubble({ message }: { message: ChatMessage }) {
       {!isUser ? <Avatar label="AI" /> : null}
       <div
         className={cn(
-          "max-w-[min(42rem,90%)] rounded-2xl border-2 px-4 py-3 text-sm leading-relaxed",
+          "max-w-[min(42rem,90%)] rounded-2xl border-2 px-4 text-sm leading-[1.7]",
           isUser
-            ? "border-arse-black bg-arse-cyan text-arse-black"
-            : "border-arse-black/20 bg-white text-arse-black"
+            ? "border-arse-black bg-arse-cyan py-3 text-arse-black"
+            : "border-arse-black/20 bg-white py-5 text-arse-black sm:py-6"
         )}
       >
         <div
           className={cn(
-            "min-w-0 text-sm leading-relaxed",
+            "min-w-0 text-sm leading-[1.7]",
             "break-words [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
-            "[&_p]:my-3 [&_ul]:my-3 [&_ol]:my-3 [&_li]:my-1",
-            "[&_h1]:my-3 [&_h1]:text-lg [&_h1]:font-semibold",
-            "[&_h2]:my-3 [&_h2]:text-base [&_h2]:font-semibold",
-            "[&_h3]:my-2 [&_h3]:text-sm [&_h3]:font-semibold",
-            "[&_blockquote]:my-3 [&_blockquote]:border-l-2 [&_blockquote]:border-arse-black/30 [&_blockquote]:pl-3 [&_blockquote]:italic",
+            "[&_p]:my-5 [&_ul]:my-5 [&_ol]:my-5 [&_li]:my-2 [&_li]:leading-relaxed",
+            "[&_ul]:space-y-2 [&_ol]:space-y-2",
+            "[&_h1]:mb-3 [&_h1]:mt-8 [&_h1]:first:mt-0 [&_h1]:text-lg [&_h1]:font-semibold",
+            "[&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:first:mt-0 [&_h2]:text-base [&_h2]:font-semibold",
+            "[&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:first:mt-0 [&_h3]:text-sm [&_h3]:font-semibold",
+            "[&_blockquote]:my-4 [&_blockquote]:border-l-2 [&_blockquote]:border-arse-black/30 [&_blockquote]:py-2 [&_blockquote]:pl-4 [&_blockquote]:italic",
+            "[&_blockquote_p]:my-0 [&_blockquote_p+p]:mt-2",
             "[&_a]:underline [&_a]:underline-offset-2 [&_a]:decoration-arse-pink/60 hover:[&_a]:decoration-arse-pink",
             "[&_code]:rounded [&_code]:bg-arse-black/10 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-[0.9em]",
-            "[&_pre]:my-3 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-arse-black/90 [&_pre]:p-3 [&_pre]:text-arse-white",
+            "[&_pre]:my-6 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-arse-black/90 [&_pre]:p-4 [&_pre]:text-arse-white",
             "[&_pre_code]:bg-transparent [&_pre_code]:p-0",
-            "[&_table]:my-3 [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:border-arse-black/20 [&_th]:px-2 [&_th]:py-1 [&_th]:text-left [&_th]:font-semibold [&_td]:border [&_td]:border-arse-black/20 [&_td]:px-2 [&_td]:py-1"
+            "[&_table]:my-6 [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:border-arse-black/20 [&_th]:px-2 [&_th]:py-1.5 [&_th]:text-left [&_th]:font-semibold [&_td]:border [&_td]:border-arse-black/20 [&_td]:px-2 [&_td]:py-1.5",
+            "[&_hr]:my-8 [&_hr]:border-t [&_hr]:border-arse-black/15"
           )}
         >
           <ReactMarkdown
