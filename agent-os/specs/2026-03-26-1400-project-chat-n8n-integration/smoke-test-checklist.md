@@ -49,3 +49,15 @@ Run this once per environment (local or staging) after env vars and migrations a
    - 404 on project or empty history → RLS or user not assigned to project.
    - “Failed to load conversation” on history click → check `GET /api/chat/result` (404 = wrong `request_id` / project / user).
    - Row exists in `chat_results` but thread omits it after refresh → inspect the row for `request_id`, `user_query`, `status`, and `result_payload.answer|output|response`; compare with `/api/chat/result` response and client thread merge logic (anchor row mapping + `arse_message_thread` fallback).
+
+11. **Admin project chat history (all users)**
+   - Sign in as **admin** and open dashboard project detail `/projects/{id}` → **Chat** tab.
+   - Right-side history should list rows from all project users (not only admin-created rows).
+   - User filter defaults to **All users** and can narrow history to a specific user label.
+   - Clicking a row hydrates saved messages in the center pane in read-only mode (no send box).
+   - If a selected row is no longer visible after user filter/page change, selection should clear.
+
+12. **Admin endpoint access control**
+   - As non-admin, calling `GET /api/admin/projects/{id}/chat-history` should return **403**.
+   - As non-admin, calling `GET /api/admin/projects/{id}/chat-result?request_id={uuid}` should return **403**.
+   - As admin from another org (or with org mismatch), both routes should return **403**.

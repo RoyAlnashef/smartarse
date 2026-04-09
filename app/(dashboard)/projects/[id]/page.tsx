@@ -33,6 +33,7 @@ import {
   users as mockUsers,
   conversations as mockConversations,
 } from "@/lib/mock-data"
+import { chatMessagesFromStoredResult } from "@/lib/chat-thread"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import {
   deleteProjectDocument,
@@ -84,6 +85,12 @@ import {
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DASHBOARD_MAIN_ACCENT_CLASS } from "@/lib/constants"
+import type {
+  AdminChatHistoryItem,
+  AdminChatHistoryResponse,
+} from "@/lib/admin-chat-history-types"
+import { getAdminProjectChatHistory } from "@/lib/admin-project-chat-history"
+import { getAdminProjectChatResult } from "@/lib/admin-project-chat-result"
 import type { ChatMessage, Conversation, Project, UploadedFile, User } from "@/lib/types"
 import { cn } from "@/lib/utils"
 
@@ -344,6 +351,23 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const [isSavingPersonaOrder, setIsSavingPersonaOrder] = useState(false)
   const [uploadPersonasModalOpen, setUploadPersonasModalOpen] = useState(false)
   const isChatReadOnly = user?.role === "admin"
+  const useAdminProjectHistory = Boolean(useRemoteDetail && user?.role === "admin")
+  const [adminHistory, setAdminHistory] = useState<AdminChatHistoryItem[]>([])
+  const [adminHistoryUsers, setAdminHistoryUsers] = useState<
+    AdminChatHistoryResponse["users"]
+  >([])
+  const [adminHistoryPagination, setAdminHistoryPagination] = useState<
+    AdminChatHistoryResponse["pagination"] | null
+  >(null)
+  const [adminNextHistoryPage, setAdminNextHistoryPage] = useState(1)
+  const [adminHasMoreHistory, setAdminHasMoreHistory] = useState(false)
+  const [adminSelectedUserId, setAdminSelectedUserId] = useState("all")
+  const [adminHistoryLoading, setAdminHistoryLoading] = useState(false)
+  const [adminHistoryLoadingMore, setAdminHistoryLoadingMore] = useState(false)
+  const [adminHistoryError, setAdminHistoryError] = useState<string | null>(null)
+  const [adminResultLoadingId, setAdminResultLoadingId] = useState<string | null>(null)
+  const [adminActiveRequestId, setAdminActiveRequestId] = useState<string | null>(null)
+  const [adminMessages, setAdminMessages] = useState<ChatMessage[]>([])
 
   useEffect(() => {
     setDocumentOrderUnlocked(false)
@@ -385,6 +409,108 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     () => mergedProjectPersonas.filter(isPersistedProjectDocumentRow).length,
     [mergedProjectPersonas]
   )
+
+  useEffect(() => {
+    setAdminNextHistoryPage(1)
+    setAdminHasMoreHistory(false)
+    setAdminSelectedUserId("all")
+    setAdminHistory([])
+    setAdminHistoryUsers([])
+    setAdminHistoryPagination(null)
+    setAdminHistoryError(null)
+    setAdminMessages([])
+    setAdminActiveRequestId(null)
+    setAdminResultLoadingId(null)
+  }, [id])
+
+  const loadAdminHistoryPage = useCallback(
+    async (page: number, selectedUser: string, append = false) => {
+      if (!useAdminProjectHistory) return
+      if (append) {
+        setAdminHistoryLoadingMore(true)
+      } else {
+        setAdminHistoryLoading(true)
+        setAdminHistoryError(null)
+      }
+      try {
+        const data = await getAdminProjectChatHistory({
+          projectId: id,
+          page,
+          userId: selectedUser === "all" ? null : selectedUser,
+        })
+        setAdminHistory((prev) => {
+          if (!append) return data.history
+          const existing = new Set(prev.map((item) => item.request_id))
+          const nextRows = data.history.filter((item) => !existing.has(item.request_id))
+          return [...prev, ...nextRows]
+        })
+        setAdminHistoryUsers(data.users)
+        setAdminHistoryPagination(data.pagination)
+        setAdminHasMoreHistory(data.pagination.page < data.pagination.totalPages)
+        setAdminNextHistoryPage(data.pagination.page + 1)
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : "Failed to load project chat history"
+        setAdminHistoryError(message)
+        if (!append) {
+          setAdminHistory([])
+        }
+      } finally {
+        if (append) {
+          setAdminHistoryLoadingMore(false)
+        } else {
+          setAdminHistoryLoading(false)
+        }
+      }
+    },
+    [id, useAdminProjectHistory]
+  )
+
+  useEffect(() => {
+    if (!useAdminProjectHistory) return
+    void loadAdminHistoryPage(1, adminSelectedUserId, false)
+  }, [useAdminProjectHistory, adminSelectedUserId, loadAdminHistoryPage])
+
+  const handleAdminHistorySelect = useCallback(
+    async (requestId: string) => {
+      if (!useAdminProjectHistory) return
+      setAdminResultLoadingId(requestId)
+      try {
+        const row = await getAdminProjectChatResult(id, requestId)
+        const loaded = chatMessagesFromStoredResult({
+          user_query: row.user_query,
+          created_at: row.created_at,
+          result_payload: row.result_payload,
+          conversationId: `project-admin-${id}`,
+        })
+        setAdminMessages(loaded)
+        setAdminActiveRequestId(requestId)
+      } catch (err: unknown) {
+        toast.error(
+          err instanceof Error ? err.message : "Failed to load selected conversation"
+        )
+      } finally {
+        setAdminResultLoadingId(null)
+      }
+    },
+    [id, useAdminProjectHistory]
+  )
+
+  useEffect(() => {
+    if (!useAdminProjectHistory) return
+    if (adminHistoryLoading || adminResultLoadingId) return
+    if (adminActiveRequestId) return
+    const latest = adminHistory[0]
+    if (!latest) return
+    void handleAdminHistorySelect(latest.request_id)
+  }, [
+    useAdminProjectHistory,
+    adminHistoryLoading,
+    adminResultLoadingId,
+    adminActiveRequestId,
+    adminHistory,
+    handleAdminHistorySelect,
+  ])
 
   const handleUnlockDocumentOrder = useCallback(() => {
     const stable = mergedProjectFiles.filter(isPersistedProjectDocumentRow)
@@ -544,6 +670,39 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     () => conversations.find((c) => c.id === activeConversationId) ?? null,
     [conversations, activeConversationId]
   )
+
+  const adminSidebarConversations = useMemo<Conversation[]>(
+    () =>
+      adminHistory.map((item) => ({
+        id: item.request_id,
+        projectId: id,
+        title: item.user_query,
+        createdAt: item.created_at,
+        lastMessageAt: item.created_at,
+        messageCount: 0,
+        messages: [],
+      })),
+    [adminHistory, id]
+  )
+
+  const adminSidebarMeta = useMemo<Record<string, { userLabel?: string }>>(() => {
+    const out: Record<string, { userLabel?: string }> = {}
+    for (const item of adminHistory) {
+      out[item.request_id] = { userLabel: item.user_label }
+    }
+    return out
+  }, [adminHistory])
+
+  useEffect(() => {
+    if (!useAdminProjectHistory || !adminActiveRequestId) return
+    const stillVisible = adminHistory.some(
+      (row) => row.request_id === adminActiveRequestId
+    )
+    if (!stillVisible) {
+      setAdminActiveRequestId(null)
+      setAdminMessages([])
+    }
+  }, [useAdminProjectHistory, adminHistory, adminActiveRequestId])
 
   const readyDocumentIds = useMemo(
     () =>
@@ -939,7 +1098,11 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
           <div className="relative flex min-h-0 flex-1 overflow-hidden">
             <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-card">
               <ChatWindow
-                messages={activeConversation?.messages ?? []}
+                messages={
+                  useAdminProjectHistory
+                    ? adminMessages
+                    : (activeConversation?.messages ?? [])
+                }
                 isTyping={isTyping}
                 emptyState={isChatReadOnly ? "skeleton" : "default"}
               />
@@ -952,11 +1115,67 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
             {showConvSidebar && (
               <div className="hidden w-72 shrink-0 border-l border-border bg-muted/50 xl:block">
                 <ChatSidebar
-                  conversations={conversations}
-                  activeId={activeConversationId}
-                  onSelect={setActiveConversationId}
+                  conversations={
+                    useAdminProjectHistory ? adminSidebarConversations : conversations
+                  }
+                  activeId={
+                    useAdminProjectHistory ? adminActiveRequestId : activeConversationId
+                  }
+                  onSelect={
+                    useAdminProjectHistory
+                      ? (requestId) => {
+                          if (adminHistoryLoading || adminResultLoadingId) return
+                          void handleAdminHistorySelect(requestId)
+                        }
+                      : setActiveConversationId
+                  }
                   emptyState={isChatReadOnly ? "skeleton" : "default"}
+                  metaByConversationId={
+                    useAdminProjectHistory ? adminSidebarMeta : undefined
+                  }
+                  userFilterValue={useAdminProjectHistory ? adminSelectedUserId : undefined}
+                  userFilterOptions={
+                    useAdminProjectHistory
+                      ? [
+                          { value: "all", label: "All users" },
+                          ...adminHistoryUsers.map((u) => ({
+                            value: u.user_id,
+                            label: u.user_label,
+                          })),
+                        ]
+                      : undefined
+                  }
+                  onUserFilterChange={
+                    useAdminProjectHistory
+                      ? (nextValue) => {
+                          setAdminSelectedUserId(nextValue)
+                          setAdminNextHistoryPage(1)
+                          setAdminHasMoreHistory(false)
+                          setAdminActiveRequestId(null)
+                          setAdminMessages([])
+                        }
+                      : undefined
+                  }
+                  errorMessage={useAdminProjectHistory ? adminHistoryError : null}
                 />
+                {useAdminProjectHistory && adminHistoryPagination && adminHasMoreHistory ? (
+                  <div className="border-t border-border px-4 py-2">
+                    <button
+                      type="button"
+                      className="w-full rounded border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground disabled:opacity-40"
+                      disabled={adminHistoryLoading || adminHistoryLoadingMore}
+                      onClick={() =>
+                        void loadAdminHistoryPage(
+                          adminNextHistoryPage,
+                          adminSelectedUserId,
+                          true
+                        )
+                      }
+                    >
+                      {adminHistoryLoadingMore ? "Loading..." : "More Chats"}
+                    </button>
+                  </div>
+                ) : null}
               </div>
             )}
 
