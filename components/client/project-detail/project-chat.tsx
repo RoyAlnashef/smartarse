@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import { Send, SlidersHorizontal } from "lucide-react"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 import type {
   ChatMessage,
   PersonaActivatedEvent,
@@ -54,7 +56,33 @@ function MessageBubble({ message }: { message: ChatMessage }) {
             : "border-arse-black/20 bg-white text-arse-black"
         )}
       >
-        <p className="whitespace-pre-wrap">{message.content}</p>
+        <div
+          className={cn(
+            "min-w-0 text-sm leading-relaxed",
+            "break-words [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
+            "[&_p]:my-3 [&_ul]:my-3 [&_ol]:my-3 [&_li]:my-1",
+            "[&_h1]:my-3 [&_h1]:text-lg [&_h1]:font-semibold",
+            "[&_h2]:my-3 [&_h2]:text-base [&_h2]:font-semibold",
+            "[&_h3]:my-2 [&_h3]:text-sm [&_h3]:font-semibold",
+            "[&_blockquote]:my-3 [&_blockquote]:border-l-2 [&_blockquote]:border-arse-black/30 [&_blockquote]:pl-3 [&_blockquote]:italic",
+            "[&_a]:underline [&_a]:underline-offset-2 [&_a]:decoration-arse-pink/60 hover:[&_a]:decoration-arse-pink",
+            "[&_code]:rounded [&_code]:bg-arse-black/10 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-[0.9em]",
+            "[&_pre]:my-3 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-arse-black/90 [&_pre]:p-3 [&_pre]:text-arse-white",
+            "[&_pre_code]:bg-transparent [&_pre_code]:p-0",
+            "[&_table]:my-3 [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:border-arse-black/20 [&_th]:px-2 [&_th]:py-1 [&_th]:text-left [&_th]:font-semibold [&_td]:border [&_td]:border-arse-black/20 [&_td]:px-2 [&_td]:py-1"
+          )}
+        >
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              a: ({ node: _node, ...props }) => (
+                <a {...props} target="_blank" rel="noreferrer noopener" />
+              ),
+            }}
+          >
+            {message.content}
+          </ReactMarkdown>
+        </div>
       </div>
       {isUser ? <Avatar label="ME" /> : null}
     </div>
@@ -188,7 +216,7 @@ export function ProjectChat({
   return (
     <section
       className={cn(
-        "relative flex flex-col overflow-hidden rounded-3xl border-4 border-arse-pink bg-white",
+        "relative flex flex-col overflow-hidden rounded-3xl border-4 border-arse-pink bg-zinc-50",
         PERSONA_CHAT_SHELL_CLASS
       )}
     >
