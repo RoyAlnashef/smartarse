@@ -34,11 +34,18 @@ Run this once per environment (local or staging) after env vars and migrations a
 7. **Continue thread (single history row)**  
    With a thread open (from history or after a new question), send a **follow-up** message → sidebar should still show **one** line for that conversation (the anchor row is updated; the ephemeral `request_id` for the job is removed after merge). In Supabase, `result_payload` may include `arse_message_thread` with multiple turns.
 
-8. **New chat**  
+8. **Refresh while pending (recovery)**  
+   Send a question that takes long enough to show loading, then refresh the page before completion. After the n8n run finishes:
+   - The completed turn should still be visible in the same conversation when reopening from **Chat History**.
+   - No completed `chat_results` row for that run should be silently skipped in the thread view.
+   - Rows with fallback routes (for example `REPORT_FIRST_SQL_FALLBACK`) should still render user query + assistant response.
+
+9. **New chat**  
    Click **New chat** → main pane clears; the next question creates a **new** `chat_results` row (new `request_id`).
 
-9. **Failure hints**
+10. **Failure hints**
    - Toast about webhook URL → missing `NEXT_PUBLIC_N8N_URL`.
    - Persist fails silently in UI but no history row → check browser Network for `POST /api/chat/persist` (500 often = missing service role key on server).
    - 404 on project or empty history → RLS or user not assigned to project.
    - “Failed to load conversation” on history click → check `GET /api/chat/result` (404 = wrong `request_id` / project / user).
+   - Row exists in `chat_results` but thread omits it after refresh → inspect the row for `request_id`, `user_query`, `status`, and `result_payload.answer|output|response`; compare with `/api/chat/result` response and client thread merge logic (anchor row mapping + `arse_message_thread` fallback).

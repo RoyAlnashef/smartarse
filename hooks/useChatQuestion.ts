@@ -103,7 +103,7 @@ async function postPersist(body: {
   project_id: string
   user_query: string
   result: Record<string, unknown>
-  status: "complete" | "error_fallback"
+  status: "pending" | "complete" | "error_fallback"
   thread_anchor_request_id?: string
   merge_user_timestamp?: string
   merge_assistant_timestamp?: string
@@ -198,6 +198,21 @@ export function useChatQuestion({
         ...(anchor ? { thread_anchor_request_id: anchor } : {}),
         ...(history && history.length > 0 ? { chatHistory: history } : {}),
       }
+
+      // Seed a pending row so callback reconciliation still works after refresh.
+      void postPersist({
+        request_id: requestId,
+        project_id: projectId,
+        user_query: question,
+        result: {},
+        status: "pending",
+        ...(anchor
+          ? {
+              thread_anchor_request_id: anchor,
+              merge_user_timestamp: userSentIso,
+            }
+          : {}),
+      })
 
       let result: ChatResultForClient
       let rawForPersist: Record<string, unknown>

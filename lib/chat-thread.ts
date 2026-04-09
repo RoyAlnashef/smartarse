@@ -19,11 +19,14 @@ function asRecord(v: unknown): Record<string, unknown> {
     : {}
 }
 
-function parseThreadArray(payload: Record<string, unknown>): ThreadStoredMessage[] {
+function parseThreadArray(
+  payload: Record<string, unknown>,
+  fallbackTimestamp: string
+): ThreadStoredMessage[] {
   const raw = payload[MESSAGE_THREAD_KEY]
   if (!Array.isArray(raw)) return []
   const out: ThreadStoredMessage[] = []
-  for (const item of raw) {
+  for (const [idx, item] of raw.entries()) {
     const o = asRecord(item)
     const role = o.role
     const content = o.content
@@ -32,10 +35,17 @@ function parseThreadArray(payload: Record<string, unknown>): ThreadStoredMessage
     if (
       (role === "user" || role === "assistant") &&
       typeof content === "string" &&
-      typeof timestamp === "string" &&
-      typeof id === "string"
+      content.trim()
     ) {
-      out.push({ id, role, content, timestamp })
+      out.push({
+        id: typeof id === "string" && id.trim() ? id : `thread-${role}-${idx}`,
+        role,
+        content,
+        timestamp:
+          typeof timestamp === "string" && timestamp.trim()
+            ? timestamp
+            : fallbackTimestamp,
+      })
     }
   }
   return out
@@ -49,7 +59,7 @@ export function chatMessagesFromStoredResult(input: {
   conversationId: string
 }): ChatMessage[] {
   const payload = asRecord(input.result_payload)
-  const thread = parseThreadArray(payload)
+  const thread = parseThreadArray(payload, input.created_at)
   if (thread.length > 0) {
     return thread.map((m) => ({
       id: m.id,
@@ -116,7 +126,7 @@ export function mergeJobIntoAnchorPayload(input: {
     return { ...prev }
   }
 
-  const existing = parseThreadArray(prev)
+  const existing = parseThreadArray(prev, input.anchorCreatedAt)
   const shape = resultPayloadToClientShape(input.newResult)
   const assistantText = shape.answer.trim() || "No answer returned."
 

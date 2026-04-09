@@ -2,6 +2,11 @@ import { createHash, timingSafeEqual } from "crypto"
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import type { ApiError } from "@/lib/api/require-dashboard-admin"
+import {
+  attachMergeMeta,
+  extractMergeMeta,
+  mergeCompletedJobIntoAnchor,
+} from "@/lib/api/chat-anchor-merge"
 import { PROJECT_NOT_LIVE_CHAT_MESSAGE } from "@/lib/project-status"
 import { getSupabaseAdminClient } from "@/lib/supabase/admin"
 
@@ -130,7 +135,7 @@ export async function POST(request: Request) {
 
   const { data: existing } = await admin
     .from("chat_results")
-    .select("user_id")
+    .select("request_id, user_id, project_id, organization_id, result_payload")
     .eq("request_id", body.request_id)
     .maybeSingle()
 
@@ -142,6 +147,38 @@ export async function POST(request: Request) {
   }
 
   const resultObj = body.result ?? {}
+  const mergeMeta = extractMergeMeta(existing?.result_payload)
+  const existingProjectId =
+    typeof existing?.project_id === "string" ? existing.project_id : null
+  const mergeProjectId = body.project_id ?? existingProjectId
+
+  if (
+    mergeMeta.thread_anchor_request_id &&
+    mergeProjectId &&
+    (body.status === "complete" || body.status === "error_fallback")
+  ) {
+    const merged = await mergeCompletedJobIntoAnchor({
+      admin,
+      actorUserId: body.user_id,
+      organizationId: body.organization_id,
+      projectId: mergeProjectId,
+      anchorRequestId: mergeMeta.thread_anchor_request_id,
+      jobRequestId: body.request_id,
+      followUpUserQuestion: body.user_query,
+      newResult: resultObj,
+      status: body.status,
+      systemVersion: body.system_version ?? null,
+      userTimestamp: mergeMeta.merge_user_timestamp,
+      assistantTimestamp: mergeMeta.merge_assistant_timestamp,
+    })
+    if (!merged.ok) {
+      return NextResponse.json<ApiError>(
+        { error: merged.error },
+        { status: merged.status }
+      )
+    }
+    return NextResponse.json({ ok: true }, { status: 200 })
+  }
   const weighted =
     body.weighted !== undefined
       ? body.weighted
@@ -159,11 +196,16 @@ export async function POST(request: Request) {
   const row = {
     request_id: body.request_id,
     organization_id: body.organization_id,
-    project_id: body.project_id ?? null,
+    project_id: mergeProjectId ?? null,
     user_id: body.user_id,
     user_query: body.user_query,
     status: body.status,
-    result_payload: resultObj,
+    result_payload: attachMergeMeta({
+      result: resultObj,
+      threadAnchorRequestId: mergeMeta.thread_anchor_request_id,
+      mergeUserTimestamp: mergeMeta.merge_user_timestamp,
+      mergeAssistantTimestamp: mergeMeta.merge_assistant_timestamp,
+    }),
     weighted,
     data_source_mode: dataSourceMode,
     system_version: body.system_version ?? null,

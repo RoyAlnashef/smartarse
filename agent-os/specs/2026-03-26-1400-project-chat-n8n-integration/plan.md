@@ -113,3 +113,9 @@ sequenceDiagram
 4. **Types:** Extend [`lib/chat-history-types.ts`](../../../lib/chat-history-types.ts) / [`lib/types.ts`](../../../lib/types.ts) for webhook response normalization.
 5. **Client project page:** Replace mock send/history with hooks; loading/error states per [`chat-history-spec.md`](../../product/dev-notes/chat-history-spec.md) error table.
 6. **n8n + Disrupt:** Ensure workflows do not write `chat_results`; align webhook JSON with the persist mapper; add callback or polling contract if async completions are required.
+
+## Known edge case to triage
+
+- If the user refreshes while a long-running reply is in progress, we have observed completed rows in `chat_results` that are not rendered in the chat thread UI.
+- At least one affected row used `route = REPORT_FIRST_SQL_FALLBACK` and had a valid assistant answer in `result_payload`; the thread view skipped both query and answer while adjacent turns rendered.
+- Triage focus: `GET /api/chat/result` response mapping, anchor row merge behavior, and `result_payload.answer|output|response` fallback handling when `arse_message_thread` is absent.

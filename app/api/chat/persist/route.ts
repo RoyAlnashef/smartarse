@@ -2,7 +2,10 @@ import { NextResponse } from "next/server"
 import { z } from "zod"
 import type { ApiError } from "@/lib/api/require-dashboard-admin"
 import { requireChatSession } from "@/lib/api/require-chat-session"
-import { mergeJobIntoAnchorPayload } from "@/lib/chat-thread"
+import {
+  attachMergeMeta,
+  mergeCompletedJobIntoAnchor,
+} from "@/lib/api/chat-anchor-merge"
 import { PROJECT_NOT_LIVE_CHAT_MESSAGE } from "@/lib/project-status"
 import { getSupabaseAdminClient } from "@/lib/supabase/admin"
 
@@ -98,7 +101,7 @@ export async function POST(request: Request) {
   const status = body.status ?? "complete"
 
   const anchorId = body.thread_anchor_request_id
-  if (anchorId) {
+  if (anchorId && status !== "pending") {
     if (anchorId === body.request_id) {
       return NextResponse.json<ApiError>(
         { error: "thread_anchor_request_id must differ from request_id." },
@@ -106,101 +109,25 @@ export async function POST(request: Request) {
       )
     }
 
-    const { data: anchor, error: anchorError } = await admin
-      .from("chat_results")
-      .select(
-        "user_id, project_id, organization_id, user_query, created_at, result_payload"
-      )
-      .eq("request_id", anchorId)
-      .maybeSingle()
-
-    if (anchorError || !anchor) {
-      return NextResponse.json<ApiError>(
-        { error: "Thread anchor not found." },
-        { status: 404 }
-      )
-    }
-
-    if (
-      anchor.user_id !== profile.id ||
-      anchor.project_id !== body.project_id ||
-      anchor.organization_id !== project.organization_id
-    ) {
-      return NextResponse.json<ApiError>(
-        { error: "Forbidden." },
-        { status: 403 }
-      )
-    }
-
-    const anchorPayload =
-      anchor.result_payload !== null &&
-      typeof anchor.result_payload === "object" &&
-      !Array.isArray(anchor.result_payload)
-        ? (anchor.result_payload as Record<string, unknown>)
-        : {}
-
-    const nowIso = new Date().toISOString()
-    const userTs = body.merge_user_timestamp?.trim() || nowIso
-    const asstTs = body.merge_assistant_timestamp?.trim() || nowIso
-
-    const mergedPayload = mergeJobIntoAnchorPayload({
+    const merged = await mergeCompletedJobIntoAnchor({
+      admin,
+      actorUserId: profile.id,
+      organizationId: project.organization_id as string,
+      projectId: body.project_id,
       anchorRequestId: anchorId,
-      anchorPayload,
-      anchorUserQuery: anchor.user_query as string,
-      anchorCreatedAt: anchor.created_at as string,
       jobRequestId: body.request_id,
       followUpUserQuestion: body.user_query,
       newResult: resultObj,
-      userTimestamp: userTs,
-      assistantTimestamp: asstTs,
+      status,
+      systemVersion: body.system_version ?? null,
+      userTimestamp: body.merge_user_timestamp,
+      assistantTimestamp: body.merge_assistant_timestamp,
     })
 
-    const weightedMerge =
-      body.weighted !== undefined
-        ? body.weighted
-        : typeof pickDenormFromResult(mergedPayload, "weighted") === "boolean"
-          ? (pickDenormFromResult(mergedPayload, "weighted") as boolean)
-          : null
-
-    const dataSourceMerge =
-      body.data_source_mode !== undefined
-        ? body.data_source_mode
-        : typeof pickDenormFromResult(mergedPayload, "data_source_mode") ===
-            "string"
-          ? (pickDenormFromResult(mergedPayload, "data_source_mode") as string)
-          : null
-
-    const { error: updateAnchorError } = await admin
-      .from("chat_results")
-      .update({
-        status,
-        result_payload: mergedPayload,
-        weighted: weightedMerge,
-        data_source_mode: dataSourceMerge,
-        system_version: body.system_version ?? null,
-      })
-      .eq("request_id", anchorId)
-
-    if (updateAnchorError) {
+    if (!merged.ok) {
       return NextResponse.json<ApiError>(
-        {
-          error:
-            updateAnchorError.message ?? "Failed to update thread anchor row.",
-        },
-        { status: 500 }
-      )
-    }
-
-    const { error: deleteJobError } = await admin
-      .from("chat_results")
-      .delete()
-      .eq("request_id", body.request_id)
-      .eq("user_id", profile.id)
-
-    if (deleteJobError) {
-      return NextResponse.json<ApiError>(
-        { error: deleteJobError.message ?? "Failed to remove job row." },
-        { status: 500 }
+        { error: merged.error },
+        { status: merged.status }
       )
     }
 
@@ -228,7 +155,12 @@ export async function POST(request: Request) {
     user_id: profile.id,
     user_query: body.user_query,
     status,
-    result_payload: resultObj,
+    result_payload: attachMergeMeta({
+      result: resultObj,
+      threadAnchorRequestId: anchorId,
+      mergeUserTimestamp: body.merge_user_timestamp,
+      mergeAssistantTimestamp: body.merge_assistant_timestamp,
+    }),
     weighted,
     data_source_mode: dataSourceMode,
     system_version: body.system_version ?? null,
