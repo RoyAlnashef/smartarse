@@ -112,6 +112,17 @@ export async function POST(request: Request) {
   }
 
   if (body.project_id) {
+    const { error: pauseRpcError } = await admin.rpc(
+      "pause_project_if_access_expired",
+      { p_project_id: body.project_id }
+    )
+    if (pauseRpcError) {
+      return NextResponse.json<ApiError>(
+        { error: pauseRpcError.message ?? "Could not verify project access." },
+        { status: 500 }
+      )
+    }
+
     const { data: project, error: projectError } = await admin
       .from("projects")
       .select("id, organization_id, status")

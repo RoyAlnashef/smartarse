@@ -12,6 +12,7 @@ import Link from "next/link"
 import { Plus } from "lucide-react"
 import { useParams } from "next/navigation"
 import { toast } from "sonner"
+import { format, parseISO } from "date-fns"
 import type { ChatResultForClient } from "@/lib/api/chat-payload"
 import { useAuth } from "@/lib/auth-context"
 import { uploadedFiles, conversations as mockConversations } from "@/lib/mock-data"
@@ -23,7 +24,7 @@ import { useChatQuestion } from "@/hooks/useChatQuestion"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { listProjectDocuments } from "@/lib/supabase/documents"
 import { ProjectPausedContactMessage } from "@/components/client/project-paused-contact-message"
-import { isProjectLiveForChat } from "@/lib/project-status"
+import { isAccessDateExpired, isProjectLiveForChat } from "@/lib/project-status"
 import { getProjectById } from "@/lib/supabase/projects"
 import { cn } from "@/lib/utils"
 import type { HistoryItem } from "@/lib/chat-history-types"
@@ -69,7 +70,7 @@ const WORKSPACE_INTERACTIVE_SELECTOR =
 export default function ClientProjectDetailPage() {
   const params = useParams()
   const id = typeof params.id === "string" ? params.id : ""
-  const { user, getClientForUser, getVisibleProjects } = useAuth()
+  const { user, getVisibleProjects } = useAuth()
 
   const mockProject = useMemo(
     () => getVisibleProjects().find((p) => p.id === id) ?? null,
@@ -122,10 +123,6 @@ export default function ClientProjectDetailPage() {
       ? undefined
       : remoteProject
     : mockProject
-
-  const client = getClientForUser()
-  // Placeholder; replace when access window is wired to billing/subscription.
-  const clientAccessUntilMessage = "Access until Jun 30, 2026"
 
   const [remoteDocuments, setRemoteDocuments] = useState<
     UploadedFile[] | undefined
@@ -632,13 +629,41 @@ export default function ClientProjectDetailPage() {
               disableSelect={useRealChat ? chatLoading : false}
             />
             <SourcesSelector files={readyDocuments} />
-            {client ? (
+            {project?.accessUntil ? (
               <Alert
-                className="rounded-3xl border-2 border-border bg-muted/40 py-3 text-muted-foreground shadow-none [&>svg~*]:pl-0"
+                className={cn(
+                  "rounded-3xl border-2 py-3 shadow-none [&>svg~*]:pl-0",
+                  isAccessDateExpired(project.accessUntil)
+                    ? "border-arse-pink/80 bg-arse-pink/10 text-foreground"
+                    : "border-border bg-muted/40 text-muted-foreground"
+                )}
                 role="status"
               >
-                <AlertDescription className="text-center font-arse-body text-sm text-muted-foreground">
-                  {clientAccessUntilMessage}
+                <AlertDescription
+                  className={cn(
+                    "text-center font-arse-body text-sm",
+                    isAccessDateExpired(project.accessUntil)
+                      ? "text-foreground"
+                      : "text-muted-foreground"
+                  )}
+                >
+                  {isAccessDateExpired(project.accessUntil) ? (
+                    <>
+                      Access to this project has ended. Ask{" "}
+                      <span className="font-semibold text-foreground">
+                        {project.clientName || "your organization"}
+                      </span>{" "}
+                      for an extension if you need continued access.
+                    </>
+                  ) : (
+                    <>
+                      Access until{" "}
+                      {format(
+                        parseISO(`${project.accessUntil}T12:00:00`),
+                        "MMM d, yyyy"
+                      )}
+                    </>
+                  )}
                 </AlertDescription>
               </Alert>
             ) : null}

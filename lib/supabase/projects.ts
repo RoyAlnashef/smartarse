@@ -28,6 +28,7 @@ type ProjectRow = {
   status: string
   used_credits: number
   credit_balance: number
+  access_until: string | null
   created_at: string
   updated_at: string
   last_activity: string | null
@@ -42,6 +43,7 @@ const projectSelect = `
   status,
   used_credits,
   credit_balance,
+  access_until,
   created_at,
   updated_at,
   last_activity,
@@ -71,6 +73,7 @@ function rowToProject(
     clientId: row.organization_id,
     clientName: org?.name ?? "",
     status: normalizeProjectStatus(row.status),
+    accessUntil: row.access_until ?? null,
     createdAt: row.created_at,
     lastActivity,
     totalCredits: row.credit_balance,
@@ -240,6 +243,7 @@ export async function createProject(input: {
   name: string
   description?: string
   status?: Project["status"]
+  accessUntil?: string | null
 }): Promise<Project> {
   const supabase = getSupabaseBrowserClient()
   if (!supabase) throw new Error("Supabase is not configured.")
@@ -247,14 +251,17 @@ export async function createProject(input: {
   const trimmed = input.name.trim()
   if (!trimmed) throw new Error("Project name is required.")
 
-  const { data, error } = await supabase
-    .from("projects")
-    .insert({
-      organization_id: input.organizationId,
-      name: trimmed,
-      description: (input.description ?? "").trim(),
-      status: input.status ?? "live",
-    })
+  const insertRow: Record<string, string | null> = {
+    organization_id: input.organizationId,
+    name: trimmed,
+    description: (input.description ?? "").trim(),
+    status: input.status ?? "live",
+  }
+  if (input.accessUntil !== undefined) {
+    insertRow.access_until = input.accessUntil
+  }
+
+  const { data, error } = await supabase.from("projects").insert(insertRow)
     .select(projectSelect)
     .single()
 
@@ -270,15 +277,17 @@ export async function updateProject(input: {
   name?: string
   description?: string
   status?: Project["status"]
+  accessUntil?: string | null
   usedCredits?: number
 }): Promise<void> {
   const supabase = getSupabaseBrowserClient()
   if (!supabase) throw new Error("Supabase is not configured.")
 
-  const patch: Record<string, string | number> = {}
+  const patch: Record<string, string | number | null> = {}
   if (input.name !== undefined) patch.name = input.name.trim()
   if (input.description !== undefined) patch.description = input.description.trim()
   if (input.status !== undefined) patch.status = input.status
+  if (input.accessUntil !== undefined) patch.access_until = input.accessUntil
   if (input.usedCredits !== undefined) patch.used_credits = input.usedCredits
 
   if (Object.keys(patch).length === 0) return

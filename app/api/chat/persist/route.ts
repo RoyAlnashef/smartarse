@@ -52,6 +52,26 @@ export async function POST(request: Request) {
   const { supabase, profile } = session
   const body = parsed.data
 
+  let admin
+  try {
+    admin = getSupabaseAdminClient()
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Server configuration error."
+    return NextResponse.json<ApiError>({ error: message }, { status: 500 })
+  }
+
+  const { error: pauseRpcError } = await admin.rpc(
+    "pause_project_if_access_expired",
+    { p_project_id: body.project_id }
+  )
+  if (pauseRpcError) {
+    return NextResponse.json<ApiError>(
+      { error: pauseRpcError.message ?? "Could not verify project access." },
+      { status: 500 }
+    )
+  }
+
   const { data: project, error: projectError } = await supabase
     .from("projects")
     .select("id, organization_id, status")
@@ -70,15 +90,6 @@ export async function POST(request: Request) {
       { error: PROJECT_NOT_LIVE_CHAT_MESSAGE },
       { status: 403 }
     )
-  }
-
-  let admin
-  try {
-    admin = getSupabaseAdminClient()
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Server configuration error."
-    return NextResponse.json<ApiError>({ error: message }, { status: 500 })
   }
 
   const { data: existing } = await admin

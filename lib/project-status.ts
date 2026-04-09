@@ -30,3 +30,14 @@ export function projectStatusBadgeClassName(status: Project["status"]): string {
 export function isProjectLiveForChat(status: Project["status"]): boolean {
   return status === "live"
 }
+
+/** Calendar day in UTC as `YYYY-MM-DD` (aligned with Postgres `current_date` in UTC). */
+export function utcCalendarDateString(d: Date = new Date()): string {
+  return d.toISOString().slice(0, 10)
+}
+
+/** True when `accessUntil` is strictly before today's UTC calendar date. */
+export function isAccessDateExpired(accessUntil: string | null): boolean {
+  if (accessUntil == null || accessUntil === "") return false
+  return accessUntil < utcCalendarDateString()
+}

@@ -67,6 +67,8 @@ export interface Project {
   clientName: string
   /** Maps to Supabase `projects.status` (`live` | `paused` | `archived`). */
   status: "live" | "paused" | "archived"
+  /** Maps to Supabase `projects.access_until` (`YYYY-MM-DD`); null = no scheduled end. */
+  accessUntil: string | null
   /** Maps to Supabase `projects.created_at`. */
   createdAt: string
   /** Maps to `projects.last_activity`, else `updated_at` / `created_at`. */

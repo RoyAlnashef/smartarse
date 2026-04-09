@@ -11,6 +11,7 @@ import {
 } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { format, parseISO } from "date-fns"
 import {
   ArrowLeft,
   ArrowUpDown,
@@ -23,6 +24,7 @@ import {
   PanelRightOpen,
   PanelRightClose,
   UserCircle,
+  CalendarIcon,
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { ProjectDetailSkeleton } from "@/components/dashboard/project-detail-skeleton"
@@ -48,6 +50,7 @@ import {
 import {
   projectStatusBadgeClassName,
   projectStatusLabel,
+  utcCalendarDateString,
 } from "@/lib/project-status"
 import {
   addProjectCredits,
@@ -84,6 +87,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Calendar } from "@/components/ui/calendar"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { DASHBOARD_MAIN_ACCENT_CLASS } from "@/lib/constants"
 import type {
   AdminChatHistoryItem,
@@ -337,6 +346,10 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const [settingsName, setSettingsName] = useState("")
   const [settingsDescription, setSettingsDescription] = useState("")
   const [settingsStatus, setSettingsStatus] = useState<Project["status"]>("live")
+  const [settingsAccessUntil, setSettingsAccessUntil] = useState<string | null>(
+    null
+  )
+  const [accessUntilPickerOpen, setAccessUntilPickerOpen] = useState(false)
   const [isSavingSettings, setIsSavingSettings] = useState(false)
   const [documentOrderUnlocked, setDocumentOrderUnlocked] = useState(false)
   const [draftStableDocumentIds, setDraftStableDocumentIds] = useState<string[]>(
@@ -661,7 +674,14 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     setSettingsName(project.name)
     setSettingsDescription(project.description)
     setSettingsStatus(project.status)
-  }, [project?.id, project?.name, project?.description, project?.status])
+    setSettingsAccessUntil(project.accessUntil ?? null)
+  }, [
+    project?.id,
+    project?.name,
+    project?.description,
+    project?.status,
+    project?.accessUntil,
+  ])
 
   const activeConversation = useMemo(
     () => conversations.find((c) => c.id === activeConversationId) ?? null,
@@ -937,6 +957,17 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         toast.error("Project name is required.")
         return
       }
+      if (
+        settingsStatus === "live" &&
+        settingsAccessUntil != null &&
+        settingsAccessUntil !== "" &&
+        settingsAccessUntil < utcCalendarDateString()
+      ) {
+        toast.error(
+          "Access end date is in the past. Choose a future date, clear it, or set status to Paused."
+        )
+        return
+      }
       setIsSavingSettings(true)
       try {
         await updateProject({
@@ -944,6 +975,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
           name,
           description: settingsDescription.trim(),
           status: settingsStatus,
+          accessUntil: settingsAccessUntil,
         })
         toast.success("Project updated.")
         await refreshProjectFromServer()
@@ -963,6 +995,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
       settingsName,
       settingsDescription,
       settingsStatus,
+      settingsAccessUntil,
       refreshProjectFromServer,
     ]
   )
@@ -1500,6 +1533,80 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                             <option value="archived">Archived</option>
                           </select>
                         </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-foreground">
+                          Access until
+                        </label>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          Optional. Access ends after this calendar day (UTC). Expired
+                          live projects pause automatically.
+                        </p>
+                        {user.role === "admin" && useRemoteDetail ? (
+                          <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                            <Popover
+                              open={accessUntilPickerOpen}
+                              onOpenChange={setAccessUntilPickerOpen}
+                            >
+                              <PopoverTrigger asChild>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  className={cn(
+                                    "justify-start rounded-lg border-border px-3.5 py-2.5 text-left text-sm font-normal",
+                                    !settingsAccessUntil && "text-muted-foreground"
+                                  )}
+                                >
+                                  <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+                                  {settingsAccessUntil
+                                    ? format(
+                                        parseISO(`${settingsAccessUntil}T12:00:00`),
+                                        "PPP"
+                                      )
+                                    : "No end date"}
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={
+                                    settingsAccessUntil
+                                      ? parseISO(
+                                          `${settingsAccessUntil}T12:00:00`
+                                        )
+                                      : undefined
+                                  }
+                                  onSelect={(d) => {
+                                    setSettingsAccessUntil(
+                                      d ? format(d, "yyyy-MM-dd") : null
+                                    )
+                                    setAccessUntilPickerOpen(false)
+                                  }}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            {settingsAccessUntil ? (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                className="text-sm text-muted-foreground"
+                                onClick={() => setSettingsAccessUntil(null)}
+                              >
+                                Clear
+                              </Button>
+                            ) : null}
+                          </div>
+                        ) : (
+                          <p className="mt-1.5 text-sm text-muted-foreground">
+                            {project.accessUntil
+                              ? format(
+                                  parseISO(`${project.accessUntil}T12:00:00`),
+                                  "PPP"
+                                )
+                              : "No end date"}
+                          </p>
+                        )}
                       </div>
                       {user.role === "admin" && useRemoteDetail && (
                         <div className="flex justify-end pt-2">
