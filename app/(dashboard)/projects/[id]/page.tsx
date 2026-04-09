@@ -360,6 +360,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const [adminHasMoreHistory, setAdminHasMoreHistory] = useState(false)
   const [adminHistoryLoading, setAdminHistoryLoading] = useState(false)
   const [adminHistoryLoadingMore, setAdminHistoryLoadingMore] = useState(false)
+  const [adminInitialHistoryLoaded, setAdminInitialHistoryLoaded] = useState(false)
   const [adminHistoryError, setAdminHistoryError] = useState<string | null>(null)
   const [adminResultLoadingId, setAdminResultLoadingId] = useState<string | null>(null)
   const [adminActiveRequestId, setAdminActiveRequestId] = useState<string | null>(null)
@@ -412,6 +413,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     setAdminHistory([])
     setAdminHistoryPagination(null)
     setAdminHistoryError(null)
+    setAdminInitialHistoryLoaded(false)
     setAdminMessages([])
     setAdminActiveRequestId(null)
     setAdminResultLoadingId(null)
@@ -424,6 +426,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         setAdminHistoryLoadingMore(true)
       } else {
         setAdminHistoryLoading(true)
+        setAdminInitialHistoryLoaded(false)
         setAdminHistoryError(null)
       }
       try {
@@ -453,6 +456,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
           setAdminHistoryLoadingMore(false)
         } else {
           setAdminHistoryLoading(false)
+          setAdminInitialHistoryLoaded(true)
         }
       }
     },
@@ -685,6 +689,15 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     }
     return out
   }, [adminHistory])
+
+  const adminChatWindowLoading =
+    useAdminProjectHistory &&
+    (!adminInitialHistoryLoaded ||
+      adminHistoryLoading ||
+      (adminHistory.length > 0 && !adminActiveRequestId))
+
+  const adminChatSidebarLoading =
+    useAdminProjectHistory && (!adminInitialHistoryLoaded || adminHistoryLoading)
 
   useEffect(() => {
     if (!useAdminProjectHistory || !adminActiveRequestId) return
@@ -1097,6 +1110,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                     : (activeConversation?.messages ?? [])
                 }
                 isTyping={isTyping}
+                isLoading={adminChatWindowLoading}
                 emptyState={isChatReadOnly ? "skeleton" : "default"}
               />
               {!isChatReadOnly && (
@@ -1123,6 +1137,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                       : setActiveConversationId
                   }
                   emptyState={isChatReadOnly ? "skeleton" : "default"}
+                  isLoading={adminChatSidebarLoading}
                   metaByConversationId={
                     useAdminProjectHistory ? adminSidebarMeta : undefined
                   }

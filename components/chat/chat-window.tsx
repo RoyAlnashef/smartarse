@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useEffect } from "react"
-import { Bot, MessageSquare } from "lucide-react"
+import { Bot, Loader2, MessageSquare } from "lucide-react"
 import type { ChatMessage } from "@/lib/types"
 import { MessageBubble } from "./message-bubble"
 
@@ -26,13 +26,29 @@ function ChatWindowAdminReadOnlyEmpty() {
   )
 }
 
+function ChatWindowLoadingState() {
+  return (
+    <div
+      className="flex flex-1 flex-col items-center justify-center gap-3 bg-white p-8"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      <Loader2 className="h-7 w-7 animate-spin text-arse-pink" aria-hidden />
+      <p className="text-sm text-muted-foreground">Loading chat…</p>
+    </div>
+  )
+}
+
 export function ChatWindow({
   messages,
   isTyping,
+  isLoading = false,
   emptyState = "default",
 }: {
   messages: ChatMessage[]
   isTyping?: boolean
+  isLoading?: boolean
   emptyState?: "default" | "skeleton"
 }) {
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -40,6 +56,10 @@ export function ChatWindow({
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages, isTyping])
+
+  if (isLoading) {
+    return <ChatWindowLoadingState />
+  }
 
   if (messages.length === 0) {
     if (emptyState === "skeleton") {

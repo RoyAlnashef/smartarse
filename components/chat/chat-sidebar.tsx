@@ -48,6 +48,7 @@ export function ChatSidebar({
   conversations,
   activeId,
   onSelect,
+  isLoading = false,
   emptyState = "default",
   metaByConversationId,
   errorMessage,
@@ -55,6 +56,7 @@ export function ChatSidebar({
   conversations: Conversation[]
   activeId: string | null
   onSelect: (id: string) => void
+  isLoading?: boolean
   emptyState?: "default" | "skeleton"
   metaByConversationId?: Record<string, { userLabel?: string }>
   errorMessage?: string | null
@@ -79,7 +81,15 @@ export function ChatSidebar({
         ) : null}
         {conversations.length === 0 &&
           (emptyState === "skeleton" ? (
-            <ChatSidebarEmptySkeleton />
+            isLoading ? (
+              <ChatSidebarEmptySkeleton />
+            ) : (
+              <div className="px-3 py-8 text-center">
+                <MessageSquare className="mx-auto h-8 w-8 text-muted-foreground/40" />
+                <p className="mt-2 text-sm text-muted-foreground">No chat history yet</p>
+                <p className="text-xs text-muted-foreground">Start by asking a question</p>
+              </div>
+            )
           ) : (
             <div className="px-3 py-8 text-center">
               <MessageSquare className="mx-auto h-8 w-8 text-muted-foreground/40" />
