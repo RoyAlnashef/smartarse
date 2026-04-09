@@ -353,15 +353,11 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const isChatReadOnly = user?.role === "admin"
   const useAdminProjectHistory = Boolean(useRemoteDetail && user?.role === "admin")
   const [adminHistory, setAdminHistory] = useState<AdminChatHistoryItem[]>([])
-  const [adminHistoryUsers, setAdminHistoryUsers] = useState<
-    AdminChatHistoryResponse["users"]
-  >([])
   const [adminHistoryPagination, setAdminHistoryPagination] = useState<
     AdminChatHistoryResponse["pagination"] | null
   >(null)
   const [adminNextHistoryPage, setAdminNextHistoryPage] = useState(1)
   const [adminHasMoreHistory, setAdminHasMoreHistory] = useState(false)
-  const [adminSelectedUserId, setAdminSelectedUserId] = useState("all")
   const [adminHistoryLoading, setAdminHistoryLoading] = useState(false)
   const [adminHistoryLoadingMore, setAdminHistoryLoadingMore] = useState(false)
   const [adminHistoryError, setAdminHistoryError] = useState<string | null>(null)
@@ -413,9 +409,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   useEffect(() => {
     setAdminNextHistoryPage(1)
     setAdminHasMoreHistory(false)
-    setAdminSelectedUserId("all")
     setAdminHistory([])
-    setAdminHistoryUsers([])
     setAdminHistoryPagination(null)
     setAdminHistoryError(null)
     setAdminMessages([])
@@ -424,7 +418,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   }, [id])
 
   const loadAdminHistoryPage = useCallback(
-    async (page: number, selectedUser: string, append = false) => {
+    async (page: number, append = false) => {
       if (!useAdminProjectHistory) return
       if (append) {
         setAdminHistoryLoadingMore(true)
@@ -436,7 +430,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         const data = await getAdminProjectChatHistory({
           projectId: id,
           page,
-          userId: selectedUser === "all" ? null : selectedUser,
+          userId: null,
         })
         setAdminHistory((prev) => {
           if (!append) return data.history
@@ -444,7 +438,6 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
           const nextRows = data.history.filter((item) => !existing.has(item.request_id))
           return [...prev, ...nextRows]
         })
-        setAdminHistoryUsers(data.users)
         setAdminHistoryPagination(data.pagination)
         setAdminHasMoreHistory(data.pagination.page < data.pagination.totalPages)
         setAdminNextHistoryPage(data.pagination.page + 1)
@@ -468,8 +461,8 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
 
   useEffect(() => {
     if (!useAdminProjectHistory) return
-    void loadAdminHistoryPage(1, adminSelectedUserId, false)
-  }, [useAdminProjectHistory, adminSelectedUserId, loadAdminHistoryPage])
+    void loadAdminHistoryPage(1, false)
+  }, [useAdminProjectHistory, loadAdminHistoryPage])
 
   const handleAdminHistorySelect = useCallback(
     async (requestId: string) => {
@@ -1133,29 +1126,6 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                   metaByConversationId={
                     useAdminProjectHistory ? adminSidebarMeta : undefined
                   }
-                  userFilterValue={useAdminProjectHistory ? adminSelectedUserId : undefined}
-                  userFilterOptions={
-                    useAdminProjectHistory
-                      ? [
-                          { value: "all", label: "All users" },
-                          ...adminHistoryUsers.map((u) => ({
-                            value: u.user_id,
-                            label: u.user_label,
-                          })),
-                        ]
-                      : undefined
-                  }
-                  onUserFilterChange={
-                    useAdminProjectHistory
-                      ? (nextValue) => {
-                          setAdminSelectedUserId(nextValue)
-                          setAdminNextHistoryPage(1)
-                          setAdminHasMoreHistory(false)
-                          setAdminActiveRequestId(null)
-                          setAdminMessages([])
-                        }
-                      : undefined
-                  }
                   errorMessage={useAdminProjectHistory ? adminHistoryError : null}
                 />
                 {useAdminProjectHistory && adminHistoryPagination && adminHasMoreHistory ? (
@@ -1165,11 +1135,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                       className="w-full rounded border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground disabled:opacity-40"
                       disabled={adminHistoryLoading || adminHistoryLoadingMore}
                       onClick={() =>
-                        void loadAdminHistoryPage(
-                          adminNextHistoryPage,
-                          adminSelectedUserId,
-                          true
-                        )
+                        void loadAdminHistoryPage(adminNextHistoryPage, true)
                       }
                     >
                       {adminHistoryLoadingMore ? "Loading..." : "More Chats"}

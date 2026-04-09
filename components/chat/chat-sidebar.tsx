@@ -19,11 +19,11 @@ function ChatSidebarEmptySkeleton() {
           Your client hasn&apos;t started talking to smartARSE yet.
         </AlertDescription>
       </Alert>
-      <div className="space-y-1" aria-hidden>
+      <div className="space-y-2" aria-hidden>
         {rows.map((i) => (
           <div
             key={i}
-            className="flex w-full flex-col gap-1 rounded-lg px-3 py-2.5"
+            className="flex w-full flex-col gap-1 rounded-lg px-3 py-3"
           >
             <Skeleton className={`h-4 max-w-full ${titleWidths[i]}`} />
             <div className="flex items-center gap-2">
@@ -50,9 +50,6 @@ export function ChatSidebar({
   onSelect,
   emptyState = "default",
   metaByConversationId,
-  userFilterValue,
-  userFilterOptions,
-  onUserFilterChange,
   errorMessage,
 }: {
   conversations: Conversation[]
@@ -60,9 +57,6 @@ export function ChatSidebar({
   onSelect: (id: string) => void
   emptyState?: "default" | "skeleton"
   metaByConversationId?: Record<string, { userLabel?: string }>
-  userFilterValue?: string
-  userFilterOptions?: { value: string; label: string }[]
-  onUserFilterChange?: (value: string) => void
   errorMessage?: string | null
 }) {
   return (
@@ -71,24 +65,8 @@ export function ChatSidebar({
         <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Chat History
         </h3>
-        {userFilterOptions && userFilterOptions.length > 0 && onUserFilterChange ? (
-          <label className="mt-2 block">
-            <span className="sr-only">Filter by user</span>
-            <select
-              value={userFilterValue ?? "all"}
-              onChange={(ev) => onUserFilterChange(ev.target.value)}
-              className="w-full rounded-md border border-border bg-background px-2 py-1 text-xs text-foreground"
-            >
-              {userFilterOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        ) : null}
       </div>
-      <div className="flex-1 space-y-1 overflow-y-auto p-2">
+      <div className="flex-1 space-y-2 overflow-y-auto p-3">
         {errorMessage ? (
           <Alert
             className="mb-2 border-rose-200 bg-rose-50/90 py-2 [&>svg~*]:pl-3"
@@ -113,7 +91,7 @@ export function ChatSidebar({
           <button
             key={conv.id}
             onClick={() => onSelect(conv.id)}
-            className={`flex w-full flex-col gap-1 rounded-lg px-3 py-2.5 text-left transition-colors ${
+            className={`flex w-full flex-col gap-1 rounded-lg px-3 py-3 text-left transition-colors ${
               activeId === conv.id
                 ? "bg-arse-cyan/10 ring-1 ring-arse-cyan/40"
                 : "hover:bg-muted"
