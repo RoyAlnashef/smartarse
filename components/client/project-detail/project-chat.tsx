@@ -24,6 +24,15 @@ const LOADING_ACTIONS = [
   "Triangulating insights at unsafe speed...",
 ]
 
+function getRandomLoadingActionIndex(excludeIndex?: number): number {
+  if (LOADING_ACTIONS.length <= 1) return 0
+  let next = Math.floor(Math.random() * LOADING_ACTIONS.length)
+  while (excludeIndex != null && next === excludeIndex) {
+    next = Math.floor(Math.random() * LOADING_ACTIONS.length)
+  }
+  return next
+}
+
 function Avatar({ label }: { label: string }) {
   return (
     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-arse-black bg-arse-white font-arse-title text-[10px] font-bold uppercase text-arse-black">
@@ -157,8 +166,9 @@ export function ProjectChat({
       setLoadingActionIndex(0)
       return
     }
+    setLoadingActionIndex(getRandomLoadingActionIndex())
     const intervalId = window.setInterval(() => {
-      setLoadingActionIndex((prev) => (prev + 1) % LOADING_ACTIONS.length)
+      setLoadingActionIndex((prev) => getRandomLoadingActionIndex(prev))
     }, 3400)
     return () => window.clearInterval(intervalId)
   }, [isLoading])
