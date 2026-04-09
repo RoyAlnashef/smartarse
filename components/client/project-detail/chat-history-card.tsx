@@ -141,9 +141,7 @@ export function ChatHistoryCard({
                     selectBlocked &&
                       "cursor-not-allowed opacity-60 text-arse-white/45 hover:text-arse-white/45",
                     rowLoading && "opacity-100 text-arse-cyan",
-                    isSelected &&
-                      !selectBlocked &&
-                      "bg-arse-cyan/15 text-arse-cyan ring-1 ring-arse-cyan/35",
+                    isSelected && !selectBlocked && "text-arse-cyan",
                     animateEnter &&
                       "motion-safe:animate-in motion-safe:fade-in-0 motion-safe:slide-in-from-top-4 motion-safe:duration-300 motion-safe:ease-out",
                     animateEnter &&
