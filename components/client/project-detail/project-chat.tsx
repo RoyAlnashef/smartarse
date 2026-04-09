@@ -13,6 +13,17 @@ import { cn } from "@/lib/utils"
 import { PERSONA_CHAT_SHELL_CLASS } from "@/components/client/project-detail/persona-chat-shell-classes"
 import { MOCK_SEGMENT_PERSONAS } from "@/components/client/project-detail/persona-drawer"
 
+const LOADING_ACTIONS = [
+  "Processing your brilliance...",
+  "Thinking very hard in spreadsheets...",
+  "Mathematizing the chaos...",
+  "Comprehenderizing your question...",
+  "Cross-referencing the data goblins...",
+  "Crunching numbers with dramatic flair...",
+  "Looking for patterns and plot twists...",
+  "Triangulating insights at unsafe speed...",
+]
+
 function Avatar({ label }: { label: string }) {
   return (
     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-arse-black bg-arse-white font-arse-title text-[10px] font-bold uppercase text-arse-black">
@@ -98,6 +109,7 @@ function PersonaEventBubble({
 export function ProjectChat({
   messages,
   personaEvents = [],
+  isLoading = false,
   disabled,
   appliedPersonaId,
   onSend,
@@ -108,6 +120,7 @@ export function ProjectChat({
 }: {
   messages: ChatMessage[]
   personaEvents?: (PersonaActivatedEvent | PersonaEndedEvent)[]
+  isLoading?: boolean
   disabled?: boolean
   appliedPersonaId: string | null
   onSend?: (content: string) => void
@@ -119,6 +132,7 @@ export function ProjectChat({
 }) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const [value, setValue] = useState("")
+  const [loadingActionIndex, setLoadingActionIndex] = useState(0)
 
   const appliedPersona = useMemo(
     () =>
@@ -136,7 +150,18 @@ export function ProjectChat({
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [timelineItems])
+  }, [timelineItems, isLoading, loadingActionIndex])
+
+  useEffect(() => {
+    if (!isLoading) {
+      setLoadingActionIndex(0)
+      return
+    }
+    const intervalId = window.setInterval(() => {
+      setLoadingActionIndex((prev) => (prev + 1) % LOADING_ACTIONS.length)
+    }, 3400)
+    return () => window.clearInterval(intervalId)
+  }, [isLoading])
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -219,6 +244,17 @@ export function ProjectChat({
                   }
                   return <MessageBubble key={item.id} message={item} />
                 })}
+                {isLoading ? (
+                  <div className="flex gap-3" role="status" aria-live="polite" aria-label="Assistant is preparing a response">
+                    <Avatar label="AI" />
+                    <div className="max-w-[min(42rem,90%)] rounded-2xl rounded-bl-sm border-2 border-arse-black/20 bg-white px-4 py-3 text-sm text-arse-black">
+                      <div className="flex items-center gap-2.5">
+                        <span className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-arse-pink" aria-hidden />
+                        <p className="font-arse-body text-sm">{LOADING_ACTIONS[loadingActionIndex]}</p>
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             )}
             <div ref={bottomRef} />

@@ -651,6 +651,7 @@ export default function ClientProjectDetailPage() {
             <ProjectChat
               messages={messages}
               personaEvents={personaEvents}
+              isLoading={useRealChat ? chatLoading : false}
               appliedPersonaId={appliedPersonaId}
               disabled={
                 useRealChat &&
