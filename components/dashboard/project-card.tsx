@@ -65,8 +65,8 @@ export function ProjectCard({ project }: { project: Project }) {
 
       <div className="border-t border-border px-5 py-3">
         <ProjectCreditsMeter
+          creditBalance={project.totalCredits}
           usedCredits={project.usedCredits}
-          totalCredits={project.totalCredits}
           variant="card"
         />
       </div>

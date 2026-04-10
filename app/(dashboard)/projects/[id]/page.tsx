@@ -1097,8 +1097,8 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
           </span>
         </div>
         <ProjectCreditsMeter
+          creditBalance={project.totalCredits}
           usedCredits={project.usedCredits}
-          totalCredits={project.totalCredits}
           variant="header"
           className="shrink-0"
         />
