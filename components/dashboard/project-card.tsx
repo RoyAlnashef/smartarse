@@ -1,17 +1,23 @@
 "use client"
 
 import Link from "next/link"
-import { Calendar, FileText, Users } from "lucide-react"
+import { MessageSquare, OctagonPause, Users } from "lucide-react"
 import type { Project } from "@/lib/types"
 import {
+  isAccessDateNearing,
   projectStatusBadgeClassName,
   projectStatusLabel,
 } from "@/lib/project-status"
-import { ProjectCreditsMeter } from "@/components/dashboard/project-credits-meter"
+import { cn } from "@/lib/utils"
+import {
+  CREDIT_BALANCE_WARNING_THRESHOLD,
+  ProjectCreditsMeter,
+} from "@/components/dashboard/project-credits-meter"
 import { Skeleton } from "@/components/ui/skeleton"
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-GB", {
+/** `accessUntil` is `YYYY-MM-DD`; anchor at noon to avoid TZ boundary issues. */
+function formatAccessDate(ymd: string) {
+  return new Date(`${ymd}T12:00:00`).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -19,10 +25,12 @@ function formatDate(iso: string) {
 }
 
 export function ProjectCard({ project }: { project: Project }) {
+  const creditWarning = project.totalCredits < CREDIT_BALANCE_WARNING_THRESHOLD
+
   return (
     <Link
       href={`/projects/${project.id}`}
-      className="group flex flex-col rounded-xl border border-border bg-card transition-shadow hover:shadow-md"
+      className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-shadow hover:shadow-md"
     >
       <div className="flex flex-1 flex-col p-5">
         {/* Header */}
@@ -40,30 +48,43 @@ export function ProjectCard({ project }: { project: Project }) {
           </span>
         </div>
 
-        {/* Description */}
-        <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-          {project.description}
-        </p>
-
-        {/* Meta — users, docs, date */}
-        <div className="mt-auto flex items-center gap-4 pt-4 text-xs text-muted-foreground">
+        {/* Meta — users, chats, optional access until */}
+        <div className="mt-auto flex flex-wrap items-center gap-4 pt-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Users className="h-3.5 w-3.5 shrink-0" aria-hidden />
             {project.assignedUserIds.length}{" "}
             {project.assignedUserIds.length === 1 ? "user" : "users"}
           </span>
           <span className="flex items-center gap-1">
-            <FileText className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            {project.uploadedFileIds.length} docs
+            <MessageSquare className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            {project.chatCount} {project.chatCount === 1 ? "chat" : "chats"}
           </span>
-          <span className="flex items-center gap-1">
-            <Calendar className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            {formatDate(project.lastActivity)}
-          </span>
+          {project.accessUntil ? (
+            <span
+              className={cn(
+                "flex items-center gap-1",
+                isAccessDateNearing(project.accessUntil)
+                  ? "font-medium text-orange-600 dark:text-orange-400"
+                  : "text-muted-foreground"
+              )}
+              title={`Access until ${formatAccessDate(project.accessUntil)}`}
+            >
+              <OctagonPause className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              <span className="sr-only">Access until </span>
+              {formatAccessDate(project.accessUntil)}
+            </span>
+          ) : null}
         </div>
       </div>
 
-      <div className="border-t border-border px-5 py-3">
+      <div
+        className={cn(
+          "border-t px-5 py-3",
+          creditWarning
+            ? "border-amber-200/90 bg-amber-50 dark:border-amber-800/60 dark:bg-amber-950/40"
+            : "border-border"
+        )}
+      >
         <ProjectCreditsMeter
           creditBalance={project.totalCredits}
           usedCredits={project.usedCredits}
@@ -78,7 +99,7 @@ export function ProjectCard({ project }: { project: Project }) {
 export function ProjectCardSkeleton() {
   return (
     <div
-      className="flex flex-col rounded-xl border border-border bg-card"
+      className="flex flex-col overflow-hidden rounded-xl border border-border bg-card"
       aria-busy
       aria-label="Loading project"
     >
@@ -89,10 +110,6 @@ export function ProjectCardSkeleton() {
             <Skeleton className="h-3 w-24" />
           </div>
           <Skeleton className="h-5 w-14 shrink-0 rounded-full" />
-        </div>
-        <div className="mt-3 space-y-2">
-          <Skeleton className="h-3.5 w-full" />
-          <Skeleton className="h-3.5 w-[92%]" />
         </div>
         <div className="mt-auto flex items-center gap-4 pt-4">
           <Skeleton className="h-3.5 w-16" />

@@ -79,6 +79,8 @@ export interface Project {
   usedCredits: number
   assignedUserIds: string[]
   uploadedFileIds: string[]
+  /** Rows in `chat_results` for this project (sidebar history count). */
+  chatCount: number
 }
 
 export interface UploadedFile {

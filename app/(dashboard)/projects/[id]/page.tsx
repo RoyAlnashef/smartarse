@@ -77,7 +77,10 @@ import {
   PERSONA_FILE_UPLOAD_ACCEPT,
   PERSONA_FILE_UPLOAD_TYPES_DESCRIPTION,
 } from "@/components/upload/persona-upload-config"
-import { ProjectCreditsMeter } from "@/components/dashboard/project-credits-meter"
+import {
+  CREDIT_BALANCE_WARNING_THRESHOLD,
+  ProjectCreditsMeter,
+} from "@/components/dashboard/project-credits-meter"
 import { ProjectUsers } from "@/components/projects/project-users"
 import { Button } from "@/components/ui/button"
 import {
@@ -119,6 +122,8 @@ const tabs = [
 ] as const
 
 type TabId = (typeof tabs)[number]["id"]
+
+type SettingsSectionId = "info" | "credits" | "delete"
 
 // Simulated AI responses for demo
 const demoResponses = [
@@ -328,6 +333,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const projectConversations = mockConversations.filter((c) => c.projectId === id)
 
   const [activeTab, setActiveTab] = useState<TabId>("chat")
+  const [settingsSection, setSettingsSection] = useState<SettingsSectionId>("info")
   const projectTabScrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -1039,6 +1045,18 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     ]
   )
 
+  const openSettingsCredits = useCallback(() => {
+    setActiveTab("settings")
+    setSettingsSection("credits")
+  }, [])
+
+  const creditsMeterOpensCreditsSettings =
+    project != null &&
+    user != null &&
+    project.totalCredits < CREDIT_BALANCE_WARNING_THRESHOLD &&
+    user.role === "admin" &&
+    useRemoteDetail
+
   if (!user) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -1101,6 +1119,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
           usedCredits={project.usedCredits}
           variant="header"
           className="shrink-0"
+          onClick={creditsMeterOpensCreditsSettings ? openSettingsCredits : undefined}
         />
       </div>
 
@@ -1451,7 +1470,8 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         {activeTab === "settings" && (
           <div className="flex min-h-0 flex-1 flex-col justify-start overflow-y-auto p-4 lg:p-6">
             <Tabs
-              defaultValue="info"
+              value={settingsSection}
+              onValueChange={(v) => setSettingsSection(v as SettingsSectionId)}
               orientation="vertical"
               className="mx-auto flex w-full max-w-4xl flex-col items-start gap-6 md:flex-row md:gap-10"
             >

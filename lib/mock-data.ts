@@ -167,6 +167,7 @@ export const projects: Project[] = [
     usedCredits: 87,
     assignedUserIds: ["u3", "u5"],
     uploadedFileIds: ["f1", "f2", "f3"],
+    chatCount: 12,
   },
   {
     id: "p2",
@@ -182,6 +183,7 @@ export const projects: Project[] = [
     usedCredits: 63,
     assignedUserIds: ["u3", "u6"],
     uploadedFileIds: ["f4", "f5"],
+    chatCount: 4,
   },
   {
     id: "p3",
@@ -197,6 +199,7 @@ export const projects: Project[] = [
     usedCredits: 37,
     assignedUserIds: ["u3", "u5", "u6"],
     uploadedFileIds: ["f6"],
+    chatCount: 0,
   },
   {
     id: "p4",
@@ -212,6 +215,7 @@ export const projects: Project[] = [
     usedCredits: 72,
     assignedUserIds: ["u4", "u7"],
     uploadedFileIds: ["f7", "f8"],
+    chatCount: 28,
   },
   {
     id: "p5",
@@ -227,6 +231,7 @@ export const projects: Project[] = [
     usedCredits: 20,
     assignedUserIds: ["u4"],
     uploadedFileIds: ["f9"],
+    chatCount: 6,
   },
   {
     id: "p6",
@@ -242,6 +247,7 @@ export const projects: Project[] = [
     usedCredits: 198,
     assignedUserIds: ["u8"],
     uploadedFileIds: ["f10", "f11", "f12"],
+    chatCount: 41,
   },
   {
     id: "p7",
@@ -257,6 +263,7 @@ export const projects: Project[] = [
     usedCredits: 103,
     assignedUserIds: ["u8"],
     uploadedFileIds: ["f13", "f14"],
+    chatCount: 15,
   },
   {
     id: "p8",
@@ -272,6 +279,7 @@ export const projects: Project[] = [
     usedCredits: 40,
     assignedUserIds: ["u8"],
     uploadedFileIds: ["f15"],
+    chatCount: 3,
   },
 ]
 

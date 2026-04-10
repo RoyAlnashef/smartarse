@@ -62,7 +62,8 @@ function normalizeOrgEmbed(
 function rowToProject(
   row: ProjectRow,
   assignedUserIds: string[],
-  uploadedFileIds: string[] = []
+  uploadedFileIds: string[] = [],
+  chatCount = 0
 ): Project {
   const org = normalizeOrgEmbed(row.organizations)
   const lastActivity = row.last_activity ?? row.updated_at ?? row.created_at
@@ -80,6 +81,7 @@ function rowToProject(
     usedCredits: row.used_credits,
     assignedUserIds,
     uploadedFileIds,
+    chatCount,
   }
 }
 
@@ -139,6 +141,28 @@ async function fetchDocumentIdsByProject(
   return map
 }
 
+async function fetchChatCountsByProject(
+  supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>,
+  projectIds: string[]
+): Promise<Map<string, number>> {
+  const map = new Map<string, number>()
+  if (projectIds.length === 0) return map
+
+  const { data, error } = await supabase
+    .from("chat_results")
+    .select("project_id")
+    .in("project_id", projectIds)
+
+  if (error) throw new Error(error.message)
+
+  for (const row of data ?? []) {
+    const pid = row.project_id as string | null
+    if (pid == null) continue
+    map.set(pid, (map.get(pid) ?? 0) + 1)
+  }
+  return map
+}
+
 /**
  * Lists projects visible to the current session (RLS enforces admin / client org / user assignment).
  */
@@ -157,15 +181,17 @@ export async function listProjectsForAuthUser(): Promise<Project[]> {
   if (rows.length === 0) return []
 
   const ids = rows.map((r) => r.id)
-  const [byProject, docsByProject] = await Promise.all([
+  const [byProject, docsByProject, chatCounts] = await Promise.all([
     fetchAssignedUserIdsByProject(supabase, ids),
     fetchDocumentIdsByProject(supabase, ids),
+    fetchChatCountsByProject(supabase, ids),
   ])
   return rows.map((row) =>
     rowToProject(
       row,
       byProject.get(row.id) ?? [],
-      docsByProject.get(row.id) ?? []
+      docsByProject.get(row.id) ?? [],
+      chatCounts.get(row.id) ?? 0
     )
   )
 }
@@ -187,15 +213,21 @@ export async function getProjectById(id: string): Promise<Project | null> {
   if (!data) return null
 
   const row = data as ProjectRow
-  const [{ data: puRows, error: puError }, docMap] = await Promise.all([
+  const [{ data: puRows, error: puError }, docMap, chatCounts] = await Promise.all([
     supabase.from("project_users").select("user_id").eq("project_id", id),
     fetchDocumentIdsByProject(supabase, [id]),
+    fetchChatCountsByProject(supabase, [id]),
   ])
 
   if (puError) throw new Error(puError.message)
   const assignedUserIds = (puRows ?? []).map((r) => r.user_id as string)
 
-  return rowToProject(row, assignedUserIds, docMap.get(id) ?? [])
+  return rowToProject(
+    row,
+    assignedUserIds,
+    docMap.get(id) ?? [],
+    chatCounts.get(id) ?? 0
+  )
 }
 
 export async function assignProjectUser(
@@ -269,7 +301,7 @@ export async function createProject(input: {
   if (!data) throw new Error("Failed to create project.")
 
   const row = data as ProjectRow
-  return rowToProject(row, [])
+  return rowToProject(row, [], [], 0)
 }
 
 export async function updateProject(input: {
