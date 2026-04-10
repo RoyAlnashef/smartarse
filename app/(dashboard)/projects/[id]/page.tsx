@@ -1509,7 +1509,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                     >
                       <div>
                         <label className="block text-sm font-medium text-foreground">
-                          Project Name
+                          Project name
                         </label>
                         <input
                           type="text"
