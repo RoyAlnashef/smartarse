@@ -73,9 +73,9 @@ export interface Project {
   createdAt: string
   /** Maps to `projects.last_activity`, else `updated_at` / `created_at`. */
   lastActivity: string
-  /** Maps to Supabase `projects.credit_balance` (allocated pool for this project). */
+  /** Maps to Supabase `projects.credit_balance` (credits currently available). */
   totalCredits: number
-  /** Maps to Supabase `projects.used_credits`. */
+  /** Maps to Supabase `projects.used_credits` (lifetime spent; informational in UI). */
   usedCredits: number
   assignedUserIds: string[]
   uploadedFileIds: string[]
