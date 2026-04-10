@@ -1500,7 +1500,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                   </>
                 )}
               </TabsList>
-              <div className="min-w-0 w-full flex-1 self-start">
+              <div className="min-h-0 min-w-0 w-full flex-1 self-start md:min-h-80">
                 <TabsContent value="info" className="mt-0 outline-none">
                   <section className="space-y-4">
                     <form
@@ -1817,6 +1817,11 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
 
                     <TabsContent value="delete" className="mt-0 outline-none">
                       <section className="space-y-4 rounded-xl border border-destructive/25 bg-destructive/5 p-6">
+                        <h2 className="text-lg font-semibold tracking-tight text-foreground">
+                          {project.usedCredits > 0
+                            ? "No deleting, sorry!"
+                            : "Delete project"}
+                        </h2>
                         <p className="text-sm text-muted-foreground">
                           {project.usedCredits > 0
                             ? "Projects that have used credits cannot be deleted."
