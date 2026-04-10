@@ -22,7 +22,6 @@ export function ProjectCreditsMeter({
   onClick?: () => void
   className?: string
 }) {
-  const overBudget = usedCredits > creditBalance
   const warn = creditBalance < CREDIT_BALANCE_WARNING_THRESHOLD
   const headerInteractive = variant === "header" && onClick != null
 
@@ -80,14 +79,7 @@ export function ProjectCreditsMeter({
         >
           -
         </span>
-        <span
-          className={cn(
-            valueClass,
-            overBudget && "text-destructive"
-          )}
-        >
-          {usedCredits.toLocaleString()}
-        </span>
+        <span className={valueClass}>{usedCredits.toLocaleString()}</span>
         <span className={labelClass}>spent</span>
       </div>
     </>

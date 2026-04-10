@@ -78,7 +78,10 @@ import {
   PERSONA_FILE_UPLOAD_ACCEPT,
   PERSONA_FILE_UPLOAD_TYPES_DESCRIPTION,
 } from "@/components/upload/persona-upload-config"
-import { ProjectCreditsMeter } from "@/components/dashboard/project-credits-meter"
+import {
+  CREDIT_BALANCE_WARNING_THRESHOLD,
+  ProjectCreditsMeter,
+} from "@/components/dashboard/project-credits-meter"
 import { ProjectUsers } from "@/components/projects/project-users"
 import { Button } from "@/components/ui/button"
 import {
@@ -1095,6 +1098,9 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const headerCreditsMeterOpensSettings =
     user.role === "admin" && useRemoteDetail
 
+  const creditsBalanceLowWarning =
+    project.totalCredits < CREDIT_BALANCE_WARNING_THRESHOLD
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Project header */}
@@ -1680,27 +1686,64 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                   <>
                     <TabsContent value="credits" className="mt-0 outline-none">
                       <section className="space-y-4">
-                        <div className="flex flex-col gap-6 rounded-xl border border-border bg-card p-6">
-                          <p className="rounded-lg border-l-4 border-l-arse-cyan bg-muted/50 px-3.5 py-3 text-sm leading-relaxed text-foreground/90">
-                            Credits are allocated to this project only.
-                            Purchasing credits is not available here yet — use the
-                            field below to add to the balance manually.
+                        <div
+                          className={cn(
+                            "flex flex-col gap-6 rounded-xl border p-6",
+                            creditsBalanceLowWarning
+                              ? "border-amber-200/90 bg-amber-50/40 dark:border-amber-800/60 dark:bg-amber-950/30"
+                              : "border-border bg-card"
+                          )}
+                        >
+                          <p
+                            className={cn(
+                              "rounded-lg border-l-4 px-3.5 py-3 text-sm leading-relaxed",
+                              creditsBalanceLowWarning
+                                ? "border-l-amber-500 bg-amber-100/50 text-amber-950/95 dark:border-l-amber-400 dark:bg-amber-950/50 dark:text-amber-50/95"
+                                : "border-l-arse-cyan bg-muted/50 text-foreground/90"
+                            )}
+                          >
+                            <b>smartARSE needs credits to stay sharp.</b><br></br>
+                            Use the field below to add credits to ARSE's balance.
                           </p>
                           <div className="border-b border-border pb-6">
                             <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                               <div>
-                                <dt className="text-xs font-semibold uppercase tracking-wide text-foreground/75">
+                                <dt
+                                  className={cn(
+                                    "text-xs font-semibold uppercase tracking-wide text-foreground/75",
+                                    creditsBalanceLowWarning &&
+                                      "text-amber-800/85 dark:text-amber-200/90"
+                                  )}
+                                >
                                   Allocated balance
                                 </dt>
-                                <dd className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-foreground">
+                                <dd
+                                  className={cn(
+                                    "mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-foreground",
+                                    creditsBalanceLowWarning &&
+                                      "text-amber-950 dark:text-amber-50"
+                                  )}
+                                >
                                   {project.totalCredits.toLocaleString()}
                                 </dd>
                               </div>
                               <div>
-                                <dt className="text-xs font-semibold uppercase tracking-wide text-foreground/75">
+                                <dt
+                                  className={cn(
+                                    "text-xs font-semibold uppercase tracking-wide text-foreground/75",
+                                    creditsBalanceLowWarning &&
+                                      "text-amber-800/85 dark:text-amber-200/90"
+                                  )}
+                                >
                                   Used
                                 </dt>
-                                <dd className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-foreground">
+                                <dd
+                                  className={cn(
+                                    "mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-foreground",
+                                    creditsBalanceLowWarning &&
+                                      "text-amber-950 dark:text-amber-50"
+                                  )}
+                                >
                                   {project.usedCredits.toLocaleString()}
                                 </dd>
                               </div>
@@ -1713,7 +1756,11 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                             <div className="min-w-[12rem] flex-1">
                               <label
                                 htmlFor="credit-top-up-amount"
-                                className="block text-sm font-medium text-foreground"
+                                className={cn(
+                                  "block text-sm font-medium text-foreground",
+                                  creditsBalanceLowWarning &&
+                                    "text-amber-900 dark:text-amber-100"
+                                )}
                               >
                                 Amount to add
                               </label>
@@ -1730,7 +1777,12 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                                 }
                                 disabled={isAddingCredits}
                                 placeholder="e.g. 500"
-                                className="mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30 disabled:opacity-60"
+                                className={cn(
+                                  "mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 disabled:opacity-60",
+                                  creditsBalanceLowWarning
+                                    ? "focus:border-amber-500 focus:ring-amber-500/25"
+                                    : "focus:border-arse-cyan focus:ring-arse-pink/30"
+                                )}
                               />
                             </div>
                             <Button
