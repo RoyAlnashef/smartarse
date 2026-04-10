@@ -6,6 +6,7 @@ import {
   useMemo,
   use,
   useEffect,
+  useLayoutEffect,
   useRef,
   type FormEvent,
 } from "react"
@@ -335,6 +336,8 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const [activeTab, setActiveTab] = useState<TabId>("chat")
   const [settingsSection, setSettingsSection] = useState<SettingsSectionId>("info")
   const projectTabScrollRef = useRef<HTMLDivElement>(null)
+  const creditsAmountInputRef = useRef<HTMLInputElement>(null)
+  const focusCreditsAmountAfterMeterClick = useRef(false)
 
   useEffect(() => {
     const root = projectTabScrollRef.current
@@ -346,6 +349,13 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
       behavior: "smooth",
     })
   }, [activeTab])
+
+  useLayoutEffect(() => {
+    if (activeTab !== "settings" || settingsSection !== "credits") return
+    if (!focusCreditsAmountAfterMeterClick.current) return
+    focusCreditsAmountAfterMeterClick.current = false
+    creditsAmountInputRef.current?.focus()
+  }, [activeTab, settingsSection])
 
   const [conversations, setConversations] = useState<Conversation[]>(projectConversations)
   const [activeConversationId, setActiveConversationId] = useState<string | null>(
@@ -1046,6 +1056,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   )
 
   const openSettingsCredits = useCallback(() => {
+    focusCreditsAmountAfterMeterClick.current = true
     setActiveTab("settings")
     setSettingsSection("credits")
   }, [])
@@ -1712,6 +1723,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                                 Amount to add
                               </label>
                               <input
+                                ref={creditsAmountInputRef}
                                 id="credit-top-up-amount"
                                 type="number"
                                 min={1}
