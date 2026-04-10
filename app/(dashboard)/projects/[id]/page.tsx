@@ -1680,30 +1680,32 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                   <>
                     <TabsContent value="credits" className="mt-0 outline-none">
                       <section className="space-y-4">
-                        <div className="space-y-4 rounded-xl border border-border bg-card p-6">
-                          <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
-                            <div>
-                              <dt className="font-medium text-muted-foreground">
-                                Allocated balance
-                              </dt>
-                              <dd className="mt-1 tabular-nums text-foreground">
-                                {project.totalCredits.toLocaleString()}
-                              </dd>
-                            </div>
-                            <div>
-                              <dt className="font-medium text-muted-foreground">
-                                Used
-                              </dt>
-                              <dd className="mt-1 tabular-nums text-foreground">
-                                {project.usedCredits.toLocaleString()}
-                              </dd>
-                            </div>
-                          </dl>
-                          <p className="text-sm text-muted-foreground">
+                        <div className="flex flex-col gap-6 rounded-xl border border-border bg-card p-6">
+                          <p className="rounded-lg border-l-4 border-l-arse-cyan bg-muted/50 px-3.5 py-3 text-sm leading-relaxed text-foreground/90">
                             Credits are allocated to this project only.
                             Purchasing credits is not available here yet — use the
                             field below to add to the balance manually.
                           </p>
+                          <div className="border-b border-border pb-6">
+                            <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                              <div>
+                                <dt className="text-xs font-semibold uppercase tracking-wide text-foreground/75">
+                                  Allocated balance
+                                </dt>
+                                <dd className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-foreground">
+                                  {project.totalCredits.toLocaleString()}
+                                </dd>
+                              </div>
+                              <div>
+                                <dt className="text-xs font-semibold uppercase tracking-wide text-foreground/75">
+                                  Used
+                                </dt>
+                                <dd className="mt-1.5 text-2xl font-semibold tabular-nums tracking-tight text-foreground">
+                                  {project.usedCredits.toLocaleString()}
+                                </dd>
+                              </div>
+                            </dl>
+                          </div>
                           <form
                             onSubmit={(ev) => void handleAddCredits(ev)}
                             className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end"
