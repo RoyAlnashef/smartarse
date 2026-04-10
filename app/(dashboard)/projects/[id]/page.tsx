@@ -27,6 +27,7 @@ import {
   UserCircle,
   CalendarIcon,
   Info,
+  Plus,
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { ProjectDetailSkeleton } from "@/components/dashboard/project-detail-skeleton"
@@ -1694,17 +1695,19 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                               : "border-border bg-card"
                           )}
                         >
-                          <p
+                          <div
                             className={cn(
-                              "rounded-lg border-l-4 px-3.5 py-3 text-sm leading-relaxed",
+                              "space-y-1 rounded-lg border-l-4 px-3.5 py-3 text-sm leading-relaxed",
                               creditsBalanceLowWarning
                                 ? "border-l-amber-500 bg-amber-100/50 text-amber-950/95 dark:border-l-amber-400 dark:bg-amber-950/50 dark:text-amber-50/95"
-                                : "border-l-arse-cyan bg-muted/50 text-foreground/90"
+                                : "border-l-arse-cyan bg-arse-cyan/10 text-foreground/90 dark:bg-arse-cyan/15"
                             )}
                           >
-                            <b>smartARSE needs credits to stay sharp.</b><br></br>
-                            Use the field below to add credits to ARSE's balance.
-                          </p>
+                            <p>
+                              <b>smartARSE is hungry</b><br></br>
+                              Add credits below to keep this ARSE well-fed.
+                            </p>
+                          </div>
                           <div className="border-b border-border pb-6">
                             <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                               <div>
@@ -1715,7 +1718,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                                       "text-amber-800/85 dark:text-amber-200/90"
                                   )}
                                 >
-                                  Allocated balance
+                                  Available
                                 </dt>
                                 <dd
                                   className={cn(
@@ -1735,7 +1738,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                                       "text-amber-800/85 dark:text-amber-200/90"
                                   )}
                                 >
-                                  Used
+                                  Spent
                                 </dt>
                                 <dd
                                   className={cn(
@@ -1762,8 +1765,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                                     "text-amber-900 dark:text-amber-100"
                                 )}
                               >
-                                Amount to add
-                              </label>
+                                Enter a number</label>
                               <input
                                 ref={creditsAmountInputRef}
                                 id="credit-top-up-amount"
@@ -1790,7 +1792,14 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                               disabled={isAddingCredits}
                               className="rounded-lg bg-dark-950 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-dark-800"
                             >
-                              {isAddingCredits ? "Adding…" : "Add Credits"}
+                              {isAddingCredits ? (
+                                "Adding…"
+                              ) : (
+                                <>
+                                  <Plus aria-hidden />
+                                  Add Credits
+                                </>
+                              )}
                             </Button>
                           </form>
                         </div>
