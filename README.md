@@ -22,7 +22,8 @@ Status legend: ✅ built, 🟡 partial/in progress, ⚪ planned/not built yet
 - 🟡 **Tabbed project sidebar (client)**: Right column uses **Chat History** and **Personas** tabs (line-style tabs); **Studio** is scaffolded but hidden until ready. Mobile uses the same tabbed shell inside the overlay drawer.
 - 🟡 **Chat history (past questions)**: `GET /api/chat/history` backed by `chat_results`; client page uses `useChatHistory` and merges API rows with in-session items (falls back to mock data when Supabase is off or the list is empty). Spec-level pagination/re-run polish may still evolve.
 - 🟡 **Document-based queries**: Upload and selection UX exists; production document-grounded query backend is still evolving
-- 🟡 **Credit system**: Balance and management surfaces exist; end-to-end consumption lifecycle is still evolving
+- 🟡 **Credit system**: Balance and management surfaces exist; allocated credits auto-pause live projects when depleted (DB trigger); end-to-end consumption reporting is still evolving
+- ✅ **Project access window**: Optional end date (`access_until`, inclusive UTC calendar day). Live projects auto-pause after that day via row triggers, `pause_project_if_access_expired` before chat persist/completion, and a scheduled job (`GET /api/cron/pause-expired-projects`, Vercel Cron in `vercel.json`) when `CRON_SECRET` is set
 
 ## Current Progress Snapshot
 
@@ -31,15 +32,19 @@ Status legend: ✅ built, 🟡 partial/in progress, ⚪ planned/not built yet
   - Organizations dashboard wired to Supabase (create/update/soft delete via status)
   - Users dashboard wired to Supabase for org assignment and admin-only user creation
   - Server routes: `POST /api/admin/users`, `DELETE /api/admin/users/[id]`
-  - Chat routes: `GET /api/chat/history`, `GET /api/chat/poll`, `POST /api/chat/persist`, `POST /api/chat/n8n-complete`
+  - Chat routes: `GET /api/chat/history`, `GET /api/chat/result`, `GET /api/chat/poll`, `POST /api/chat/persist`, `POST /api/chat/n8n-complete`
+  - Admin project chat helpers: `GET /api/admin/projects/[id]/chat-history`, `GET /api/admin/projects/[id]/chat-result`
+  - Scheduled maintenance: `GET /api/cron/pause-expired-projects` (Bearer `CRON_SECRET`) calls `pause_all_projects_expired_access` for batch pause of expired access windows
   - Client hooks: `hooks/useChatHistory.ts`, `hooks/useChatQuestion.ts`
-  - Supabase migrations for admin RLS and active-with-organization constraints
+  - Supabase migrations for admin RLS, active-with-organization constraints, project status/credits, storage RLS, `chat_results`, and `access_until` + pause helpers
 - **Recent client UX**:
   - `components/ui/tabs.tsx` supports a **`line`** variant on `TabsList` for underline-style tabs (default pill tabs unchanged for persona sub-tabs).
-  - Client project detail: `ProjectSidebarTabs` in `components/client/project-detail/` drives the right column; history list is API-backed when the client runs against Supabase.
+  - Client project detail: `ProjectSidebarTabs` in `components/client/project-detail/` drives the right column; history list is API-backed when the client runs against Supabase; access window and expiry messaging use `accessUntil` + `lib/project-status.ts`
+- **Admin project detail**:
+  - Project settings include optional **Access until** date; saving flows through Supabase `projects` updates (`lib/supabase/projects.ts`)
 - **Still evolving**:
   - Chat UX: full spec alignment for history pagination, re-run-from-history, and edge cases per `agent-os/product/dev-notes/chat-history-spec.md`
-  - Full AI/RAG depth and credit consumption lifecycle
+  - Full AI/RAG depth and richer credit analytics
   - Expanded analytics beyond current shell/reporting surfaces
 
 ### Product specs (agent-os)
@@ -121,7 +126,9 @@ The sign-in form includes a `Forgot password?` flow:
 │   ├── api/
 │   │   ├── admin/users/      # Admin user creation
 │   │   ├── admin/users/[id]/ # Admin user DELETE
-│   │   └── chat/             # history, poll, persist, n8n-complete
+│   │   ├── admin/projects/[id]/ # chat-history, chat-result (admin)
+│   │   ├── cron/             # pause-expired-projects (scheduled access window enforcement)
+│   │   └── chat/             # history, result, poll, persist, n8n-complete
 │   ├── help/                 # Public help pages (FAQ, privacy, contact)
 │   ├── layout.tsx            # Root layout, fonts, AuthProvider
 │   └── page.tsx              # Login / redirect
@@ -197,13 +204,15 @@ NEXT_PUBLIC_N8N_URL=https://your-n8n-instance/webhook/...
 NEXT_PUBLIC_N8N_WEBHOOK_URL=https://your-n8n-instance/webhook/...
 ```
 
-**Server-only** (admin provisioning, service role, long-running chat completion):
+**Server-only** (admin provisioning, service role, long-running chat completion, cron):
 
 ```env
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 # Optional: n8n → app callback for async / long workflows (see agent-os n8n coordination doc)
 CHAT_N8N_CALLBACK_SECRET=your_shared_secret
 # Alias also supported: N8N_CHAT_CALLBACK_SECRET
+# Optional: protects GET /api/cron/pause-expired-projects (Vercel Cron uses Authorization: Bearer ...)
+CRON_SECRET=your_cron_secret
 ```
 
 Important notes:
@@ -211,7 +220,7 @@ Important notes:
 - `NEXT_PUBLIC_*` variables are required for browser auth flows (sign in, forgot password, password update).
 - `SUPABASE_SERVICE_ROLE_KEY` is required for `POST /api/admin/users` (admin user provisioning).
 - **Row-level security on `public.users`:** enable a policy so each signed-in user can **read their own profile row** (for example `USING (auth.uid() = id)` on `SELECT`). If `SELECT` is denied, the app falls back to JWT metadata or mock email matching, and **routing may not match the row you see in the Table Editor**.
-- Apply project migrations in `supabase/migrations/` so admin RLS and active-with-organization constraints are enforced consistently.
+- Apply project migrations in `supabase/migrations/` so admin RLS, project lifecycle (status, credits, `access_until`), and related helpers are enforced consistently.
 - In Supabase Auth settings, allow these redirect URLs:
   - `http://localhost:3000/auth/reset-password`
   - `https://<your-production-domain>/auth/reset-password`
