@@ -41,17 +41,40 @@ function slugFromName(name: string): string {
 function rowToOrganization(
   row: OrganizationRow,
   userCount: number,
-  projectIds: string[]
+  projectIds: string[],
+  chatCount = 0
 ): Organization {
   return {
     id: row.id,
     name: row.name,
     projectIds,
     userIds: Array.from({ length: userCount }, (_, idx) => `${row.id}-${idx}`),
+    chatCount,
     creditBalance: row.credit_balance ?? 0,
     status: normalizeOrgStatus(row.status),
     createdAt: row.created_at,
   }
+}
+
+async function fetchChatCountsByOrganization(
+  supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>,
+  organizationIds: string[]
+): Promise<Map<string, number>> {
+  const map = new Map<string, number>()
+  if (organizationIds.length === 0) return map
+
+  const { data, error } = await supabase
+    .from("chat_results")
+    .select("organization_id")
+    .in("organization_id", organizationIds)
+
+  if (error) throw new Error(error.message)
+
+  for (const row of data ?? []) {
+    const oid = row.organization_id as string
+    map.set(oid, (map.get(oid) ?? 0) + 1)
+  }
+  return map
 }
 
 export async function listOrganizationsForDashboard(): Promise<Organization[]> {
@@ -90,8 +113,16 @@ export async function listOrganizationsForDashboard(): Promise<Organization[]> {
   }
 
   const rows = (orgsResult.data ?? []) as OrganizationRow[]
+  const orgIds = rows.map((r) => r.id)
+  const chatCountsByOrg = await fetchChatCountsByOrganization(supabase, orgIds)
+
   return rows.map((row) =>
-    rowToOrganization(row, userCountsByOrg.get(row.id) ?? 0, projectIdsByOrg.get(row.id) ?? [])
+    rowToOrganization(
+      row,
+      userCountsByOrg.get(row.id) ?? 0,
+      projectIdsByOrg.get(row.id) ?? [],
+      chatCountsByOrg.get(row.id) ?? 0
+    )
   )
 }
 

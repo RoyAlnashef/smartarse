@@ -49,6 +49,8 @@ export interface Organization {
    * Synthetic id list whose length matches member count from `users.organization_id` in the admin dashboard.
    */
   userIds: string[]
+  /** Rows in `chat_results` for this org (dashboard list). */
+  chatCount: number
   /** Maps to Supabase `organizations.credit_balance`. */
   creditBalance: number
   /** Maps to Supabase `organizations.status` when present (`active` | `inactive`). */

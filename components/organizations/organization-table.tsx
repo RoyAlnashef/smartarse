@@ -1,7 +1,7 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { Ban, Coins, Edit, MoreHorizontal, RefreshCcw, Trash2 } from "lucide-react"
+import { Ban, Edit, MoreHorizontal, RefreshCcw, Trash2 } from "lucide-react"
 import type { Organization } from "@/lib/types"
 import {
   DropdownMenu,
@@ -15,14 +15,6 @@ import { initialAvatarClass } from "@/lib/avatar-palette"
 const statusColors: Record<string, string> = {
   active: "bg-mint-100 text-mint-700",
   inactive: "bg-dark-100 text-dark-500",
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  })
 }
 
 function orgInitials(name: string) {
@@ -49,11 +41,8 @@ export function OrganizationTableSkeleton() {
               <th className="hidden px-4 py-3 font-medium text-muted-foreground sm:table-cell">
                 Users
               </th>
-              <th className="hidden px-4 py-3 font-medium text-muted-foreground lg:table-cell">
-                Credits
-              </th>
-              <th className="hidden px-4 py-3 font-medium text-muted-foreground md:table-cell">
-                Created
+              <th className="hidden px-4 py-3 font-medium text-muted-foreground sm:table-cell">
+                Chats
               </th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">
@@ -79,11 +68,8 @@ export function OrganizationTableSkeleton() {
                 <td className="hidden px-4 py-3 sm:table-cell">
                   <Skeleton className="h-4 w-8" />
                 </td>
-                <td className="hidden px-4 py-3 lg:table-cell">
-                  <Skeleton className="h-4 w-20" />
-                </td>
-                <td className="hidden px-4 py-3 md:table-cell">
-                  <Skeleton className="h-4 w-24" />
+                <td className="hidden px-4 py-3 sm:table-cell">
+                  <Skeleton className="h-4 w-10" />
                 </td>
                 <td className="px-4 py-3">
                   <Skeleton className="h-5 w-16 rounded-full" />
@@ -128,11 +114,8 @@ export function OrganizationTable({
               <th className="hidden px-4 py-3 font-medium text-muted-foreground sm:table-cell">
                 Users
               </th>
-              <th className="hidden px-4 py-3 font-medium text-muted-foreground lg:table-cell">
-                Credits
-              </th>
-              <th className="hidden px-4 py-3 font-medium text-muted-foreground md:table-cell">
-                Created
+              <th className="hidden px-4 py-3 font-medium text-muted-foreground sm:table-cell">
+                Chats
               </th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">
@@ -144,7 +127,7 @@ export function OrganizationTable({
             {organizations.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={6}
                   className="px-4 py-10 text-center text-sm text-muted-foreground"
                 >
                   No organizations match your filters.
@@ -163,8 +146,8 @@ export function OrganizationTable({
                     <div>
                       <p className="font-medium text-foreground">{org.name}</p>
                       <p className="text-xs text-muted-foreground sm:hidden">
-                        {org.creditBalance} credits · {org.projectIds.length} projects ·{" "}
-                        {org.userIds.length} users
+                        {org.chatCount} chats · {org.projectIds.length} projects · {org.userIds.length}{" "}
+                        users
                       </p>
                     </div>
                   </div>
@@ -175,16 +158,8 @@ export function OrganizationTable({
                 <td className="hidden px-4 py-3 text-muted-foreground sm:table-cell">
                   {org.userIds.length}
                 </td>
-                <td className="hidden px-4 py-3 lg:table-cell">
-                  <div className="flex items-center gap-2">
-                    <Coins className="h-4 w-4 shrink-0 text-arse-pink" aria-hidden />
-                    <span className="font-medium tabular-nums text-foreground">
-                      {org.creditBalance}
-                    </span>
-                  </div>
-                </td>
-                <td className="hidden px-4 py-3 text-muted-foreground md:table-cell">
-                  {formatDate(org.createdAt)}
+                <td className="hidden px-4 py-3 text-muted-foreground sm:table-cell">
+                  <span className="font-medium tabular-nums text-foreground">{org.chatCount}</span>
                 </td>
                 <td className="px-4 py-3">
                   <span
