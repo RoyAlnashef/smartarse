@@ -88,14 +88,8 @@
     text-wrap: balance;
   }
 
-  /** Login / client marketing backdrop (wireframe; replace art later) */
+  /** Login / client marketing backdrop */
   .arse-surface-bg {
-    background: linear-gradient(
-      165deg,
-      var(--arse-cyan) 0%,
-      #7ee8e8 35%,
-      #b8f7f7 55%,
-      var(--arse-cyan) 100%
-    );
+    background: var(--arse-cyan);
   }
 }

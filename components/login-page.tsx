@@ -7,6 +7,7 @@ import { Eye, EyeOff, Lock, User } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { ArseLogoGroup } from "@/components/arse-logo-group"
+import { LoginFlowBackground } from "@/components/login-flow-background"
 import { cn } from "@/lib/utils"
 import { SUPPORT_CONTACT_NEW_TAB_HREF } from "@/lib/support-contact"
 import type { UserRole } from "@/lib/types"
@@ -84,20 +85,7 @@ export function LoginPage() {
 
   return (
     <div className="arse-surface-bg relative flex min-h-screen flex-col font-arse-body text-arse-black">
-      {/* Decorative waves (wireframe — swap for final art) */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.12]"
-        aria-hidden
-        style={{
-          backgroundImage: `repeating-linear-gradient(
-            -12deg,
-            transparent,
-            transparent 40px,
-            rgba(0,0,0,0.08) 40px,
-            rgba(0,0,0,0.08) 41px
-          )`,
-        }}
-      />
+      <LoginFlowBackground />
 
       <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-12 sm:px-6">
         <div className="flex w-full max-w-md flex-col gap-12 items-center justify-start text-center">
