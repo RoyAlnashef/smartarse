@@ -28,6 +28,7 @@ import {
   CalendarIcon,
   Info,
   Plus,
+  X,
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
 import { ProjectDetailSkeleton } from "@/components/dashboard/project-detail-skeleton"
@@ -1598,61 +1599,69 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                             </TooltipProvider>
                           </div>
                           {user.role === "admin" && useRemoteDetail ? (
-                            <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                              <Popover
-                                open={accessUntilPickerOpen}
-                                onOpenChange={setAccessUntilPickerOpen}
-                              >
-                                <PopoverTrigger asChild>
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    className={cn(
-                                      "w-full justify-start rounded-lg border-border px-3.5 py-2.5 text-left text-sm font-normal",
-                                      !settingsAccessUntil && "text-muted-foreground"
-                                    )}
+                            <div className="mt-1.5 flex items-center gap-2">
+                              <div className="min-w-0 flex-1">
+                                <Popover
+                                  open={accessUntilPickerOpen}
+                                  onOpenChange={setAccessUntilPickerOpen}
+                                >
+                                  <PopoverTrigger asChild>
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      className={cn(
+                                        "h-auto w-full min-w-0 justify-start rounded-lg border-border px-3.5 py-2.5 text-left text-sm font-normal",
+                                        !settingsAccessUntil &&
+                                          "text-muted-foreground"
+                                      )}
+                                    >
+                                      <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+                                      <span className="truncate">
+                                        {settingsAccessUntil
+                                          ? format(
+                                              parseISO(
+                                                `${settingsAccessUntil}T12:00:00`
+                                              ),
+                                              "PPP"
+                                            )
+                                          : "No end date"}
+                                      </span>
+                                    </Button>
+                                  </PopoverTrigger>
+                                  <PopoverContent
+                                    className="w-auto p-0"
+                                    align="start"
                                   >
-                                    <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
-                                    <span className="truncate">
-                                      {settingsAccessUntil
-                                        ? format(
-                                            parseISO(
+                                    <Calendar
+                                      mode="single"
+                                      selected={
+                                        settingsAccessUntil
+                                          ? parseISO(
                                               `${settingsAccessUntil}T12:00:00`
-                                            ),
-                                            "PPP"
-                                          )
-                                        : "No end date"}
-                                    </span>
-                                  </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                  <Calendar
-                                    mode="single"
-                                    selected={
-                                      settingsAccessUntil
-                                        ? parseISO(
-                                            `${settingsAccessUntil}T12:00:00`
-                                          )
-                                        : undefined
-                                    }
-                                    onSelect={(d) => {
-                                      setSettingsAccessUntil(
-                                        d ? format(d, "yyyy-MM-dd") : null
-                                      )
-                                      setAccessUntilPickerOpen(false)
-                                    }}
-                                    initialFocus
-                                  />
-                                </PopoverContent>
-                              </Popover>
+                                            )
+                                          : undefined
+                                      }
+                                      onSelect={(d) => {
+                                        setSettingsAccessUntil(
+                                          d ? format(d, "yyyy-MM-dd") : null
+                                        )
+                                        setAccessUntilPickerOpen(false)
+                                      }}
+                                      initialFocus
+                                    />
+                                  </PopoverContent>
+                                </Popover>
+                              </div>
                               {settingsAccessUntil ? (
                                 <Button
                                   type="button"
                                   variant="ghost"
-                                  className="shrink-0 text-sm text-muted-foreground"
+                                  size="icon"
+                                  className="shrink-0 rounded-lg text-muted-foreground hover:text-foreground"
+                                  aria-label="Clear access end date"
                                   onClick={() => setSettingsAccessUntil(null)}
                                 >
-                                  Clear
+                                  <X className="h-4 w-4" strokeWidth={2} />
                                 </Button>
                               ) : null}
                             </div>
