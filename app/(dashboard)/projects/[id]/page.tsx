@@ -78,10 +78,7 @@ import {
   PERSONA_FILE_UPLOAD_ACCEPT,
   PERSONA_FILE_UPLOAD_TYPES_DESCRIPTION,
 } from "@/components/upload/persona-upload-config"
-import {
-  CREDIT_BALANCE_WARNING_THRESHOLD,
-  ProjectCreditsMeter,
-} from "@/components/dashboard/project-credits-meter"
+import { ProjectCreditsMeter } from "@/components/dashboard/project-credits-meter"
 import { ProjectUsers } from "@/components/projects/project-users"
 import { Button } from "@/components/ui/button"
 import {
@@ -1061,13 +1058,6 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     setSettingsSection("credits")
   }, [])
 
-  const creditsMeterOpensCreditsSettings =
-    project != null &&
-    user != null &&
-    project.totalCredits < CREDIT_BALANCE_WARNING_THRESHOLD &&
-    user.role === "admin" &&
-    useRemoteDetail
-
   if (!user) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -1102,6 +1092,9 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     return !adminOnly || user.role === "admin"
   })
 
+  const headerCreditsMeterOpensSettings =
+    user.role === "admin" && useRemoteDetail
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* Project header */}
@@ -1130,7 +1123,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
           usedCredits={project.usedCredits}
           variant="header"
           className="shrink-0"
-          onClick={creditsMeterOpensCreditsSettings ? openSettingsCredits : undefined}
+          onClick={headerCreditsMeterOpensSettings ? openSettingsCredits : undefined}
         />
       </div>
 

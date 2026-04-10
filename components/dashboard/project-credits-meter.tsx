@@ -46,7 +46,12 @@ export function ProjectCreditsMeter({
             ? "border-amber-200/90 bg-amber-50 dark:border-amber-800/60 dark:bg-amber-950/40"
             : "border-border bg-white",
           headerInteractive &&
-            "cursor-pointer hover:bg-amber-100/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:hover:bg-amber-950/55"
+            cn(
+              "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+              warn
+                ? "hover:bg-amber-100/90 dark:hover:bg-amber-950/55"
+                : "hover:bg-muted/70 dark:hover:bg-muted/40"
+            )
         )
       : "min-w-0 w-full",
     className
