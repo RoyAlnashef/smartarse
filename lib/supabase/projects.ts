@@ -63,7 +63,9 @@ function rowToProject(
   row: ProjectRow,
   assignedUserIds: string[],
   uploadedFileIds: string[] = [],
-  chatCount = 0
+  chatCount = 0,
+  /** When set, `sum(chat_results.credits_charged)` from RPC (aligned with billing). */
+  usedCreditsAttributed?: number
 ): Project {
   const org = normalizeOrgEmbed(row.organizations)
   const lastActivity = row.last_activity ?? row.updated_at ?? row.created_at
@@ -78,7 +80,10 @@ function rowToProject(
     createdAt: row.created_at,
     lastActivity,
     totalCredits: row.credit_balance,
-    usedCredits: row.used_credits,
+    usedCredits:
+      usedCreditsAttributed !== undefined
+        ? usedCreditsAttributed
+        : row.used_credits,
     assignedUserIds,
     uploadedFileIds,
     chatCount,
@@ -163,6 +168,33 @@ async function fetchChatCountsByProject(
   return map
 }
 
+/** Sum(credits_charged) per project for visible rows; matches project card / detail “spent”. */
+async function fetchAttributedCreditsByProjectIds(
+  supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>,
+  projectIds: string[]
+): Promise<Map<string, number>> {
+  const map = new Map<string, number>()
+  for (const id of projectIds) {
+    map.set(id, 0)
+  }
+  if (projectIds.length === 0) return map
+
+  const { data, error } = await supabase.rpc(
+    "project_attributed_credits_by_projects",
+    { p_project_ids: projectIds }
+  )
+
+  if (error) throw new Error(error.message)
+
+  for (const row of (data ?? []) as {
+    project_id: string
+    credits_spent: number | string
+  }[]) {
+    map.set(row.project_id, Number(row.credits_spent))
+  }
+  return map
+}
+
 /**
  * Lists projects visible to the current session (RLS enforces admin / client org / user assignment).
  */
@@ -181,17 +213,22 @@ export async function listProjectsForAuthUser(): Promise<Project[]> {
   if (rows.length === 0) return []
 
   const ids = rows.map((r) => r.id)
-  const [byProject, docsByProject, chatCounts] = await Promise.all([
-    fetchAssignedUserIdsByProject(supabase, ids),
-    fetchDocumentIdsByProject(supabase, ids),
-    fetchChatCountsByProject(supabase, ids),
-  ])
+  const [byProject, docsByProject, chatCounts, attributedSpend] =
+    await Promise.all([
+      fetchAssignedUserIdsByProject(supabase, ids),
+      fetchDocumentIdsByProject(supabase, ids),
+      fetchChatCountsByProject(supabase, ids),
+      fetchAttributedCreditsByProjectIds(supabase, ids).catch(() => null),
+    ])
   return rows.map((row) =>
     rowToProject(
       row,
       byProject.get(row.id) ?? [],
       docsByProject.get(row.id) ?? [],
-      chatCounts.get(row.id) ?? 0
+      chatCounts.get(row.id) ?? 0,
+      attributedSpend === null
+        ? undefined
+        : (attributedSpend.get(row.id) ?? 0)
     )
   )
 }
@@ -213,11 +250,13 @@ export async function getProjectById(id: string): Promise<Project | null> {
   if (!data) return null
 
   const row = data as ProjectRow
-  const [{ data: puRows, error: puError }, docMap, chatCounts] = await Promise.all([
-    supabase.from("project_users").select("user_id").eq("project_id", id),
-    fetchDocumentIdsByProject(supabase, [id]),
-    fetchChatCountsByProject(supabase, [id]),
-  ])
+  const [{ data: puRows, error: puError }, docMap, chatCounts, attributedSpend] =
+    await Promise.all([
+      supabase.from("project_users").select("user_id").eq("project_id", id),
+      fetchDocumentIdsByProject(supabase, [id]),
+      fetchChatCountsByProject(supabase, [id]),
+      fetchAttributedCreditsByProjectIds(supabase, [id]).catch(() => null),
+    ])
 
   if (puError) throw new Error(puError.message)
   const assignedUserIds = (puRows ?? []).map((r) => r.user_id as string)
@@ -226,7 +265,10 @@ export async function getProjectById(id: string): Promise<Project | null> {
     row,
     assignedUserIds,
     docMap.get(id) ?? [],
-    chatCounts.get(id) ?? 0
+    chatCounts.get(id) ?? 0,
+    attributedSpend === null
+      ? undefined
+      : (attributedSpend.get(id) ?? 0)
   )
 }
 
