@@ -150,6 +150,22 @@ export async function mergeCompletedJobIntoAnchor(input: {
     }
   }
 
+  const { error: mergeCreditError } = await admin.rpc(
+    "apply_project_credit_for_thread_merge",
+    {
+      p_job_request_id: input.jobRequestId,
+      p_anchor_request_id: input.anchorRequestId,
+    }
+  )
+
+  if (mergeCreditError) {
+    return {
+      ok: false,
+      error: mergeCreditError.message ?? "Failed to apply merge credit charge.",
+      status: 500,
+    }
+  }
+
   const { error: deleteJobError } = await admin
     .from("chat_results")
     .delete()

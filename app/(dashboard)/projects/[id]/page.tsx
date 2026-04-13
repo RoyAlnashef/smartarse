@@ -145,6 +145,12 @@ const UNSAVED_DOCUMENT_ORDER_LEAVE_MESSAGE =
 const UNSAVED_PERSONA_ORDER_LEAVE_MESSAGE =
   "You haven't saved your persona order yet. Leave this page anyway?"
 
+function sumCreditSpendByUserMap(m: ReadonlyMap<string, number>): number {
+  let t = 0
+  for (const v of m.values()) t += v
+  return t
+}
+
 export default function ProjectPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const router = useRouter()
@@ -1181,6 +1187,11 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     return !adminOnly || user.role === "admin"
   })
 
+  const displaySpentCredits =
+    user.role === "admin" && useRemoteDetail
+      ? sumCreditSpendByUserMap(memberCreditSpendByUserId)
+      : project.usedCredits
+
   const headerCreditsMeterOpensSettings =
     user.role === "admin" && useRemoteDetail
 
@@ -1212,7 +1223,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         </div>
         <ProjectCreditsMeter
           creditBalance={project.totalCredits}
-          usedCredits={project.usedCredits}
+          usedCredits={displaySpentCredits}
           variant="header"
           className="shrink-0"
           onClick={headerCreditsMeterOpensSettings ? openSettingsCredits : undefined}
@@ -1842,7 +1853,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                                       "text-amber-950 dark:text-amber-50"
                                   )}
                                 >
-                                  {project.usedCredits.toLocaleString()}
+                                  {displaySpentCredits.toLocaleString()}
                                 </dd>
                               </div>
                             </dl>
@@ -1923,12 +1934,12 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                     <TabsContent value="delete" className="mt-0 outline-none">
                       <section className="space-y-4 rounded-xl border border-destructive/25 bg-destructive/5 p-6">
                         <h2 className="text-lg font-semibold tracking-tight text-foreground">
-                          {project.usedCredits > 0
+                          {displaySpentCredits > 0
                             ? "No deleting, sorry!"
                             : "Delete project"}
                         </h2>
                         <p className="text-sm text-muted-foreground">
-                          {project.usedCredits > 0
+                          {displaySpentCredits > 0
                             ? "Projects that have used credits cannot be deleted."
                             : "Permanently remove this project and its uploaded documents from storage. Users and the organization are not affected."}
                         </p>
@@ -1937,7 +1948,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                             type="button"
                             variant="destructive"
                             disabled={
-                              project.usedCredits > 0 || isDeletingProject
+                              displaySpentCredits > 0 || isDeletingProject
                             }
                             onClick={() => void handleDeleteProject()}
                           >

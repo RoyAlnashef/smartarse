@@ -82,7 +82,10 @@ export interface Project {
   lastActivity: string
   /** Maps to Supabase `projects.credit_balance` (credits currently available). */
   totalCredits: number
-  /** Maps to Supabase `projects.used_credits` (lifetime spent; informational in UI). */
+  /**
+   * Lifetime credits attributed on this project: `SUM(chat_results.credits_charged)` for this
+   * `project_id`, stored on `projects.used_credits` and kept in sync by the billing trigger.
+   */
   usedCredits: number
   assignedUserIds: string[]
   uploadedFileIds: string[]
