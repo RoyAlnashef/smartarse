@@ -9,7 +9,7 @@ import {
   type PointerEvent,
 } from "react"
 import Link from "next/link"
-import { Plus } from "lucide-react"
+import { Coins, Plus } from "lucide-react"
 import { useParams } from "next/navigation"
 import { toast } from "sonner"
 import { format, parseISO } from "date-fns"
@@ -26,6 +26,7 @@ import {
 } from "@/hooks/useChatQuestion"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { listProjectDocuments } from "@/lib/supabase/documents"
+import { CREDIT_BALANCE_WARNING_THRESHOLD } from "@/components/dashboard/project-credits-meter"
 import { ProjectPausedContactMessage } from "@/components/client/project-paused-contact-message"
 import { isAccessDateExpired, isProjectLiveForChat } from "@/lib/project-status"
 import { getProjectById } from "@/lib/supabase/projects"
@@ -547,6 +548,8 @@ export default function ClientProjectDetailPage() {
     )
   }
 
+  const creditsLow = project.totalCredits < CREDIT_BALANCE_WARNING_THRESHOLD
+
   return (
     <div className="w-full px-4 pb-12 pt-6 sm:px-6 lg:px-8">
       <nav
@@ -678,6 +681,23 @@ export default function ClientProjectDetailPage() {
                   )}
                 </AlertDescription>
               </Alert>
+            ) : null}
+            {creditsLow ? (
+              <div
+                className="px-1 text-center"
+                role="status"
+                aria-live="polite"
+              >
+                <div className="flex items-center justify-center gap-1.5">
+                  <Coins
+                    className="h-3 w-3 shrink-0 text-amber-600/70 dark:text-amber-400/80"
+                    aria-hidden
+                  />
+                  <span className="font-arse-body text-[11px] text-arse-black/50 dark:text-arse-white/50">
+                    Credits running low
+                  </span>
+                </div>
+              </div>
             ) : null}
           </aside>
 
