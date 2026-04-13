@@ -28,6 +28,7 @@ import {
   CalendarIcon,
   Info,
   Plus,
+  Minus,
   X,
 } from "lucide-react"
 import { useAuth } from "@/lib/auth-context"
@@ -61,6 +62,7 @@ import {
   addProjectCredits,
   deleteProject,
   getProjectById,
+  removeProjectCredits,
   updateProject,
 } from "@/lib/supabase/projects"
 import { listUsersForDashboard } from "@/lib/supabase/users"
@@ -368,7 +370,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const [showConvSidebar, setShowConvSidebar] = useState(true)
   const [isDeletingProject, setIsDeletingProject] = useState(false)
   const [creditAmountInput, setCreditAmountInput] = useState("")
-  const [isAddingCredits, setIsAddingCredits] = useState(false)
+  const [creditsBusy, setCreditsBusy] = useState<false | "add" | "remove">(false)
   const [settingsName, setSettingsName] = useState("")
   const [settingsDescription, setSettingsDescription] = useState("")
   const [settingsStatus, setSettingsStatus] = useState<Project["status"]>("live")
@@ -1056,10 +1058,10 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
       if (!useRemoteDetail || user?.role !== "admin") return
       const parsed = Number.parseInt(creditAmountInput.trim(), 10)
       if (!Number.isFinite(parsed) || parsed <= 0) {
-        toast.error("Enter a positive whole number of credits.")
+        toast.error("Enter an amount of credits to add")
         return
       }
-      setIsAddingCredits(true)
+      setCreditsBusy("add")
       try {
         await addProjectCredits(id, parsed)
         toast.success(`Added ${parsed.toLocaleString()} credits.`)
@@ -1070,7 +1072,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
           err instanceof Error ? err.message : "Could not add credits."
         )
       } finally {
-        setIsAddingCredits(false)
+        setCreditsBusy(false)
       }
     },
     [
@@ -1081,6 +1083,42 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
       refreshProjectFromServer,
     ]
   )
+
+  const handleRemoveCredits = useCallback(async () => {
+    if (!useRemoteDetail || user?.role !== "admin" || !project) return
+    const parsed = Number.parseInt(creditAmountInput.trim(), 10)
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      toast.error("Enter an amount of credits to remove")
+      return
+    }
+    if (
+      !window.confirm(
+        `Remove ${parsed.toLocaleString()} credits from the allocated pool for "${project.name}"?`
+      )
+    ) {
+      return
+    }
+    setCreditsBusy("remove")
+    try {
+      await removeProjectCredits(id, parsed)
+      toast.success(`Removed ${parsed.toLocaleString()} credits.`)
+      setCreditAmountInput("")
+      await refreshProjectFromServer()
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Could not remove credits."
+      )
+    } finally {
+      setCreditsBusy(false)
+    }
+  }, [
+    useRemoteDetail,
+    user?.role,
+    project,
+    creditAmountInput,
+    id,
+    refreshProjectFromServer,
+  ])
 
   const openSettingsCredits = useCallback(() => {
     focusCreditsAmountAfterMeterClick.current = true
@@ -1800,7 +1838,8 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                                     "text-amber-900 dark:text-amber-100"
                                 )}
                               >
-                                Enter a number</label>
+                                Enter a number of credits
+                              </label>
                               <input
                                 ref={creditsAmountInputRef}
                                 id="credit-top-up-amount"
@@ -1812,7 +1851,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                                 onChange={(ev) =>
                                   setCreditAmountInput(ev.target.value)
                                 }
-                                disabled={isAddingCredits}
+                                disabled={creditsBusy !== false}
                                 placeholder="e.g. 500"
                                 className={cn(
                                   "mt-1.5 block w-full rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 disabled:opacity-60",
@@ -1822,20 +1861,38 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                                 )}
                               />
                             </div>
-                            <Button
-                              type="submit"
-                              disabled={isAddingCredits}
-                              className="rounded-lg bg-dark-950 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-dark-800"
-                            >
-                              {isAddingCredits ? (
-                                "Adding…"
-                              ) : (
-                                <>
-                                  <Plus aria-hidden />
-                                  Add Credits
-                                </>
-                              )}
-                            </Button>
+                            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-end">
+                              <Button
+                                type="submit"
+                                disabled={creditsBusy !== false}
+                                className="rounded-lg bg-dark-950 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-dark-800"
+                              >
+                                {creditsBusy === "add" ? (
+                                  "Adding…"
+                                ) : (
+                                  <>
+                                    <Plus aria-hidden />
+                                    Add
+                                  </>
+                                )}
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                disabled={creditsBusy !== false}
+                                className="rounded-lg border-destructive/40 px-5 py-2.5 text-sm font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                onClick={() => void handleRemoveCredits()}
+                              >
+                                {creditsBusy === "remove" ? (
+                                  "Removing…"
+                                ) : (
+                                  <>
+                                    <Minus aria-hidden />
+                                    Remove
+                                  </>
+                                )}
+                              </Button>
+                            </div>
                           </form>
                         </div>
                       </section>

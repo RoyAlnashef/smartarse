@@ -359,6 +359,33 @@ export async function addProjectCredits(
 }
 
 /**
+ * Atomically decreases `projects.credit_balance` (dashboard admins only; enforced in RPC).
+ */
+export async function removeProjectCredits(
+  projectId: string,
+  amount: number
+): Promise<void> {
+  const supabase = getSupabaseBrowserClient()
+  if (!supabase) throw new Error("Supabase is not configured.")
+  if (!isUuidString(projectId)) {
+    throw new Error("Invalid project id.")
+  }
+  if (!Number.isInteger(amount) || amount <= 0) {
+    throw new Error("Amount must be a positive whole number.")
+  }
+  if (amount > MAX_PROJECT_CREDITS_TOP_UP) {
+    throw new Error(`Amount cannot exceed ${MAX_PROJECT_CREDITS_TOP_UP.toLocaleString()}.`)
+  }
+
+  const { error } = await supabase.rpc("remove_project_credits", {
+    p_project_id: projectId,
+    p_amount: amount,
+  })
+
+  if (error) throw new Error(error.message)
+}
+
+/**
  * Deletes a project (admin + RLS: only when used_credits = 0).
  * Removes the DB row first, then deletes storage objects for project documents and personas.
  */
