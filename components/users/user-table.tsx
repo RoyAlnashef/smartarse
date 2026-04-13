@@ -1,7 +1,7 @@
 "use client"
 
 import type { ReactNode } from "react"
-import { Edit, MoreHorizontal, Trash2 } from "lucide-react"
+import { ArrowDown, ArrowUp, ArrowUpDown, Edit, MoreHorizontal, Trash2 } from "lucide-react"
 import type { User } from "@/lib/types"
 import {
   Tooltip,
@@ -41,19 +41,19 @@ export function UserTableSkeleton() {
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/50">
-              <th className="px-4 py-3 font-medium text-muted-foreground">User</th>
-              <th className="hidden px-4 py-3 font-medium text-muted-foreground sm:table-cell">Role</th>
-              <th className="hidden px-4 py-3 font-medium text-muted-foreground md:table-cell">
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">User</th>
+              <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground sm:table-cell">Role</th>
+              <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground md:table-cell">
                 Organization
               </th>
-              <th className="hidden px-4 py-3 font-medium text-muted-foreground lg:table-cell">
+              <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground lg:table-cell">
                 Last Login
               </th>
-              <th className="hidden px-4 py-3 font-medium text-muted-foreground lg:table-cell">
+              <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground lg:table-cell">
                 Credits spent
               </th>
-              <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
-              <th className="px-4 py-3 font-medium text-muted-foreground">
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">Status</th>
+              <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                 <span className="sr-only">Actions</span>
               </th>
             </tr>
@@ -104,6 +104,8 @@ export function UserTable({
   onDelete,
   currentUserId,
   footer,
+  creditsSort = null,
+  onCreditsSortClick,
 }: {
   users: User[]
   organizations: { id: string; name: string; status: "active" | "inactive" }[]
@@ -111,6 +113,8 @@ export function UserTable({
   onDelete?: (user: User) => void
   currentUserId?: string
   footer?: ReactNode
+  creditsSort?: "desc" | "asc" | null
+  onCreditsSortClick?: () => void
 }) {
   return (
     <TooltipProvider>
@@ -119,15 +123,48 @@ export function UserTable({
           <table className="w-full text-left text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/50">
-                <th className="px-4 py-3 font-medium text-muted-foreground">User</th>
-                <th className="hidden px-4 py-3 font-medium text-muted-foreground sm:table-cell">Role</th>
-                <th className="hidden px-4 py-3 font-medium text-muted-foreground md:table-cell">Organization</th>
-                <th className="hidden px-4 py-3 font-medium text-muted-foreground lg:table-cell">Last Login</th>
-                <th className="hidden px-4 py-3 font-medium text-muted-foreground lg:table-cell">
-                  Credits spent
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">User</th>
+                <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground sm:table-cell">Role</th>
+                <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground md:table-cell">Organization</th>
+                <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground lg:table-cell">Last Login</th>
+                <th
+                  className="hidden px-4 py-3 text-left font-medium text-muted-foreground lg:table-cell"
+                  aria-sort={
+                    creditsSort === "desc"
+                      ? "descending"
+                      : creditsSort === "asc"
+                        ? "ascending"
+                        : "none"
+                  }
+                >
+                  {onCreditsSortClick ? (
+                    <button
+                      type="button"
+                      onClick={onCreditsSortClick}
+                      className="inline-flex w-full min-w-0 items-center justify-start gap-1.5 rounded-md text-left font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink/30"
+                      aria-label={
+                        creditsSort === null
+                          ? "Sort by credits spent, highest first"
+                          : creditsSort === "desc"
+                            ? "Sort by credits spent, lowest first"
+                            : "Clear credits spent sort"
+                      }
+                    >
+                      Credits Spent
+                      {creditsSort === "desc" ? (
+                        <ArrowDown className="h-4 w-4 shrink-0 text-foreground" aria-hidden />
+                      ) : creditsSort === "asc" ? (
+                        <ArrowUp className="h-4 w-4 shrink-0 text-foreground" aria-hidden />
+                      ) : (
+                        <ArrowUpDown className="h-4 w-4 shrink-0 opacity-50" aria-hidden />
+                      )}
+                    </button>
+                  ) : (
+                    "Credits spent"
+                  )}
                 </th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
-                <th className="px-4 py-3 font-medium text-muted-foreground">
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">Status</th>
+                <th className="px-4 py-3 text-left font-medium text-muted-foreground">
                   <span className="sr-only">Actions</span>
                 </th>
               </tr>
@@ -187,7 +224,7 @@ export function UserTable({
                     <td className="hidden px-4 py-3 text-muted-foreground lg:table-cell">
                       {formatDate(user.lastLogin)}
                     </td>
-                    <td className="hidden tabular-nums lg:table-cell">
+                    <td className="hidden px-4 py-3 text-left tabular-nums lg:table-cell">
                       <span className="font-semibold text-foreground">
                         {user.creditsSpentLifetime.toLocaleString()}
                       </span>

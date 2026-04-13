@@ -28,6 +28,7 @@ export default function UsersPage() {
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [page, setPage] = useState(1)
+  const [creditsSort, setCreditsSort] = useState<"desc" | "asc" | null>(null)
 
   async function refreshData() {
     const [userRows, orgRows] = await Promise.all([
@@ -85,9 +86,17 @@ export default function UsersPage() {
 
   useEffect(() => {
     setPage(1)
-  }, [search, roleFilter])
+  }, [search, roleFilter, creditsSort])
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / LIST_PAGE_SIZE))
+  const sortedFiltered = useMemo(() => {
+    if (!creditsSort) return filtered
+    return [...filtered].sort((a, b) => {
+      const diff = a.creditsSpentLifetime - b.creditsSpentLifetime
+      return creditsSort === "desc" ? -diff : diff
+    })
+  }, [filtered, creditsSort])
+
+  const totalPages = Math.max(1, Math.ceil(sortedFiltered.length / LIST_PAGE_SIZE))
 
   useEffect(() => {
     setPage((p) => Math.min(p, totalPages))
@@ -95,8 +104,8 @@ export default function UsersPage() {
 
   const paginatedUsers = useMemo(() => {
     const start = (page - 1) * LIST_PAGE_SIZE
-    return filtered.slice(start, start + LIST_PAGE_SIZE)
-  }, [filtered, page])
+    return sortedFiltered.slice(start, start + LIST_PAGE_SIZE)
+  }, [sortedFiltered, page])
 
   const organizationOptions = useMemo(
     () => organizations.map((o) => ({ id: o.id, name: o.name })),
@@ -280,6 +289,14 @@ export default function UsersPage() {
           users={paginatedUsers}
           organizations={organizationRows}
           currentUserId={currentUser?.id}
+          creditsSort={creditsSort}
+          onCreditsSortClick={() => {
+            setCreditsSort((prev) => {
+              if (prev === null) return "desc"
+              if (prev === "desc") return "asc"
+              return null
+            })
+          }}
           onEdit={(u) => {
             setEditingUser(u)
             setModalOpen(true)
@@ -288,7 +305,7 @@ export default function UsersPage() {
           footer={
             <ListPagination
               currentPage={page}
-              totalItems={filtered.length}
+              totalItems={sortedFiltered.length}
               pageSize={LIST_PAGE_SIZE}
               onPageChange={setPage}
             />
