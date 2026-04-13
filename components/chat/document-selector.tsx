@@ -2,6 +2,7 @@
 
 import { FileText, FileSpreadsheet, File } from "lucide-react"
 import type { UploadedFile } from "@/lib/types"
+import { sourceListLabel } from "@/lib/documents/display-label"
 
 const fileIcons: Record<string, typeof FileText> = {
   pdf: FileText,
@@ -32,6 +33,8 @@ export function DocumentSelector({
         {files.map((file) => {
           const Icon = fileIcons[file.type] ?? File
           const isSelected = selected.has(file.id)
+          const label = sourceListLabel(file)
+          const hasCustomDisplay = Boolean(file.displayName?.trim())
           return (
             <button
               key={file.id}
@@ -54,10 +57,15 @@ export function DocumentSelector({
                   }`}
                 />
               </div>
-              <div className="flex-1 truncate">
+              <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium text-foreground">
-                  {file.name}
+                  {label}
                 </p>
+                {hasCustomDisplay ? (
+                  <p className="truncate text-xs text-muted-foreground" title={file.name}>
+                    {file.name}
+                  </p>
+                ) : null}
                 {file.status !== "ready" && (
                   <p className="text-xs text-amber-500">({file.status})</p>
                 )}

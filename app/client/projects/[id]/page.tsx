@@ -20,7 +20,10 @@ import { chatMessagesFromStoredResult } from "@/lib/chat-thread"
 import { getChatResult } from "@/lib/chat-result"
 import { MOCK_CHAT_HISTORY } from "@/lib/mock-chat-history"
 import { useChatHistory } from "@/hooks/useChatHistory"
-import { useChatQuestion } from "@/hooks/useChatQuestion"
+import {
+  useChatQuestion,
+  type ChatProjectDocumentWebhookItem,
+} from "@/hooks/useChatQuestion"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { listProjectDocuments } from "@/lib/supabase/documents"
 import { ProjectPausedContactMessage } from "@/components/client/project-paused-contact-message"
@@ -399,6 +402,15 @@ export default function ClientProjectDetailPage() {
     () => readyDocuments.map((f) => f.id),
     [readyDocuments]
   )
+
+  const projectDocumentsForWebhook = useMemo((): ChatProjectDocumentWebhookItem[] => {
+    return readyDocuments.map((f) => ({
+      id: f.id,
+      name: f.name,
+      display_name:
+        f.displayName && f.displayName.trim() ? f.displayName.trim() : null,
+    }))
+  }, [readyDocuments])
   const [personaEvents, setPersonaEvents] = useState<
     (PersonaActivatedEvent | PersonaEndedEvent)[]
   >([])
@@ -676,6 +688,7 @@ export default function ClientProjectDetailPage() {
             <ProjectChat
               messages={messages}
               personaEvents={personaEvents}
+              citationDocuments={readyDocuments}
               isLoading={useRealChat ? chatLoading : false}
               appliedPersonaId={appliedPersonaId}
               disabled={
@@ -712,6 +725,7 @@ export default function ClientProjectDetailPage() {
                     chatHistoryForWebhook: activeThreadRequestId
                       ? chatHistoryForWebhook
                       : undefined,
+                    projectDocumentsForWebhook,
                   })
                   return
                 }

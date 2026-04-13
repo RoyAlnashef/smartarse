@@ -288,7 +288,18 @@ export const projects: Project[] = [
 
 // ── Files ──────────────────────────────────────────────
 export const uploadedFiles: UploadedFile[] = [
-  { id: "f1", name: "UK_Grocery_Report_2025.pdf", type: "pdf", size: 4500000, projectId: "p1", uploadedBy: "u1", uploadedAt: "2025-09-05T10:00:00Z", status: "ready", sortOrder: 2 },
+  {
+    id: "f1",
+    name: "UK_Grocery_Report_2025.pdf",
+    displayName: "UK grocery outlook 2025",
+    type: "pdf",
+    size: 4500000,
+    projectId: "p1",
+    uploadedBy: "u1",
+    uploadedAt: "2025-09-05T10:00:00Z",
+    status: "ready",
+    sortOrder: 2,
+  },
   { id: "f2", name: "Competitor_Pricing_Data.csv", type: "csv", size: 1200000, projectId: "p1", uploadedBy: "u1", uploadedAt: "2025-09-05T10:15:00Z", status: "ready", sortOrder: 1 },
   { id: "f3", name: "Consumer_Survey_Raw.xlsx", type: "xlsx", size: 3200000, projectId: "p1", uploadedBy: "u2", uploadedAt: "2025-09-10T09:00:00Z", status: "ready", sortOrder: 0 },
   { id: "f4", name: "Sentiment_Wave1_Results.pdf", type: "pdf", size: 2800000, projectId: "p2", uploadedBy: "u1", uploadedAt: "2025-10-20T11:00:00Z", status: "ready", sortOrder: 1 },

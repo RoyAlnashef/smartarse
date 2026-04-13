@@ -99,6 +99,11 @@ export interface UploadedFile {
    * Supabase-backed rows use `project_documents.sort_order`.
    */
   sortOrder: number
+  /**
+   * Optional admin-set label; maps to `project_documents.display_name`.
+   * When null/empty, UI uses `name` (e.g. Sources uses stem without extension).
+   */
+  displayName?: string | null
   /** Set when `status` is `uploading` (mock or optimistic UI before persistence). */
   uploadProgress?: number
 }

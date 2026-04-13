@@ -45,6 +45,7 @@ import {
   deleteProjectDocument,
   listProjectDocuments,
   reorderProjectDocuments,
+  updateProjectDocumentDisplayName,
 } from "@/lib/supabase/documents"
 import {
   deleteProjectPersona,
@@ -775,6 +776,30 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     [useRemoteDetail, user, runRemoteUploads, addFiles]
   )
 
+  const handleSaveDocumentDisplayName = useCallback(
+    async (documentId: string, displayName: string | null) => {
+      if (!useRemoteDetail) return
+      try {
+        const updated = await updateProjectDocumentDisplayName(documentId, {
+          displayName,
+        })
+        setRemoteDocuments((prev) =>
+          (prev ?? []).map((f) => (f.id === documentId ? updated : f))
+        )
+        toast.success(
+          displayName?.trim()
+            ? "Display name saved"
+            : "Display name cleared — file name will be used"
+        )
+      } catch (err: unknown) {
+        toast.error(
+          err instanceof Error ? err.message : "Could not save display name"
+        )
+      }
+    },
+    [useRemoteDetail]
+  )
+
   const handleDocumentDelete = useCallback(
     (fileId: string) => {
       const meta = mergedProjectFiles.find((f) => f.id === fileId)
@@ -1331,6 +1356,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                     <SortableProjectDocumentsTable
                       files={mergedProjectFiles}
                       onDelete={handleDocumentDelete}
+                      onSaveDisplayName={handleSaveDocumentDisplayName}
                       isInitialLoading={
                         remoteDocuments === undefined &&
                         remoteUploadPendingCount === 0

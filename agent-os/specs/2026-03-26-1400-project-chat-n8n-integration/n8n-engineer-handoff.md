@@ -21,6 +21,7 @@ If async is not wired, the browser will poll **`GET /api/chat/poll`** but **will
 1. **Do not** INSERT/UPDATE **`public.chat_results`** from n8n or workers. Next.js **`POST /api/chat/persist`** (and `n8n-complete`) owns writes.
 2. **Inbound body** uses **`org_id`** (not `organization_id`). Echo **`request_id`** and **`user_id`** through the workflow for async callbacks.
 3. **Outbound JSON:** prefer top-level **`answer`** for the assistant text; **`output`** and **`response`** are accepted as legacy aliases.
+4. **Document labels:** the client may send **`project_documents`** (array of `{ id, name, display_name }` for ready files). Prefer **`display_name ?? name`** when generating user-facing source strings so they align with the in-app **Sources** list and citation tooltips.
 
 ## Quick test
 

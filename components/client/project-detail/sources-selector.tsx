@@ -1,13 +1,7 @@
 "use client"
 
 import type { UploadedFile } from "@/lib/types"
-
-/** Display label: drop the last `.<ext>` segment; keep the original if there is no stem. */
-function fileNameWithoutExtension(name: string): string {
-  const dot = name.lastIndexOf(".")
-  if (dot <= 0 || dot === name.length - 1) return name
-  return name.slice(0, dot)
-}
+import { sourceListLabel } from "@/lib/documents/display-label"
 
 export function SourcesSelector({
   files,
@@ -33,7 +27,7 @@ export function SourcesSelector({
                   <span aria-hidden className="mt-1 h-2 w-2 shrink-0 rounded-full bg-arse-cyan" />
                   <span className="min-w-0 flex-1">
                     <span className="block whitespace-normal break-words font-arse-body text-xs font-semibold leading-snug">
-                      {fileNameWithoutExtension(file.name)}
+                      {sourceListLabel(file)}
                     </span>
                   </span>
                 </div>

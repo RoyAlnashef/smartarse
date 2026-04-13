@@ -30,6 +30,8 @@ type ProjectDocumentRow = {
   id: string
   project_id: string
   name: string
+  /** Present after migration `202604131600_project_documents_display_name`. */
+  display_name?: string | null
   storage_path: string
   size_bytes: number
   mime_type: string | null
@@ -40,7 +42,7 @@ type ProjectDocumentRow = {
 }
 
 const documentSelect =
-  "id,project_id,name,storage_path,size_bytes,mime_type,uploaded_by,uploaded_at,status,sort_order"
+  "id,project_id,name,display_name,storage_path,size_bytes,mime_type,uploaded_by,uploaded_at,status,sort_order"
 
 /** Eight hyphenated hex groups — rejects mock ids like `u1`. */
 const UUID_REGEX =
@@ -71,6 +73,7 @@ function rowToUploadedFile(row: ProjectDocumentRow): UploadedFile {
   return {
     id: row.id,
     name: row.name,
+    displayName: row.display_name ?? null,
     type: inferUploadedFileType(ext),
     size: row.size_bytes,
     projectId: row.project_id,
@@ -208,6 +211,39 @@ export async function uploadProjectDocument(input: {
     throw formatDocumentUploadError(insertError.message, "database")
   }
 
+  return rowToUploadedFile(data as ProjectDocumentRow)
+}
+
+const DISPLAY_NAME_MAX = 500
+
+export async function updateProjectDocumentDisplayName(
+  documentId: string,
+  input: { displayName: string | null }
+): Promise<UploadedFile> {
+  const supabase = getSupabaseBrowserClient()
+  if (!supabase) throw new Error("Supabase is not configured.")
+
+  if (!isUuidString(documentId)) {
+    throw new Error("Invalid document id.")
+  }
+
+  const raw = input.displayName
+  const trimmed = typeof raw === "string" ? raw.trim() : ""
+  const dbValue =
+    trimmed === ""
+      ? null
+      : trimmed.length > DISPLAY_NAME_MAX
+        ? trimmed.slice(0, DISPLAY_NAME_MAX)
+        : trimmed
+
+  const { data, error } = await supabase
+    .from("project_documents")
+    .update({ display_name: dbValue })
+    .eq("id", documentId)
+    .select(documentSelect)
+    .single()
+
+  if (error) throw new Error(error.message)
   return rowToUploadedFile(data as ProjectDocumentRow)
 }
 

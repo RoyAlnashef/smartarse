@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState, type AnchorHTMLAttributes } from "react"
 import { Send, SlidersHorizontal } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
@@ -11,6 +11,12 @@ import type {
   ChatTimelineItem,
 } from "@/lib/types"
 import { isPersonaActivatedEvent, isPersonaEndedEvent } from "@/lib/types"
+import {
+  buildCitationLabelLookup,
+  resolveCitationLinkTitle,
+  type CitationDocumentRef,
+  type CitationLabelLookup,
+} from "@/lib/documents/display-label"
 import { cn } from "@/lib/utils"
 import { PERSONA_CHAT_SHELL_CLASS } from "@/components/client/project-detail/persona-chat-shell-classes"
 import { MOCK_SEGMENT_PERSONAS } from "@/components/client/project-detail/persona-drawer"
@@ -43,8 +49,44 @@ function Avatar({ label }: { label: string }) {
   )
 }
 
-function MessageBubble({ message }: { message: ChatMessage }) {
+function MessageBubble({
+  message,
+  citationLookup,
+}: {
+  message: ChatMessage
+  /** When set (assistant only), link `title` tooltips prefer document display names. */
+  citationLookup: CitationLabelLookup | null
+}) {
   const isUser = message.role === "user"
+
+  const markdownComponents = useMemo(() => {
+    return {
+      a: ({
+        node: _node,
+        href,
+        title,
+        children,
+        ...rest
+      }: AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown }) => {
+        const resolvedTitle =
+          citationLookup != null
+            ? resolveCitationLinkTitle(citationLookup, href, title)
+            : title
+        return (
+          <a
+            {...rest}
+            href={href}
+            title={resolvedTitle}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            {children}
+          </a>
+        )
+      },
+    }
+  }, [citationLookup])
+
   return (
     <div className={cn("flex gap-3", isUser ? "justify-end" : "justify-start")}>
       {!isUser ? <Avatar label="AI" /> : null}
@@ -77,11 +119,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
         >
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
-            components={{
-              a: ({ node: _node, ...props }) => (
-                <a {...props} target="_blank" rel="noreferrer noopener" />
-              ),
-            }}
+            components={markdownComponents}
           >
             {message.content}
           </ReactMarkdown>
@@ -149,6 +187,7 @@ function PersonaEventBubble({
 export function ProjectChat({
   messages,
   personaEvents = [],
+  citationDocuments,
   isLoading = false,
   disabled,
   appliedPersonaId,
@@ -160,6 +199,8 @@ export function ProjectChat({
 }: {
   messages: ChatMessage[]
   personaEvents?: (PersonaActivatedEvent | PersonaEndedEvent)[]
+  /** Ready project documents — used to improve assistant markdown link tooltips. */
+  citationDocuments?: CitationDocumentRef[]
   isLoading?: boolean
   disabled?: boolean
   appliedPersonaId: string | null
@@ -181,6 +222,11 @@ export function ProjectChat({
         : null,
     [appliedPersonaId]
   )
+
+  const citationLookup = useMemo((): CitationLabelLookup | null => {
+    if (!citationDocuments || citationDocuments.length === 0) return null
+    return buildCitationLabelLookup(citationDocuments)
+  }, [citationDocuments])
 
   const timelineItems = useMemo((): ChatTimelineItem[] => {
     const items: ChatTimelineItem[] = [...messages, ...personaEvents]
@@ -328,7 +374,15 @@ export function ProjectChat({
                       </p>
                     )
                   }
-                  return <MessageBubble key={item.id} message={item} />
+                  return (
+                    <MessageBubble
+                      key={item.id}
+                      message={item}
+                      citationLookup={
+                        item.role === "assistant" ? citationLookup : null
+                      }
+                    />
+                  )
                 })}
                 {isLoading ? (
                   <div className="flex gap-3" role="status" aria-live="polite" aria-label="Assistant is preparing a response">

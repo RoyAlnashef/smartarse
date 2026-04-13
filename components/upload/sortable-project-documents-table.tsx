@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, type ReactNode } from "react"
+import { useMemo, useState, type ReactNode } from "react"
 import {
   DndContext,
   PointerSensor,
@@ -22,9 +22,11 @@ import {
   File,
   GripVertical,
   MoreHorizontal,
+  Pencil,
   Trash2,
 } from "lucide-react"
 import type { UploadedFile } from "@/lib/types"
+import { adminDocumentPrimaryLabel } from "@/lib/documents/display-label"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,6 +35,17 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 const fileIcons: Record<string, typeof FileText> = {
   pdf: FileText,
@@ -46,11 +59,6 @@ const statusColors: Record<string, string> = {
   ready: "bg-mint-100 text-mint-700",
   processing: "bg-amber-100 text-amber-700",
   error: "bg-red-100 text-red-700",
-}
-
-function formatSize(bytes: number) {
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
 export function isPersistedProjectDocumentRow(f: UploadedFile): boolean {
@@ -137,14 +145,20 @@ function StaticDocumentRow({
   file,
   onDelete,
   showDragColumn = false,
+  onRequestEditDisplayName,
 }: {
   file: UploadedFile
   onDelete?: (id: string) => void
   /** When true, reserve a narrow column for alignment with sortable rows (handle or spacer). */
   showDragColumn?: boolean
+  onRequestEditDisplayName?: (file: UploadedFile) => void
 }) {
   const Icon = fileIcons[file.type] ?? File
-  const showActions = Boolean(onDelete) && file.status !== "uploading"
+  const showActions =
+    (Boolean(onDelete) || Boolean(onRequestEditDisplayName)) &&
+    file.status !== "uploading"
+  const primary = adminDocumentPrimaryLabel(file)
+  const hasCustomDisplay = Boolean(file.displayName?.trim())
 
   return (
     <tr className="transition-colors hover:bg-muted/30">
@@ -157,10 +171,14 @@ function StaticDocumentRow({
         <div className="flex items-start gap-3">
           <Icon className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
           <div className="min-w-0 flex-1">
-            <div className="truncate font-medium text-foreground">{file.name}</div>
-            <div className="mt-0.5 text-xs text-muted-foreground">
-              {formatSize(file.size)}
-            </div>
+            <div className="truncate font-medium text-foreground">{primary}</div>
+            {hasCustomDisplay ? (
+              <div className="mt-0.5 text-xs text-muted-foreground">
+                <span className="block truncate" title={file.name}>
+                  {file.name}
+                </span>
+              </div>
+            ) : null}
           </div>
         </div>
       </td>
@@ -194,13 +212,21 @@ function StaticDocumentRow({
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                className="text-red-500 focus:text-red-500"
-                onClick={() => onDelete?.(file.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
+              {onRequestEditDisplayName && isPersistedProjectDocumentRow(file) ? (
+                <DropdownMenuItem onClick={() => onRequestEditDisplayName(file)}>
+                  <Pencil className="h-4 w-4" />
+                  Edit display name
+                </DropdownMenuItem>
+              ) : null}
+              {onDelete ? (
+                <DropdownMenuItem
+                  className="text-red-500 focus:text-red-500"
+                  onClick={() => onDelete(file.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              ) : null}
             </DropdownMenuContent>
           </DropdownMenu>
         ) : null}
@@ -212,9 +238,11 @@ function StaticDocumentRow({
 function SortableDocumentRow({
   file,
   onDelete,
+  onRequestEditDisplayName,
 }: {
   file: UploadedFile
   onDelete?: (id: string) => void
+  onRequestEditDisplayName?: (file: UploadedFile) => void
 }) {
   const {
     attributes,
@@ -231,7 +259,11 @@ function SortableDocumentRow({
   }
 
   const Icon = fileIcons[file.type] ?? File
-  const showActions = Boolean(onDelete) && file.status !== "uploading"
+  const showActions =
+    (Boolean(onDelete) || Boolean(onRequestEditDisplayName)) &&
+    file.status !== "uploading"
+  const primary = adminDocumentPrimaryLabel(file)
+  const hasCustomDisplay = Boolean(file.displayName?.trim())
 
   return (
     <tr
@@ -254,10 +286,14 @@ function SortableDocumentRow({
         <div className="flex items-start gap-3">
           <Icon className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
           <div className="min-w-0 flex-1">
-            <div className="truncate font-medium text-foreground">{file.name}</div>
-            <div className="mt-0.5 text-xs text-muted-foreground">
-              {formatSize(file.size)}
-            </div>
+            <div className="truncate font-medium text-foreground">{primary}</div>
+            {hasCustomDisplay ? (
+              <div className="mt-0.5 text-xs text-muted-foreground">
+                <span className="block truncate" title={file.name}>
+                  {file.name}
+                </span>
+              </div>
+            ) : null}
           </div>
         </div>
       </td>
@@ -291,13 +327,21 @@ function SortableDocumentRow({
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                className="text-red-500 focus:text-red-500"
-                onClick={() => onDelete?.(file.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
+              {onRequestEditDisplayName && isPersistedProjectDocumentRow(file) ? (
+                <DropdownMenuItem onClick={() => onRequestEditDisplayName(file)}>
+                  <Pencil className="h-4 w-4" />
+                  Edit display name
+                </DropdownMenuItem>
+              ) : null}
+              {onDelete ? (
+                <DropdownMenuItem
+                  className="text-red-500 focus:text-red-500"
+                  onClick={() => onDelete(file.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              ) : null}
             </DropdownMenuContent>
           </DropdownMenu>
         ) : null}
@@ -309,6 +353,7 @@ function SortableDocumentRow({
 export function SortableProjectDocumentsTable({
   files,
   onDelete,
+  onSaveDisplayName,
   isInitialLoading = false,
   reorderUnlocked,
   draftStableIds,
@@ -317,6 +362,11 @@ export function SortableProjectDocumentsTable({
 }: {
   files: UploadedFile[]
   onDelete?: (id: string) => void
+  /** When set, row menu includes “Edit display name” for persisted rows (e.g. project documents only). */
+  onSaveDisplayName?: (
+    documentId: string,
+    displayName: string | null
+  ) => Promise<void>
   isInitialLoading?: boolean
   reorderUnlocked: boolean
   draftStableIds: string[]
@@ -329,6 +379,31 @@ export function SortableProjectDocumentsTable({
     ...labelsProp,
   }
   const byId = useMemo(() => new Map(files.map((f) => [f.id, f])), [files])
+
+  const [displayNameTarget, setDisplayNameTarget] = useState<UploadedFile | null>(
+    null
+  )
+  const [displayNameDraft, setDisplayNameDraft] = useState("")
+  const [savingDisplayName, setSavingDisplayName] = useState(false)
+
+  const openDisplayNameDialog = (file: UploadedFile) => {
+    setDisplayNameTarget(file)
+    setDisplayNameDraft(file.displayName?.trim() ? file.displayName : "")
+  }
+
+  const handleSaveDisplayName = async () => {
+    if (!displayNameTarget || !onSaveDisplayName) return
+    setSavingDisplayName(true)
+    try {
+      const next = displayNameDraft.trim() === "" ? null : displayNameDraft.trim()
+      await onSaveDisplayName(displayNameTarget.id, next)
+      setDisplayNameTarget(null)
+    } finally {
+      setSavingDisplayName(false)
+    }
+  }
+
+  const requestEditDisplayName = onSaveDisplayName ? openDisplayNameDialog : undefined
 
   const { pendingRows, stableInFileOrder } = useMemo(() => {
     const pending: UploadedFile[] = []
@@ -386,51 +461,126 @@ export function SortableProjectDocumentsTable({
     </div>
   )
 
+  const displayNameDialog = (
+    <Dialog
+      open={displayNameTarget !== null}
+      onOpenChange={(open) => {
+        if (!open) setDisplayNameTarget(null)
+      }}
+    >
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Edit display name</DialogTitle>
+          <DialogDescription>
+            Shown in Sources and citation tooltips. Leave empty to use the file name.
+          </DialogDescription>
+        </DialogHeader>
+        {displayNameTarget ? (
+          <div className="grid gap-2 py-1">
+            <Label htmlFor="doc-display-name">Display name</Label>
+            <Input
+              id="doc-display-name"
+              value={displayNameDraft}
+              onChange={(e) => setDisplayNameDraft(e.target.value)}
+              placeholder="e.g. Sustainability report 2023"
+              maxLength={500}
+              disabled={savingDisplayName}
+            />
+            <p className="text-xs text-muted-foreground">
+              File: <span className="font-medium">{displayNameTarget.name}</span>
+            </p>
+          </div>
+        ) : null}
+        <DialogFooter className="gap-2 sm:gap-0">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setDisplayNameTarget(null)}
+            disabled={savingDisplayName}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            onClick={() => void handleSaveDisplayName()}
+            disabled={savingDisplayName || !onSaveDisplayName}
+          >
+            Save
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
+
   if (showDragColumn) {
     return (
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        {tableShell(
-          <>
-            {pendingRows.map((file) => (
-              <StaticDocumentRow
-                key={file.id}
-                file={file}
-                onDelete={onDelete}
-                showDragColumn
-              />
-            ))}
-            <SortableContext
-              items={draftStableIds}
-              strategy={verticalListSortingStrategy}
-            >
-              {draftStableIds.map((id) => {
-                const file = byId.get(id)
-                if (!file) return null
-                return (
-                  <SortableDocumentRow key={id} file={file} onDelete={onDelete} />
-                )
-              })}
-            </SortableContext>
-          </>,
-          true
-        )}
-      </DndContext>
+      <>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          {tableShell(
+            <>
+              {pendingRows.map((file) => (
+                <StaticDocumentRow
+                  key={file.id}
+                  file={file}
+                  onDelete={onDelete}
+                  showDragColumn
+                  onRequestEditDisplayName={requestEditDisplayName}
+                />
+              ))}
+              <SortableContext
+                items={draftStableIds}
+                strategy={verticalListSortingStrategy}
+              >
+                {draftStableIds.map((id) => {
+                  const file = byId.get(id)
+                  if (!file) return null
+                  return (
+                    <SortableDocumentRow
+                      key={id}
+                      file={file}
+                      onDelete={onDelete}
+                      onRequestEditDisplayName={requestEditDisplayName}
+                    />
+                  )
+                })}
+              </SortableContext>
+            </>,
+            true
+          )}
+        </DndContext>
+        {displayNameDialog}
+      </>
     )
   }
 
-  return tableShell(
+  return (
     <>
-      {pendingRows.map((file) => (
-        <StaticDocumentRow key={file.id} file={file} onDelete={onDelete} />
-      ))}
-      {stableInFileOrder.map((file) => (
-        <StaticDocumentRow key={file.id} file={file} onDelete={onDelete} />
-      ))}
-    </>,
-    false
+      {tableShell(
+        <>
+          {pendingRows.map((file) => (
+            <StaticDocumentRow
+              key={file.id}
+              file={file}
+              onDelete={onDelete}
+              onRequestEditDisplayName={requestEditDisplayName}
+            />
+          ))}
+          {stableInFileOrder.map((file) => (
+            <StaticDocumentRow
+              key={file.id}
+              file={file}
+              onDelete={onDelete}
+              onRequestEditDisplayName={requestEditDisplayName}
+            />
+          ))}
+        </>,
+        false
+      )}
+      {displayNameDialog}
+    </>
   )
 }

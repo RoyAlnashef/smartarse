@@ -19,6 +19,13 @@ type OrgSettings = {
   qual_enabled: boolean
 }
 
+/** One project document for n8n / Disrupt (prompts, citations, metadata). */
+export type ChatProjectDocumentWebhookItem = {
+  id: string
+  name: string
+  display_name: string | null
+}
+
 export type ChatQuestionWebhookPayload = {
   chatInput: string
   org_id: string
@@ -33,6 +40,8 @@ export type ChatQuestionWebhookPayload = {
   thread_anchor_request_id?: string
   /** Path A: prior turns for model context (optional). */
   chatHistory?: { role: string; content: string }[]
+  /** Ready project documents for this chat (optional). Prefer `display_name ?? name` in workflows. */
+  project_documents?: ChatProjectDocumentWebhookItem[]
 }
 
 function unknownToResultRecord(data: unknown): Record<string, unknown> {
@@ -123,6 +132,8 @@ export type SubmitQuestionOptions = {
   threadAnchorRequestId?: string | null
   /** Path A: messages to send to n8n (e.g. prior turns + current user text). */
   chatHistoryForWebhook?: { role: string; content: string }[]
+  /** Sent as `project_documents` on the webhook body when non-empty. */
+  projectDocumentsForWebhook?: ChatProjectDocumentWebhookItem[]
 }
 
 export function useChatQuestion({
@@ -184,6 +195,7 @@ export function useChatQuestion({
 
       const anchor = opts?.threadAnchorRequestId?.trim() || undefined
       const history = opts?.chatHistoryForWebhook
+      const projectDocs = opts?.projectDocumentsForWebhook
 
       const payload: ChatQuestionWebhookPayload = {
         chatInput: question,
@@ -197,6 +209,9 @@ export function useChatQuestion({
         qual_enabled: orgSettings.qual_enabled,
         ...(anchor ? { thread_anchor_request_id: anchor } : {}),
         ...(history && history.length > 0 ? { chatHistory: history } : {}),
+        ...(projectDocs && projectDocs.length > 0
+          ? { project_documents: projectDocs }
+          : {}),
       }
 
       // Seed a pending row so callback reconciliation still works after refresh.

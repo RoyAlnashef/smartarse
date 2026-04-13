@@ -27,6 +27,7 @@ The browser POSTs JSON with at least:
 | `qual_enabled`     | boolean       | Org setting.                                                                                          |
 | `thread_anchor_request_id` | string (UUID) | **Optional (Path A).** When the user is continuing a thread, the **`request_id`** of the first `chat_results` row for that conversation. Omit for a brand-new thread. |
 | `chatHistory`      | array         | **Optional (Path A).** Prior turns as `{ "role": "user" \| "assistant", "content": string }[]` (plus the current user message). Workflows that ignore this field still run; multi-turn quality improves when the model receives it. |
+| `project_documents` | array        | **Optional.** Ready project documents for this turn: `{ "id": string (UUID), "name": string, "display_name": string \| null }[]`. Omitted when the project has no ready documents. Use **`display_name ?? name`** (or `name` only) for human-readable labels in prompts, `sources[]`, and markdown citations. |
 
 URL: from `NEXT_PUBLIC_N8N_URL` or `NEXT_PUBLIC_N8N_WEBHOOK_URL` (see [`lib/n8n-webhook-url.ts`](../../../lib/n8n-webhook-url.ts)).
 
