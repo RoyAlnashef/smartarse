@@ -249,7 +249,7 @@ export function ProjectChat({
               <div className="max-w-[min(42rem,90%)]">
                 <div className="block rounded-2xl rounded-bl-sm border-2 border-arse-black/20 bg-white px-4 py-4 text-sm text-arse-black sm:px-5 sm:py-5">
                   <p className="font-arse-body leading-relaxed">
-                    Hi! I&apos;m <strong className="font-semibold">smartA.R.S.E.</strong>, and I answer
+                    Hi there! <br></br>I&apos;m <strong className="font-semibold">smartA.R.S.E.</strong>, and I answer
                     from this project&apos;s <strong className="font-semibold">Sources</strong>—the
                     documents your team added here. Ask in plain language; I&apos;ll stay grounded in
                     what&apos;s in those materials (and I&apos;ll say so when something isn&apos;t
@@ -263,6 +263,20 @@ export function ProjectChat({
                       point of view.
                     </p>
                   ) : null}
+                  <p className="mt-4 font-arse-body text-sm leading-relaxed text-arse-black/85">
+                    {appliedPersona ? (
+                      <>
+                        Switch personas or tweak how I speak anytime from{" "}
+                        <strong className="font-semibold">Controls</strong>.
+                      </>
+                    ) : (
+                      <>
+                        Would you like me to speak in a segment's voice? Open{" "}
+                        <strong className="font-semibold">Controls</strong> and choose a persona when
+                        you&apos;re ready.
+                      </>
+                    )}
+                  </p>
                   <p className="mt-4 font-arse-body text-sm font-semibold text-arse-black">
                     A few things to try:
                   </p>
@@ -280,20 +294,6 @@ export function ProjectChat({
                       </li>
                     )}
                   </ul>
-                  <p className="mt-4 font-arse-body text-sm leading-relaxed text-arse-black/85">
-                    {appliedPersona ? (
-                      <>
-                        Switch personas or tweak how I speak anytime from{" "}
-                        <strong className="font-semibold">Controls</strong>.
-                      </>
-                    ) : (
-                      <>
-                        Want a segment&apos;s voice? Open{" "}
-                        <strong className="font-semibold">Controls</strong> and pick a persona when
-                        you&apos;re ready.
-                      </>
-                    )}
-                  </p>
                 </div>
               </div>
             ) : (
