@@ -26,6 +26,11 @@ export interface User {
   lastLogin: string
   /** Maps to Supabase `users.created_at`. */
   createdAt: string
+  /**
+   * Lifetime credits charged across all projects (`sum(chat_results.credits_charged)`);
+   * dashboard RPC; 0 when not loaded or mock.
+   */
+  creditsSpentLifetime: number
 }
 
 export interface Client {

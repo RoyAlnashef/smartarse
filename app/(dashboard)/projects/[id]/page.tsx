@@ -61,6 +61,7 @@ import {
 import {
   addProjectCredits,
   deleteProject,
+  fetchProjectCreditSpendByUser,
   getProjectById,
   removeProjectCredits,
   updateProject,
@@ -159,16 +160,21 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     undefined
   )
   const [directoryUsers, setDirectoryUsers] = useState<User[]>([])
+  const [memberCreditSpendByUserId, setMemberCreditSpendByUserId] = useState(
+    () => new Map<string, number>()
+  )
 
   useEffect(() => {
     if (!user) {
       setRemoteProject(undefined)
       setDirectoryUsers([])
+      setMemberCreditSpendByUserId(new Map())
       return
     }
     if (!getSupabaseBrowserClient()) {
       setRemoteProject(undefined)
       setDirectoryUsers(mockUsers)
+      setMemberCreditSpendByUserId(new Map())
       return
     }
 
@@ -180,11 +186,17 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         ? listUsersForDashboard()
         : Promise.resolve([] as User[])
 
-    Promise.all([getProjectById(id), usersPromise])
-      .then(([proj, dir]) => {
+    const creditSpendPromise =
+      user.role === "admin"
+        ? fetchProjectCreditSpendByUser(id)
+        : Promise.resolve(new Map<string, number>())
+
+    Promise.all([getProjectById(id), usersPromise, creditSpendPromise])
+      .then(([proj, dir, creditSpend]) => {
         if (!cancelled) {
           setRemoteProject(proj)
           setDirectoryUsers(dir)
+          setMemberCreditSpendByUserId(creditSpend)
         }
       })
       .catch((err: unknown) => {
@@ -194,6 +206,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
           )
           setRemoteProject(null)
           setDirectoryUsers([])
+          setMemberCreditSpendByUserId(new Map())
         }
       })
 
@@ -214,14 +227,22 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const refreshProjectFromServer = useCallback(async () => {
     if (!getSupabaseBrowserClient() || !user) return
     try {
-      const proj = await getProjectById(id)
+      const [proj, creditSpend] = await Promise.all([
+        getProjectById(id),
+        user.role === "admin"
+          ? fetchProjectCreditSpendByUser(id)
+          : Promise.resolve(new Map<string, number>()),
+      ])
       setRemoteProject(proj)
+      if (user.role === "admin") {
+        setMemberCreditSpendByUserId(creditSpend)
+      }
     } catch (err: unknown) {
       toast.error(
         err instanceof Error ? err.message : "Failed to refresh project"
       )
     }
-  }, [id, user?.id])
+  }, [id, user?.id, user?.role])
 
   const [remoteDocuments, setRemoteDocuments] = useState<
     UploadedFile[] | undefined
@@ -1535,6 +1556,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
               <ProjectUsers
                 project={project}
                 allUsers={memberDirectoryUsers}
+                creditSpendByUserId={memberCreditSpendByUserId}
                 onAssignmentsChange={
                   useRemoteDetail ? refreshProjectFromServer : undefined
                 }

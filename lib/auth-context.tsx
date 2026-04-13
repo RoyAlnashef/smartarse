@@ -86,6 +86,7 @@ function buildUserFromSession(sessionUser: SessionUserShape, dbRow: PublicUserRo
     status: matchedMock?.status ?? "active",
     lastLogin: new Date().toISOString(),
     createdAt: dbRow?.created_at ?? matchedMock?.createdAt ?? new Date().toISOString(),
+    creditsSpentLifetime: matchedMock?.creditsSpentLifetime ?? 0,
   }
 }
 

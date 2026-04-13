@@ -39,6 +39,7 @@ function rowToUser(row: UserRow): User {
     status: normalizedStatus,
     lastLogin: created,
     createdAt: created,
+    creditsSpentLifetime: 0,
   }
 }
 
@@ -53,7 +54,25 @@ export async function listUsersForDashboard(): Promise<User[]> {
 
   if (error) throw new Error(error.message)
 
-  return ((data ?? []) as UserRow[]).map(rowToUser)
+  const users = ((data ?? []) as UserRow[]).map(rowToUser)
+
+  const { data: spendRows, error: spendError } = await supabase.rpc(
+    "dashboard_users_credit_spend"
+  )
+  if (spendError) throw new Error(spendError.message)
+
+  const spendById = new Map<string, number>()
+  for (const row of (spendRows ?? []) as {
+    user_id: string
+    credits_spent: number | string
+  }[]) {
+    spendById.set(row.user_id, Number(row.credits_spent))
+  }
+
+  return users.map((u) => ({
+    ...u,
+    creditsSpentLifetime: spendById.get(u.id) ?? 0,
+  }))
 }
 
 export async function updateUserAdmin(input: {

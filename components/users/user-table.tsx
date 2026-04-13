@@ -49,6 +49,9 @@ export function UserTableSkeleton() {
               <th className="hidden px-4 py-3 font-medium text-muted-foreground lg:table-cell">
                 Last Login
               </th>
+              <th className="hidden px-4 py-3 font-medium text-muted-foreground lg:table-cell">
+                Credits spent
+              </th>
               <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
               <th className="px-4 py-3 font-medium text-muted-foreground">
                 <span className="sr-only">Actions</span>
@@ -75,6 +78,9 @@ export function UserTableSkeleton() {
                 </td>
                 <td className="hidden px-4 py-3 lg:table-cell">
                   <Skeleton className="h-4 w-24" />
+                </td>
+                <td className="hidden px-4 py-3 lg:table-cell">
+                  <Skeleton className="h-4 w-12" />
                 </td>
                 <td className="px-4 py-3">
                   <Skeleton className="h-5 w-16 rounded-full" />
@@ -117,6 +123,9 @@ export function UserTable({
                 <th className="hidden px-4 py-3 font-medium text-muted-foreground sm:table-cell">Role</th>
                 <th className="hidden px-4 py-3 font-medium text-muted-foreground md:table-cell">Organization</th>
                 <th className="hidden px-4 py-3 font-medium text-muted-foreground lg:table-cell">Last Login</th>
+                <th className="hidden px-4 py-3 font-medium text-muted-foreground lg:table-cell">
+                  Credits spent
+                </th>
                 <th className="px-4 py-3 font-medium text-muted-foreground">Status</th>
                 <th className="px-4 py-3 font-medium text-muted-foreground">
                   <span className="sr-only">Actions</span>
@@ -127,7 +136,7 @@ export function UserTable({
               {users.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={7}
                     className="px-4 py-10 text-center text-sm text-muted-foreground"
                   >
                     No users match your filters.
@@ -177,6 +186,12 @@ export function UserTable({
                     </td>
                     <td className="hidden px-4 py-3 text-muted-foreground lg:table-cell">
                       {formatDate(user.lastLogin)}
+                    </td>
+                    <td className="hidden tabular-nums lg:table-cell">
+                      <span className="font-semibold text-foreground">
+                        {user.creditsSpentLifetime.toLocaleString()}
+                      </span>
+                      <span className="ml-1 text-xs text-muted-foreground">spent</span>
                     </td>
                     <td className="px-4 py-3">
                       {isInactiveFromOrg ? (

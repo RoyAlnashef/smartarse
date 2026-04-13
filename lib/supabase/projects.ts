@@ -472,3 +472,29 @@ export async function deleteProject(projectId: string): Promise<void> {
     }
   }
 }
+
+type CreditSpendRpcRow = { user_id: string; credits_spent: number | string }
+
+/**
+ * Per-user credits charged on this project (from `chat_results.credits_charged`).
+ * Dashboard admin only (RPC).
+ */
+export async function fetchProjectCreditSpendByUser(
+  projectId: string
+): Promise<Map<string, number>> {
+  const supabase = getSupabaseBrowserClient()
+  if (!supabase) return new Map()
+  if (!isUuidString(projectId)) return new Map()
+
+  const { data, error } = await supabase.rpc("dashboard_project_credit_spend_by_user", {
+    p_project_id: projectId,
+  })
+
+  if (error) throw new Error(error.message)
+
+  const map = new Map<string, number>()
+  for (const row of (data ?? []) as CreditSpendRpcRow[]) {
+    map.set(row.user_id, Number(row.credits_spent))
+  }
+  return map
+}

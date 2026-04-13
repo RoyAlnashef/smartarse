@@ -20,6 +20,7 @@ export const users: User[] = [
     status: "active",
     lastLogin: "2026-02-12T09:30:00Z",
     createdAt: "2025-01-15T00:00:00Z",
+    creditsSpentLifetime: 0,
   },
   {
     id: "u2",
@@ -29,6 +30,7 @@ export const users: User[] = [
     status: "active",
     lastLogin: "2026-02-11T14:00:00Z",
     createdAt: "2025-01-15T00:00:00Z",
+    creditsSpentLifetime: 3,
   },
   {
     id: "u3",
@@ -39,6 +41,7 @@ export const users: User[] = [
     status: "active",
     lastLogin: "2026-02-12T08:15:00Z",
     createdAt: "2025-03-01T00:00:00Z",
+    creditsSpentLifetime: 42,
   },
   {
     id: "u4",
@@ -49,6 +52,7 @@ export const users: User[] = [
     status: "active",
     lastLogin: "2026-02-10T11:00:00Z",
     createdAt: "2025-04-20T00:00:00Z",
+    creditsSpentLifetime: 18,
   },
   {
     id: "u5",
@@ -59,6 +63,7 @@ export const users: User[] = [
     status: "active",
     lastLogin: "2026-02-11T16:30:00Z",
     createdAt: "2025-06-01T00:00:00Z",
+    creditsSpentLifetime: 120,
   },
   {
     id: "u6",
@@ -69,6 +74,7 @@ export const users: User[] = [
     status: "active",
     lastLogin: "2026-02-09T09:45:00Z",
     createdAt: "2025-06-15T00:00:00Z",
+    creditsSpentLifetime: 64,
   },
   {
     id: "u7",
@@ -79,6 +85,7 @@ export const users: User[] = [
     status: "inactive",
     lastLogin: "2026-01-05T10:00:00Z",
     createdAt: "2025-07-01T00:00:00Z",
+    creditsSpentLifetime: 9,
   },
   {
     id: "u8",
@@ -89,6 +96,7 @@ export const users: User[] = [
     status: "active",
     lastLogin: "2026-02-12T07:00:00Z",
     createdAt: "2025-08-10T00:00:00Z",
+    creditsSpentLifetime: 0,
   },
 ]
 

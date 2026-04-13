@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
+import { Coins } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -23,6 +24,8 @@ import type { Project, User } from "@/lib/types"
 export interface ProjectUsersProps {
   project: Project
   allUsers: User[]
+  /** Per-user credits charged on this project (`chat_results.credits_charged` sums). */
+  creditSpendByUserId?: ReadonlyMap<string, number>
   /** Optional refetch after a successful assign/remove (e.g. reload project from Supabase). */
   onAssignmentsChange?: () => void | Promise<void>
 }
@@ -32,8 +35,10 @@ type PendingToggle = { user: User; assign: boolean }
 export function ProjectUsers({
   project,
   allUsers,
+  creditSpendByUserId,
   onAssignmentsChange,
 }: ProjectUsersProps) {
+  const spendMap = creditSpendByUserId ?? new Map<string, number>()
   const [assignedIds, setAssignedIds] = useState(
     () => new Set(project.assignedUserIds)
   )
@@ -138,7 +143,7 @@ export function ProjectUsers({
                 <li
                   key={user.id}
                   className={cn(
-                    "flex items-center gap-4 px-4 py-4",
+                    "flex items-center gap-4 px-4 py-4 sm:gap-6",
                     user.status === "inactive" && "bg-muted/20"
                   )}
                 >
@@ -170,6 +175,19 @@ export function ProjectUsers({
                         Inactive users cannot be newly assigned.
                       </p>
                     ) : null}
+                  </div>
+                  <div
+                    className="flex shrink-0 items-baseline gap-1"
+                    aria-label={`Credits spent by ${user.name} on this project`}
+                  >
+                    <Coins
+                      className="mt-0.5 h-3.5 w-3.5 shrink-0 text-arse-pink"
+                      aria-hidden
+                    />
+                    <span className="text-sm font-semibold tabular-nums text-foreground">
+                      {(spendMap.get(user.id) ?? 0).toLocaleString()}
+                    </span>
+                    <span className="text-xs text-muted-foreground">spent</span>
                   </div>
                   <Popover
                     modal={false}
