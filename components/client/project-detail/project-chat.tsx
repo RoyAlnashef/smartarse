@@ -422,7 +422,7 @@ export function ProjectChat({
             placeholder={inputPlaceholder}
             disabled={disabled}
             className={cn(
-              "block w-full resize-none rounded-xl border-4 border-arse-black bg-arse-cyan px-4 py-3 font-arse-body text-sm text-arse-black placeholder:text-arse-black/45",
+              "block w-full resize-none rounded-xl border-4 border-arse-black bg-zinc-100 px-4 py-3 font-arse-body text-sm text-arse-black placeholder:text-arse-black/45",
               "focus:outline-none focus:ring-2 focus:ring-arse-pink disabled:opacity-50"
             )}
           />
