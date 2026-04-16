@@ -709,6 +709,7 @@ export default function ClientProjectDetailPage() {
               messages={messages}
               personaEvents={personaEvents}
               citationDocuments={readyDocuments}
+              userName={user?.name}
               isLoading={useRealChat ? chatLoading : false}
               appliedPersonaId={appliedPersonaId}
               disabled={

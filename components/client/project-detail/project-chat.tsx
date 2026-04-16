@@ -167,6 +167,13 @@ function formatEventTimestamp(iso: string): string {
   })
 }
 
+function getGreetingName(userName?: string | null): string {
+  const normalized = userName?.trim()
+  if (!normalized) return "there"
+  const firstName = normalized.split(/\s+/)[0]
+  return firstName || "there"
+}
+
 function PersonaEventBubble({
   event,
   persona,
@@ -215,6 +222,7 @@ export function ProjectChat({
   personasColumnCollapsed = false,
   onPersonaActivated,
   onPersonaEnded,
+  userName,
 }: {
   messages: ChatMessage[]
   personaEvents?: (PersonaActivatedEvent | PersonaEndedEvent)[]
@@ -229,6 +237,7 @@ export function ProjectChat({
   personasColumnCollapsed?: boolean
   onPersonaActivated?: (personaId: string) => void
   onPersonaEnded?: (personaId: string) => void
+  userName?: string | null
 }) {
   const bottomRef = useRef<HTMLDivElement>(null)
   const [value, setValue] = useState("")
@@ -280,6 +289,7 @@ export function ProjectChat({
   const inputPlaceholder = appliedPersona
     ? `Ask about ${appliedPersona.title}…`
     : "Ask me anything…"
+  const greetingName = getGreetingName(userName)
 
   return (
     <section
@@ -314,51 +324,42 @@ export function ProjectChat({
               <div className="max-w-[min(42rem,90%)]">
                 <div className="block rounded-2xl rounded-bl-sm border-2 border-arse-black/20 bg-white px-4 py-4 text-sm text-arse-black sm:px-5 sm:py-5">
                   <p className="font-arse-body leading-relaxed">
-                    Hi there! <br></br>I&apos;m <strong className="font-semibold">smartA.R.S.E.</strong>, and I answer
-                    from this project&apos;s <strong className="font-semibold">Sources</strong>—the
-                    documents your team added here. Ask in plain language; I&apos;ll stay grounded in
-                    what&apos;s in those materials (and I&apos;ll say so when something isn&apos;t
-                    covered).
+                    Hi {greetingName}!
+                    <br />
+                    I&apos;m <strong className="font-semibold">smartA.R.S.E.</strong>, your project
+                    insight agent. You can ask me anything about your research project and I&apos;ll
+                    answer based only on the input <strong className="font-semibold">Source</strong>{" "}
+                    documents. Ask in plain language and I&apos;ll get what you need, but if you are
+                    after something specific you can reference a source file or question directly.
+                    Don&apos;t worry I won&apos;t answer anything not covered in your project and I
+                    won&apos;t make anything up. All my answers will come with a citation detailing
+                    exactly where in the <strong className="font-semibold">Source</strong> document I
+                    found the answer.
                   </p>
-                  {appliedPersona ? (
-                    <p className="mt-3 font-arse-body leading-relaxed">
-                      You&apos;ve got{" "}
-                      <strong className="font-semibold">{appliedPersona.title}</strong> lined up—ask
-                      what feels stuck, surprising, or worth pressure-testing from that segment&apos;s
-                      point of view.
-                    </p>
-                  ) : null}
                   <p className="mt-4 font-arse-body text-sm leading-relaxed text-arse-black/85">
-                    {appliedPersona ? (
-                      <>
-                        Switch personas or tweak how I speak anytime from{" "}
-                        <strong className="font-semibold">Controls</strong>.
-                      </>
-                    ) : (
-                      <>
-                        Would you like me to speak in a segment's voice? Open{" "}
-                        <strong className="font-semibold">Controls</strong> and choose a persona when
-                        you&apos;re ready.
-                      </>
-                    )}
+                    If you&apos;d like to dig into different subgroups check out the{" "}
+                    <strong className="font-semibold">Personas</strong> tab, where you can chat to a
+                    representation of pre-defined audiences or create your own bespoke group to talk
+                    to.
                   </p>
                   <p className="mt-4 font-arse-body text-sm font-semibold text-arse-black">
                     A few things to try:
                   </p>
                   <ul className="mt-2 list-disc space-y-1.5 pl-5 font-arse-body text-sm leading-relaxed text-arse-black marker:text-arse-black/70">
-                    <li>Summarize the big picture or the &quot;so what&quot; from the research.</li>
-                    <li>Spot themes, tensions, or standout quotes worth revisiting.</li>
-                    <li>Compare findings or ideas side by side.</li>
-                    {appliedPersona ? (
-                      <li>
-                        Go deeper on motivations, barriers, or language this segment might use.
-                      </li>
-                    ) : (
-                      <li>
-                        Ask how attitudes, barriers, or trade-offs show up across the research.
-                      </li>
-                    )}
+                    <li>Summarise the big picture or the &lsquo;so what&rsquo; from the research</li>
+                    <li>Identify themes, tensions or differences between audiences</li>
+                    <li>Compare findings or ideas side by side</li>
+                    <li>Pull key stats and facts for key audiences</li>
+                    <li>
+                      Get quotes that represent ideas or findings (if the project has qual/
+                      verbatims)
+                    </li>
                   </ul>
+                  <p className="mt-4 font-arse-body text-sm leading-relaxed text-arse-black/85">
+                    If you have any questions about using smartA.R.S.E. check out the{" "}
+                    <strong className="font-semibold">FAQ</strong> for anything regarding the
+                    research findings / implications then talk to your Disrupt project team.
+                  </p>
                 </div>
               </div>
             ) : (
