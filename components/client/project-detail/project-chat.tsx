@@ -43,7 +43,7 @@ function getRandomLoadingActionIndex(excludeIndex?: number): number {
   return next
 }
 
-function Avatar({ label }: { label: string }) {
+function Avatar({ label, isLoading = false }: { label: string; isLoading?: boolean }) {
   const isAiAvatar = label.toUpperCase() === "AI"
 
   return (
@@ -59,7 +59,7 @@ function Avatar({ label }: { label: string }) {
           alt="AI avatar"
           fill
           sizes="32px"
-          className="object-cover"
+          className={cn("object-cover", isLoading && "animate-spin")}
         />
       ) : (
         label
@@ -406,10 +406,9 @@ export function ProjectChat({
                 })}
                 {isLoading ? (
                   <div className="flex gap-3" role="status" aria-live="polite" aria-label="Assistant is preparing a response">
-                    <Avatar label="AI" />
+                    <Avatar label="AI" isLoading />
                     <div className="max-w-[min(42rem,90%)] rounded-2xl rounded-bl-sm border-2 border-arse-black/20 bg-white px-4 py-3 text-sm text-arse-black">
-                      <div className="flex items-center gap-2.5">
-                        <span className="h-2.5 w-2.5 shrink-0 animate-pulse rounded-full bg-arse-pink" aria-hidden />
+                      <div className="flex items-center">
                         <p className="font-arse-body text-sm">{LOADING_ACTIONS[loadingActionIndex]}</p>
                       </div>
                     </div>
