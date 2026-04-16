@@ -369,8 +369,16 @@ export function ProjectChat({
                   </ul>
                     <p className="mt-4 font-arse-body text-sm leading-relaxed text-arse-black/85">
                       If you have any questions about using smartA.R.S.E. check out the{" "}
-                      <strong className="font-semibold">FAQ</strong> for anything regarding the
-                      research findings / implications then talk to your Disrupt project team.
+                      <a
+                        href="/help/faq"
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="font-semibold underline decoration-arse-pink/60 underline-offset-2 hover:decoration-arse-pink"
+                      >
+                        FAQ
+                      </a>{" "}
+                      for anything regarding the research findings / implications then talk to your
+                      Disrupt project team.
                     </p>
                   </div>
                 </div>
