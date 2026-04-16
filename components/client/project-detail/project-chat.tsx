@@ -321,8 +321,10 @@ export function ProjectChat({
         <div className="relative min-h-0 flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto p-4 sm:p-6">
             {timelineItems.length === 0 ? (
-              <div className="max-w-[min(42rem,90%)]">
-                <div className="block rounded-2xl rounded-bl-sm border-2 border-arse-black/20 bg-white px-4 py-4 text-sm text-arse-black sm:px-5 sm:py-5">
+              <div className="flex gap-3">
+                <Avatar label="AI" />
+                <div className="max-w-[min(42rem,90%)]">
+                  <div className="block rounded-2xl rounded-bl-sm border-2 border-arse-black/20 bg-white px-4 py-4 text-sm text-arse-black sm:px-5 sm:py-5">
                   <p className="font-arse-body leading-relaxed">
                     Hi {greetingName}!
                     <br />
@@ -355,11 +357,12 @@ export function ProjectChat({
                       verbatims)
                     </li>
                   </ul>
-                  <p className="mt-4 font-arse-body text-sm leading-relaxed text-arse-black/85">
-                    If you have any questions about using smartA.R.S.E. check out the{" "}
-                    <strong className="font-semibold">FAQ</strong> for anything regarding the
-                    research findings / implications then talk to your Disrupt project team.
-                  </p>
+                    <p className="mt-4 font-arse-body text-sm leading-relaxed text-arse-black/85">
+                      If you have any questions about using smartA.R.S.E. check out the{" "}
+                      <strong className="font-semibold">FAQ</strong> for anything regarding the
+                      research findings / implications then talk to your Disrupt project team.
+                    </p>
+                  </div>
                 </div>
               </div>
             ) : (
