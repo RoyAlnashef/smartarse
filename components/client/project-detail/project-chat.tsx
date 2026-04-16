@@ -240,6 +240,7 @@ export function ProjectChat({
   userName?: string | null
 }) {
   const bottomRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [value, setValue] = useState("")
   const [loadingActionIndex, setLoadingActionIndex] = useState(0)
 
@@ -277,6 +278,15 @@ export function ProjectChat({
     }, 3400)
     return () => window.clearInterval(intervalId)
   }, [isLoading])
+
+  useEffect(() => {
+    const textarea = textareaRef.current
+    if (!textarea) return
+    textarea.style.height = "0px"
+    const nextHeight = Math.min(textarea.scrollHeight, 220)
+    textarea.style.height = `${nextHeight}px`
+    textarea.style.overflowY = textarea.scrollHeight > 220 ? "auto" : "hidden"
+  }, [value])
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -431,6 +441,7 @@ export function ProjectChat({
             Ask a question
           </label>
           <textarea
+            ref={textareaRef}
             id="project-chat-input"
             rows={1}
             value={value}
@@ -444,9 +455,10 @@ export function ProjectChat({
             placeholder={inputPlaceholder}
             disabled={disabled}
             className={cn(
-              "block w-full resize-none rounded-xl border-4 border-arse-black bg-zinc-100 px-4 py-3 font-arse-body text-sm text-arse-black placeholder:text-arse-black/45",
+              "block w-full resize-none rounded-xl border-4 border-arse-black bg-zinc-100 px-4 pb-4 pt-3 font-arse-body text-sm text-arse-black placeholder:text-arse-black/45",
               "focus:outline-none focus:ring-2 focus:ring-arse-pink disabled:opacity-50"
             )}
+            style={{ height: "44px" }}
           />
           <button
             type="submit"
