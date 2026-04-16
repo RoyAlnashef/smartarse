@@ -120,7 +120,7 @@ export function ChatHistoryCard({
         <div className="space-y-0">
           {items.length === 0 && !loading ? (
             <p className="text-left font-arse-body text-sm leading-relaxed text-arse-white/75">
-              Ask this smartARSE your first question about the research data.
+              Ask smartARSE your first question about the research data.
             </p>
           ) : (
             items.map((item) => {
