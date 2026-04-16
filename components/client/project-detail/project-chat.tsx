@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState, type AnchorHTMLAttributes } from "react"
 import { Send, SlidersHorizontal } from "lucide-react"
+import Image from "next/image"
+import robotAvatar from "@/public/robot-avatar.png"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import type {
@@ -42,9 +44,26 @@ function getRandomLoadingActionIndex(excludeIndex?: number): number {
 }
 
 function Avatar({ label }: { label: string }) {
+  const isAiAvatar = label.toUpperCase() === "AI"
+
   return (
-    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-arse-black bg-arse-white font-arse-title text-[10px] font-bold uppercase text-arse-black">
-      {label}
+    <div
+      className={cn(
+        "relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden bg-transparent font-arse-title text-[10px] font-bold uppercase text-arse-black",
+        isAiAvatar ? "rounded-none" : "rounded-full border-2 border-arse-black"
+      )}
+    >
+      {isAiAvatar ? (
+        <Image
+          src={robotAvatar}
+          alt="AI avatar"
+          fill
+          sizes="32px"
+          className="object-cover"
+        />
+      ) : (
+        label
+      )}
     </div>
   )
 }
