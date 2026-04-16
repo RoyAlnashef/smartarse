@@ -63,7 +63,7 @@ export function ProjectSidebarTabs({
 
       <TabsContent value="studio" className={tabContentClass}>
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-          <EmptyPane title="Studio" />
+          <EmptyPane title="Studio" variant="studio" />
         </div>
       </TabsContent>
     </Tabs>

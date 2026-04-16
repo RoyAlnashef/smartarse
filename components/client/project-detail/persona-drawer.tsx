@@ -1,7 +1,18 @@
 "use client"
 
 import { useState } from "react"
-import { X } from "lucide-react"
+import {
+  CircleHelp,
+  FileImage,
+  FileSpreadsheet,
+  FileText,
+  GitBranch,
+  Headphones,
+  Layers3,
+  Monitor,
+  Tv,
+  X,
+} from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
@@ -157,7 +168,49 @@ export const MOCK_SEGMENT_PERSONAS: PersonaMock[] = [
   },
 ]
 
-export function EmptyPane({ title }: { title: string }) {
+type EmptyPaneProps = {
+  title: string
+  variant?: "default" | "studio"
+}
+
+const STUDIO_ITEMS = [
+  { label: "Podcast Summary", Icon: Headphones },
+  { label: "Flashcards", Icon: Layers3 },
+  { label: "Quiz", Icon: CircleHelp },
+  { label: "Mind Map", Icon: GitBranch },
+  { label: "Video Overview", Icon: Tv },
+  { label: "Written Report (PDF)", Icon: FileText },
+  { label: "Infographic", Icon: FileImage },
+  { label: "Slide Deck (PPT)", Icon: Monitor },
+  { label: "Data Tables (XLS)", Icon: FileSpreadsheet },
+]
+
+export function EmptyPane({ title, variant = "default" }: EmptyPaneProps) {
+  if (variant === "studio") {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col rounded-xl border-2 border-dashed border-arse-black/15 bg-arse-black/[0.02] px-3 py-4">
+        <p className="text-left font-arse-body text-[11px] leading-relaxed text-arse-black/45">
+          <b>Coming Soon</b> <br></br>The tools below are being built and will be launching soon. Talk to your
+          Disrupt team if you need them.
+        </p>
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          {STUDIO_ITEMS.map((item) => (
+            <div
+              key={item.label}
+              aria-disabled
+              className="relative flex min-h-20 flex-col items-center justify-center rounded-xl border border-arse-black/10 bg-arse-black/[0.015] px-1.5 py-2 text-center opacity-45"
+            >
+              <item.Icon className="h-4 w-4 text-arse-black/45" aria-hidden />
+              <p className="mt-1 font-arse-body text-[10px] leading-tight text-arse-black/55">
+                {item.label}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex min-h-0 flex-1 flex-col items-center justify-center rounded-xl border-2 border-dashed border-arse-black/15 bg-arse-black/[0.02] px-4 py-6 text-center sm:py-10">
       <p className="font-arse-title text-xs font-bold uppercase tracking-wide text-arse-black/50">
