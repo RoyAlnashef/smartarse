@@ -9,7 +9,6 @@ import {
   FolderOpen,
   Building2,
   Users,
-  BarChart3,
   HelpCircle,
   Shield,
   Settings,
@@ -24,7 +23,6 @@ const navigation = [
   { name: "Projects", href: "/projects", icon: FolderOpen, roles: ["admin", "client"] },
   { name: "Users", href: "/users", icon: Users, roles: ["admin"] },
   { name: "Organizations", href: "/organizations", icon: Building2, roles: ["admin"] },
-  { name: "Analytics", href: "/analytics", icon: BarChart3, roles: ["admin"] },
 ]
 
 /** Shown in the profile menu instead of the main nav (same role rules as before). */
