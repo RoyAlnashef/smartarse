@@ -298,7 +298,7 @@ export function ProjectChat({
 
   const inputPlaceholder = appliedPersona
     ? `Ask about ${appliedPersona.title}…`
-    : "Ask me anything…"
+    : "Ask me anything about this project…"
   const greetingName = getGreetingName(userName)
 
   return (
