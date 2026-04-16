@@ -416,7 +416,8 @@ export function PersonaPanel({
             Personas
           </p>
           <p className="font-arse-body text-[11px] text-arse-black/50">
-            Choose how smartA.R.S.E speaks to you.
+            Explore a segment's collective perspective on the study. Select a
+            segment to choose how smartA.R.S.E. speaks to you.
           </p>
         </div>
         {onClose ? (
@@ -474,7 +475,7 @@ export function PersonaPanel({
               "data-[state=active]:border-2 data-[state=active]:border-arse-black/15 data-[state=active]:bg-white data-[state=active]:text-arse-black data-[state=active]:shadow-sm"
             )}
           >
-            Audience
+            Custom Audience
           </TabsTrigger>
           <TabsTrigger
             value="focus"
@@ -483,7 +484,7 @@ export function PersonaPanel({
               "data-[state=active]:border-2 data-[state=active]:border-arse-black/15 data-[state=active]:bg-white data-[state=active]:text-arse-black data-[state=active]:shadow-sm"
             )}
           >
-            Focus grp
+            Focus Group
           </TabsTrigger>
         </TabsList>
 
