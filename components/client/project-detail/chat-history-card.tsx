@@ -148,7 +148,7 @@ export function ChatHistoryCard({
                       "motion-reduce:animate-none motion-reduce:opacity-100",
                   )}
                 >
-                  <span className="min-w-0 flex-1 truncate text-left">
+                  <span className="min-w-0 flex-1 line-clamp-2 text-left">
                     {item.user_query}
                   </span>
                   {rowLoading ? (
