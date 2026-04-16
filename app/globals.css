@@ -13,6 +13,8 @@
      */
     --arse-cyan-rgb: 0 255 255;
     --arse-pink-rgb: 255 0 230;
+    --arse-black-rgb: 0 0 0;
+    --arse-white-rgb: 255 255 255;
 
     /**
      * Named alpha stops for raw CSS (borders, fills, shadows) without Tailwind.

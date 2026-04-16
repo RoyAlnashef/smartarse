@@ -19,7 +19,7 @@ export function SourcesSelector({
             <p className="text-sm text-arse-white/70">No sources for this project yet.</p>
           ) : (
             <>
-              <p className="px-2 pb-2 font-arse-body text-xs leading-relaxed text-arse-white/75">
+              <p className="px-2 pb-2 font-arse-body text-xs leading-relaxed text-arse-white/90">
                 This is the seed data SmartA.R.S.E. has ingested and from which all answers will be
                 derived.
               </p>

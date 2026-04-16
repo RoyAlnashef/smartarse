@@ -84,8 +84,8 @@ const config: Config = {
           cyan: 'rgb(var(--arse-cyan-rgb) / <alpha-value>)',
           pink: 'rgb(var(--arse-pink-rgb) / <alpha-value>)',
           'pink-muted': 'var(--arse-pink-muted)',
-          black: 'var(--arse-black)',
-          white: 'var(--arse-white)',
+          black: 'rgb(var(--arse-black-rgb) / <alpha-value>)',
+          white: 'rgb(var(--arse-white-rgb) / <alpha-value>)',
         },
       },
       fontFamily: {

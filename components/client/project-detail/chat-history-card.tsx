@@ -118,8 +118,13 @@ export function ChatHistoryCard({
         ) : null}
 
         <div className="space-y-0">
+          <p className="px-2 pb-2 font-arse-body text-xs leading-relaxed text-arse-white/90">
+            Each session is saved into a single chat history in the box below i.e. multiple
+            Q&amp;A&apos;s are stored as one chat. Start a new chat if you want conversations saved
+            separately.
+          </p>
           {items.length === 0 && !loading ? (
-            <p className="text-left font-arse-body text-sm leading-relaxed text-arse-white/75">
+            <p className="text-left font-arse-body text-sm leading-relaxed text-arse-white/90">
               Ask smartARSE your first question about the research data.
             </p>
           ) : (
@@ -134,7 +139,7 @@ export function ChatHistoryCard({
                   disabled={selectBlocked}
                   onClick={() => void handleSelect(item)}
                   className={cn(
-                    "flex w-full items-center gap-2 rounded-lg px-1 py-1.5 text-left transition-colors",
+                    "flex w-full items-center gap-3 rounded-lg px-1 py-1.5 text-left transition-colors",
                     "font-arse-body text-xs font-semibold leading-snug",
                     "text-arse-white hover:text-arse-cyan",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink/40 focus-visible:ring-offset-2 focus-visible:ring-offset-dark-950",
@@ -148,6 +153,10 @@ export function ChatHistoryCard({
                       "motion-reduce:animate-none motion-reduce:opacity-100",
                   )}
                 >
+                  <span
+                    aria-hidden
+                    className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-arse-cyan"
+                  />
                   <span className="min-w-0 flex-1 line-clamp-2 text-left">
                     {item.user_query}
                   </span>
