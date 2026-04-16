@@ -11,7 +11,7 @@ export function SourcesSelector({
   return (
     <section className="overflow-hidden rounded-3xl bg-dark-950 text-arse-white shadow-[0_0_0_1px_rgba(0,0,0,0.08)]">
       <div className="bg-arse-pink px-4 py-2 text-center font-arse-title text-xs font-bold tracking-wide text-arse-white">
-        Sources
+       Data Sources
       </div>
       <div className="px-4 py-4">
         <div className="space-y-0">
