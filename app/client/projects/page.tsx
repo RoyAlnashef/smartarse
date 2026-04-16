@@ -130,9 +130,6 @@ export default function ClientProjectsPage() {
                 <p className="font-arse-title text-3xl sm:text-4xl font-light uppercase tracking-wider text-arse-black">
                   Projects
                 </p>
-                <p className="mt-1 max-w-[10rem] text-sm font-bold leading-snug text-arse-black">
-                  Space for secondary copy if needed.
-                </p>
               </div>
             </aside>
 
