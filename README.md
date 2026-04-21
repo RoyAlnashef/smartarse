@@ -181,6 +181,27 @@ The client project detail includes a **Persona Drawer** that lets users apply se
 
 When a persona is applied, the AI responds as a representative of that segment. Persona activation and end events appear inline in the chat timeline.
 
+## Development Workflow
+
+Use this branch flow to keep integration testing separate from production:
+
+`feature/*` -> `staging` -> `main`
+
+- Create feature branches from `main` (for example `feature/chat-history-pagination`)
+- Open PRs from `feature/*` into `staging` for integration testing
+- Deploy `staging` to the staging environment (`staging.smartarse.io` on Vercel)
+- After validation, open a PR from `staging` into `main`
+- Only `main` deploys to production
+
+Recommended PR flow:
+
+1. Sync local `main`
+2. Branch from `main` (`feature/<name>`)
+3. Implement + test locally
+4. Open PR to `staging`
+5. Validate on `staging.smartarse.io`
+6. Merge `staging` to `main` for production release
+
 ## Scripts
 
 | Command      | Description                  |
