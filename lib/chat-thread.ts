@@ -61,13 +61,27 @@ export function chatMessagesFromStoredResult(input: {
   const payload = asRecord(input.result_payload)
   const thread = parseThreadArray(payload, input.created_at)
   if (thread.length > 0) {
-    return thread.map((m) => ({
+    const messages = thread.map((m) => ({
       id: m.id,
       conversationId: input.conversationId,
       role: m.role,
       content: m.content,
       timestamp: m.timestamp,
     }))
+    const hasAssistantCitations = messages.some(
+      (m) => m.role === "assistant" && Array.isArray(m.citations) && m.citations.length > 0
+    )
+    if (hasAssistantCitations) return messages
+
+    const shape = resultPayloadToClientShape(input.result_payload)
+    if (shape.sources.length < 1) return messages
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === "assistant") {
+        messages[i] = { ...messages[i], citations: shape.sources }
+        break
+      }
+    }
+    return messages
   }
 
   const shape = resultPayloadToClientShape(input.result_payload)

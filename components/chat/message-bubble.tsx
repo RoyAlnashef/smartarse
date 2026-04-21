@@ -1,8 +1,19 @@
 "use client"
 
+import { useMemo, type AnchorHTMLAttributes, type ReactNode } from "react"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
-import type { ChatMessage } from "@/lib/types"
+import type { ChatCitationSource, ChatMessage } from "@/lib/types"
+import {
+  citationSourcePrimaryLabel,
+  citationSourceTooltipLabel,
+} from "@/lib/documents/display-label"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { cn } from "@/lib/utils"
 
 function formatTime(iso: string) {
@@ -12,8 +23,66 @@ function formatTime(iso: string) {
   })
 }
 
+const CITATION_HREF_PREFIX = "citation://"
+
+function citationHref(index: number): string {
+  return `${CITATION_HREF_PREFIX}${index}`
+}
+
+function citationIndexFromHref(href: string | undefined): number | null {
+  if (!href || !href.startsWith(CITATION_HREF_PREFIX)) return null
+  const value = Number(href.slice(CITATION_HREF_PREFIX.length))
+  if (!Number.isInteger(value) || value < 1) return null
+  return value
+}
+
+function citationIndexFromText(value: string): number | null {
+  const match = value.trim().match(/^\[(\d+)\]$/)
+  if (!match) return null
+  const index = Number(match[1])
+  if (!Number.isInteger(index) || index < 1) return null
+  return index
+}
+
+function textFromReactChildren(children: ReactNode): string {
+  if (typeof children === "string") return children
+  if (typeof children === "number") return String(children)
+  if (Array.isArray(children)) {
+    return children.map((child) => textFromReactChildren(child)).join("")
+  }
+  if (children && typeof children === "object" && "props" in children) {
+    const node = children as { props?: { children?: ReactNode } }
+    return textFromReactChildren(node.props?.children)
+  }
+  return ""
+}
+
+function rewriteInlineCitationMarkers(
+  markdown: string,
+  sourcesByIndex: Map<number, ChatCitationSource>
+): string {
+  if (!markdown || sourcesByIndex.size === 0) return markdown
+  return markdown.replace(/\[(\d+)\](?!\()/g, (fullMatch, indexRaw: string) => {
+    const index = Number(indexRaw)
+    if (!sourcesByIndex.has(index)) return fullMatch
+    return `[\\[${index}\\]](${citationHref(index)})`
+  })
+}
+
 export function MessageBubble({ message }: { message: ChatMessage }) {
   const isUser = message.role === "user"
+  const citationSourcesByIndex = useMemo(() => {
+    const map = new Map<number, ChatCitationSource>()
+    for (const source of message.citations ?? []) {
+      map.set(source.index, source)
+    }
+    return map
+  }, [message.citations])
+
+  const renderedMarkdown = useMemo(() => {
+    if (isUser) return message.content
+    return rewriteInlineCitationMarkers(message.content, citationSourcesByIndex)
+  }, [citationSourcesByIndex, isUser, message.content])
 
   const markdownShell = cn(
     "min-w-0 break-words text-sm leading-[1.7] [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
@@ -69,16 +138,68 @@ export function MessageBubble({ message }: { message: ChatMessage }) {
           )}
         >
           <div className={markdownShell}>
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm]}
-              components={{
-                a: ({ node: _node, ...props }) => (
-                  <a {...props} target="_blank" rel="noreferrer noopener" />
-                ),
-              }}
-            >
-              {message.content}
-            </ReactMarkdown>
+            <TooltipProvider delayDuration={120}>
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  a: ({ node: _node, href, children, ...props }: AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown }) => {
+                    const citationIndexFromLink = citationIndexFromHref(href)
+                    const citationIndexFromLinkText = citationIndexFromText(
+                      textFromReactChildren(children)
+                    )
+                    const citationIndex = citationIndexFromLink ?? citationIndexFromLinkText
+                    if (citationIndex != null) {
+                      const source = citationSourcesByIndex.get(citationIndex)
+                      if (source) {
+                        const primaryLabel = citationSourcePrimaryLabel(source)
+                        const tooltipLabel = citationSourceTooltipLabel(source)
+                        return (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <button
+                                type="button"
+                                className="inline rounded-sm px-0.5 font-semibold text-foreground decoration-arse-pink/70 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink"
+                                aria-label={`Citation ${citationIndex}: ${primaryLabel}`}
+                              >
+                                {children}
+                              </button>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side="top"
+                              className="max-w-xs rounded-lg border-2 border-arse-black bg-white px-3 py-2 text-left text-xs text-arse-black"
+                            >
+                              <p className="font-semibold">{tooltipLabel}</p>
+                              {source.excerpt ? (
+                                <p className="mt-1 leading-relaxed text-arse-black/75">
+                                  {source.excerpt}
+                                </p>
+                              ) : null}
+                              {source.url ? (
+                                <a
+                                  href={source.url}
+                                  target="_blank"
+                                  rel="noreferrer noopener"
+                                  className="mt-1 inline-block underline decoration-arse-pink/70 underline-offset-2"
+                                >
+                                  Open source
+                                </a>
+                              ) : null}
+                            </TooltipContent>
+                          </Tooltip>
+                        )
+                      }
+                    }
+                    return (
+                      <a {...props} href={href} target="_blank" rel="noreferrer noopener">
+                        {children}
+                      </a>
+                    )
+                  },
+                }}
+              >
+                {renderedMarkdown}
+              </ReactMarkdown>
+            </TooltipProvider>
           </div>
         </div>
         <p
