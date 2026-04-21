@@ -672,13 +672,17 @@ export default function ClientProjectDetailPage() {
                       for an extension if you need continued access.
                     </>
                   ) : (
-                    <>
-                      Access until{" "}
-                      {format(
-                        parseISO(`${project.accessUntil}T12:00:00`),
-                        "MMM d, yyyy"
-                      )}
-                    </>
+                    <span className="flex flex-col items-center gap-1">
+                      <span className="font-bold">
+                        Access until{" "}
+                        {format(
+                          parseISO(`${project.accessUntil}T12:00:00`),
+                          "MMM d, yyyy"
+                        )}
+                      </span>
+                      <span className="h-px w-full max-w-[18rem] bg-border/80" />
+                      <span>Talk to your Disrupt team to extend access</span>
+                    </span>
                   )}
                 </AlertDescription>
               </Alert>
