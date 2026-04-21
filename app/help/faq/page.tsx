@@ -10,7 +10,7 @@ export default function PublicFaqPage() {
 
       <div className="mt-10 space-y-8">
         <section>
-          <h2 className="text-base font-semibold">What is smartA.R.S.E?</h2>
+          <h2 className="text-base font-semibold">What is smartA.R.S.E.?</h2>
           <p className="mt-2 text-muted-foreground leading-relaxed">
             smartA.R.S.E. is a project-centric workspace for organizing client research and asking questions against
             a document set (instead of searching the whole web every time).

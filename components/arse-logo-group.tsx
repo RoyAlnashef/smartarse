@@ -38,7 +38,7 @@ export function ArseLogoGroup({
   const wordmark = (
     <WordmarkTag className={wordmarkClass}>
       <span className={smartClass}>smart</span>
-      <span className={arseClass}>A.R.S.E</span>
+      <span className={arseClass}>A.R.S.E.</span>
     </WordmarkTag>
   )
 
