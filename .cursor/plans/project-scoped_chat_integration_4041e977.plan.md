@@ -23,7 +23,7 @@ todos:
 isProject: false
 ---
 
-# Project-scoped smartARSE chat integration
+# Project-scoped smartA.R.S.E. chat integration
 
 ## Context (what exists today)
 

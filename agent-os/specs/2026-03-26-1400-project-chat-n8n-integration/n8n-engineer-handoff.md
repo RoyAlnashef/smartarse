@@ -1,10 +1,10 @@
-# Handoff — AI / n8n engineer (smartARSE project chat)
+# Handoff — AI / n8n engineer (smartA.R.S.E. project chat)
 
 Send this page plus **[`disrupt-n8n-coordination.md`](disrupt-n8n-coordination.md)** (full contract). The coordination doc is authoritative for payloads and callbacks.
 
 ## Webhook URL
 
-- smartARSE reads **`NEXT_PUBLIC_N8N_URL`** or **`NEXT_PUBLIC_N8N_WEBHOOK_URL`** (see [`lib/n8n-webhook-url.ts`](../../../lib/n8n-webhook-url.ts)).
+- smartA.R.S.E. reads **`NEXT_PUBLIC_N8N_URL`** or **`NEXT_PUBLIC_N8N_WEBHOOK_URL`** (see [`lib/n8n-webhook-url.ts`](../../../lib/n8n-webhook-url.ts)).
 - **You** provide the production/staging **Webhook** URL from n8n; the app team pastes it into Vercel / `.env.local`.
 
 ## Sync vs async (decide once)

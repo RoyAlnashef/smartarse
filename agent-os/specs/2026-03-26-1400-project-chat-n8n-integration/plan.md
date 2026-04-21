@@ -1,4 +1,4 @@
-# Project-scoped smartARSE chat + n8n integration — execution plan
+# Project-scoped smartA.R.S.E. chat + n8n integration — execution plan
 
 Condensed checklist; scope and decisions live in [`shape.md`](shape.md). Pointers in [`references.md`](references.md).
 

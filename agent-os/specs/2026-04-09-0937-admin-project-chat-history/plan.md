@@ -2,7 +2,7 @@
 
 ## Goal
 
-Enable admins to open a project in the dashboard and view chat history for all users who chatted with smartARSE about that project, with user filtering/thread selection and read-only timeline hydration.
+Enable admins to open a project in the dashboard and view chat history for all users who chatted with smartA.R.S.E. about that project, with user filtering/thread selection and read-only timeline hydration.
 
 ## Confirmed Scope
 

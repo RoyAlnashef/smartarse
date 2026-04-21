@@ -1,6 +1,6 @@
 # Disrupt / n8n coordination — project chat webhook
 
-Handoff for workflows that serve the smartARSE project-detail chat. For a short engineer-facing summary (webhook URL env names, sync vs async), see [`n8n-engineer-handoff.md`](n8n-engineer-handoff.md). **Code reference:** [`lib/api/chat-payload.ts`](../../../lib/api/chat-payload.ts) (`resultPayloadToClientShape`), [`hooks/useChatQuestion.ts`](../../../hooks/useChatQuestion.ts) (request body + timeout → poll).
+Handoff for workflows that serve the smartA.R.S.E. project-detail chat. For a short engineer-facing summary (webhook URL env names, sync vs async), see [`n8n-engineer-handoff.md`](n8n-engineer-handoff.md). **Code reference:** [`lib/api/chat-payload.ts`](../../../lib/api/chat-payload.ts) (`resultPayloadToClientShape`), [`hooks/useChatQuestion.ts`](../../../hooks/useChatQuestion.ts) (request body + timeout → poll).
 
 ## 1. Do not write `chat_results` from n8n
 
@@ -10,7 +10,7 @@ Handoff for workflows that serve the smartARSE project-detail chat. For a short 
 
 If an existing workflow has a Supabase node targeting `chat_results`, remove or repoint it so completion is either returned in the webhook HTTP response or reported to Next via **`POST /api/chat/n8n-complete`** (see §4).
 
-## 2. Incoming webhook body (smartARSE → n8n)
+## 2. Incoming webhook body (smartA.R.S.E. → n8n)
 
 The browser POSTs JSON with at least:
 
@@ -31,7 +31,7 @@ The browser POSTs JSON with at least:
 
 URL: from `NEXT_PUBLIC_N8N_URL` or `NEXT_PUBLIC_N8N_WEBHOOK_URL` (see [`lib/n8n-webhook-url.ts`](../../../lib/n8n-webhook-url.ts)).
 
-## 3. Stable response JSON (n8n → smartARSE)
+## 3. Stable response JSON (n8n → smartA.R.S.E.)
 
 The UI and **`POST /api/chat/persist`** accept a **single JSON object** (or, for legacy shapes, the client may unwrap a one-element array — prefer a **top-level object**).
 
@@ -118,4 +118,4 @@ Optional denormalised columns (same as persist): `weighted`, `data_source_mode`,
 - [ ] Return stable JSON with **`answer`** (or **`output`** / **`response`** only if legacy).
 - [ ] Include **`sources`** (array) when available.
 - [ ] For async runs: configure **`CHAT_N8N_CALLBACK_SECRET`** and **`POST /api/chat/n8n-complete`**; align **`user_id`** for callback body.
-- [ ] Confirm **`chat_results`** is the same Supabase project as auth/projects (smartARSE migrations + RLS).
+- [ ] Confirm **`chat_results`** is the same Supabase project as auth/projects (smartA.R.S.E. migrations + RLS).

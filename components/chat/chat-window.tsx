@@ -19,7 +19,7 @@ function ChatWindowAdminReadOnlyEmpty() {
         No client activity <span className="text-arse-pink">yet</span>
       </h3>
       <p className="mt-2 max-w-sm text-center text-sm text-muted-foreground">
-        You&apos;ll see the conversation here once your client starts asking smartARSE questions. Reach out if they
+        You&apos;ll see the conversation here once your client starts asking smartA.R.S.E. questions. Reach out if they
         need help getting started.
       </p>
     </div>

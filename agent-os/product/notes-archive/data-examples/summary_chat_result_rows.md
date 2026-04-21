@@ -1,6 +1,6 @@
 # Summary: `chat_results` (Supabase sample)
 
-This document summarizes the **`chat_results`** table as represented in the sample export [`chat_results_rows.csv`](./chat_results_rows.csv). The data comes from Disrupt’s testing of **smartARSE**; it is **not** wired into this repository (no `chat_results` references in the smart-arse codebase).
+This document summarizes the **`chat_results`** table as represented in the sample export [`chat_results_rows.csv`](./chat_results_rows.csv). The data comes from Disrupt’s testing of **smartA.R.S.E.**; it is **not** wired into this repository (no `chat_results` references in the smart-arse codebase).
 
 ---
 

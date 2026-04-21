@@ -16,7 +16,7 @@ function ChatSidebarEmptySkeleton() {
       >
         <Info className="h-4 w-4 shrink-0" aria-hidden />
         <AlertDescription className="text-xs leading-snug text-foreground/90">
-          Your client hasn&apos;t started talking to smartARSE yet.
+          Your client hasn&apos;t started talking to smartA.R.S.E. yet.
         </AlertDescription>
       </Alert>
       <div className="space-y-2" aria-hidden>

@@ -1816,7 +1816,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                             )}
                           >
                             <p>
-                              <b>smartARSE is hungry</b><br></br>
+                              <b>smartA.R.S.E. is hungry</b><br></br>
                               Add credits below to keep this ARSE well-fed.
                             </p>
                           </div>
