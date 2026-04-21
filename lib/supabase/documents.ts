@@ -216,10 +216,32 @@ export async function uploadProjectDocument(input: {
 
 const DISPLAY_NAME_MAX = 500
 
+export type DisplayNameMirrorSyncResult =
+  | {
+      status: "updated"
+      /** Number of `record_manager_v2` rows matched by original filename. */
+      matchedCount: number
+    }
+  | {
+      status: "skipped_no_match"
+      matchedCount: 0
+    }
+  | {
+      status: "failed"
+      /** Rows that matched before update attempt, when known. */
+      matchedCount: number
+      error: string
+    }
+
+export type UpdateProjectDocumentDisplayNameResult = {
+  document: UploadedFile
+  mirrorSync: DisplayNameMirrorSyncResult
+}
+
 export async function updateProjectDocumentDisplayName(
   documentId: string,
   input: { displayName: string | null }
-): Promise<UploadedFile> {
+): Promise<UpdateProjectDocumentDisplayNameResult> {
   const supabase = getSupabaseBrowserClient()
   if (!supabase) throw new Error("Supabase is not configured.")
 
@@ -236,6 +258,20 @@ export async function updateProjectDocumentDisplayName(
         ? trimmed.slice(0, DISPLAY_NAME_MAX)
         : trimmed
 
+  const { data: currentData, error: currentError } = await supabase
+    .from("project_documents")
+    .select("name,display_name,project_id")
+    .eq("id", documentId)
+    .single()
+
+  if (currentError) throw new Error(currentError.message)
+  const currentRow = currentData as Pick<
+    ProjectDocumentRow,
+    "name" | "display_name" | "project_id"
+  >
+  const originalFilename = currentRow.name.trim()
+  const previousDisplayName = currentRow.display_name?.trim()
+
   const { data, error } = await supabase
     .from("project_documents")
     .update({ display_name: dbValue })
@@ -244,7 +280,127 @@ export async function updateProjectDocumentDisplayName(
     .single()
 
   if (error) throw new Error(error.message)
-  return rowToUploadedFile(data as ProjectDocumentRow)
+  const updatedRow = data as ProjectDocumentRow
+  const updatedDocument = rowToUploadedFile(updatedRow)
+  const { data: projectData, error: projectError } = await supabase
+    .from("projects")
+    .select("organization_id")
+    .eq("id", currentRow.project_id)
+    .single()
+
+  if (projectError) {
+    return {
+      document: updatedDocument,
+      mirrorSync: {
+        status: "failed",
+        matchedCount: 0,
+        error: projectError.message,
+      },
+    }
+  }
+
+  const projectOrgId = (projectData as { organization_id: string }).organization_id
+
+  // Try org-scoped first, then fall back without organization_id. Offline ingest rows
+  // sometimes have organization_id that does not match projects.organization_id.
+  const matchAttempts: Array<ReturnType<typeof supabase.from>> = [
+    supabase
+      .from("record_manager_v2")
+      .select("id")
+      .eq("organization_id", projectOrgId)
+      .eq("source_filename", originalFilename),
+    supabase
+      .from("record_manager_v2")
+      .select("id")
+      .eq("organization_id", projectOrgId)
+      .eq("document_title", originalFilename),
+  ]
+  if (previousDisplayName) {
+    matchAttempts.push(
+      supabase
+        .from("record_manager_v2")
+        .select("id")
+        .eq("organization_id", projectOrgId)
+        .eq("document_title", previousDisplayName)
+    )
+  }
+  matchAttempts.push(
+    supabase
+      .from("record_manager_v2")
+      .select("id")
+      .eq("source_filename", originalFilename),
+    supabase
+      .from("record_manager_v2")
+      .select("id")
+      .eq("document_title", originalFilename)
+  )
+  if (previousDisplayName) {
+    matchAttempts.push(
+      supabase
+        .from("record_manager_v2")
+        .select("id")
+        .eq("document_title", previousDisplayName)
+    )
+  }
+
+  let matchedIds: (string | number)[] = []
+  for (const q of matchAttempts) {
+    const { data, error } = await q
+    if (error) {
+      return {
+        document: updatedDocument,
+        mirrorSync: {
+          status: "failed",
+          matchedCount: 0,
+          error: error.message,
+        },
+      }
+    }
+    const rows = data ?? []
+    if (rows.length > 0) {
+      matchedIds = rows.map((r: { id: string | number }) => r.id)
+      break
+    }
+  }
+
+  const matchedCount = matchedIds.length
+
+  if (matchedCount < 1) {
+    return {
+      document: updatedDocument,
+      mirrorSync: {
+        status: "skipped_no_match",
+        matchedCount: 0,
+      },
+    }
+  }
+
+  const { error: mirrorUpdateError } = await supabase
+    .from("record_manager_v2")
+    .update({
+      document_title: dbValue,
+      source_filename: originalFilename,
+    })
+    .in("id", matchedIds)
+
+  if (mirrorUpdateError) {
+    return {
+      document: updatedDocument,
+      mirrorSync: {
+        status: "failed",
+        matchedCount,
+        error: mirrorUpdateError.message,
+      },
+    }
+  }
+
+  return {
+    document: updatedDocument,
+    mirrorSync: {
+      status: "updated",
+      matchedCount,
+    },
+  }
 }
 
 export async function deleteProjectDocument(documentId: string): Promise<void> {

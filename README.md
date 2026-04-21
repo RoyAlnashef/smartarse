@@ -27,7 +27,7 @@ Status legend: ✅ built, 🟡 partial/in progress, ⚪ planned/not built yet
 
 ## Current Progress Snapshot
 
-*Last updated: April 2026.*
+_Last updated: April 2026._
 
 - **Implemented in app + Supabase**:
   - Auth/session routing with admin/client role-aware redirects

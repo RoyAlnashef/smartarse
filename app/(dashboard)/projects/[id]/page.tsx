@@ -809,9 +809,10 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     async (documentId: string, displayName: string | null) => {
       if (!useRemoteDetail) return
       try {
-        const updated = await updateProjectDocumentDisplayName(documentId, {
-          displayName,
-        })
+        const { document: updated, mirrorSync } =
+          await updateProjectDocumentDisplayName(documentId, {
+            displayName,
+          })
         setRemoteDocuments((prev) =>
           (prev ?? []).map((f) => (f.id === documentId ? updated : f))
         )
@@ -820,6 +821,11 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
             ? "Display name saved"
             : "Display name cleared — file name will be used"
         )
+        if (mirrorSync.status === "skipped_no_match") {
+          toast.warning(
+            "Display name saved. Offline title sync skipped (no matching record)."
+          )
+        }
       } catch (err: unknown) {
         toast.error(
           err instanceof Error ? err.message : "Could not save display name"
