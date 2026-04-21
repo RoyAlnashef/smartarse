@@ -8,6 +8,7 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import type {
   ChatMessage,
+  ChatCitationSource,
   PersonaActivatedEvent,
   PersonaEndedEvent,
   ChatTimelineItem,
@@ -15,11 +16,19 @@ import type {
 import { isPersonaActivatedEvent, isPersonaEndedEvent } from "@/lib/types"
 import {
   buildCitationLabelLookup,
+  citationSourcePrimaryLabel,
+  citationSourceTooltipLabel,
   resolveCitationLinkTitle,
   type CitationDocumentRef,
   type CitationLabelLookup,
 } from "@/lib/documents/display-label"
 import { cn } from "@/lib/utils"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { PERSONA_CHAT_SHELL_CLASS } from "@/components/client/project-detail/persona-chat-shell-classes"
 import { MOCK_SEGMENT_PERSONAS } from "@/components/client/project-detail/persona-drawer"
 
@@ -68,15 +77,75 @@ function Avatar({ label, isLoading = false }: { label: string; isLoading?: boole
   )
 }
 
+const CITATION_HREF_PREFIX = "citation://"
+
+function citationHref(index: number): string {
+  return `${CITATION_HREF_PREFIX}${index}`
+}
+
+function citationIndexFromHref(href: string | undefined): number | null {
+  if (!href || !href.startsWith(CITATION_HREF_PREFIX)) return null
+  const value = Number(href.slice(CITATION_HREF_PREFIX.length))
+  if (!Number.isInteger(value) || value < 1) return null
+  return value
+}
+
+function citationIndexFromText(value: string): number | null {
+  const match = value.trim().match(/^\[(\d+)\]$/)
+  if (!match) return null
+  const index = Number(match[1])
+  if (!Number.isInteger(index) || index < 1) return null
+  return index
+}
+
+function textFromReactChildren(children: React.ReactNode): string {
+  if (typeof children === "string") return children
+  if (typeof children === "number") return String(children)
+  if (Array.isArray(children)) {
+    return children.map((child) => textFromReactChildren(child)).join("")
+  }
+  if (children && typeof children === "object" && "props" in children) {
+    const node = children as { props?: { children?: React.ReactNode } }
+    return textFromReactChildren(node.props?.children)
+  }
+  return ""
+}
+
+function rewriteInlineCitationMarkers(
+  markdown: string,
+  sourcesByIndex: Map<number, ChatCitationSource>
+): string {
+  if (!markdown || sourcesByIndex.size === 0) return markdown
+  return markdown.replace(/\[(\d+)\](?!\()/g, (fullMatch, indexRaw: string) => {
+    const index = Number(indexRaw)
+    if (!sourcesByIndex.has(index)) return fullMatch
+    return `[\\[${index}\\]](${citationHref(index)})`
+  })
+}
+
 function MessageBubble({
   message,
   citationLookup,
+  citations,
 }: {
   message: ChatMessage
   /** When set (assistant only), link `title` tooltips prefer document display names. */
   citationLookup: CitationLabelLookup | null
+  citations?: ChatCitationSource[]
 }) {
   const isUser = message.role === "user"
+  const citationSourcesByIndex = useMemo(() => {
+    const map = new Map<number, ChatCitationSource>()
+    for (const source of citations ?? []) {
+      map.set(source.index, source)
+    }
+    return map
+  }, [citations])
+
+  const renderedMarkdown = useMemo(() => {
+    if (isUser) return message.content
+    return rewriteInlineCitationMarkers(message.content, citationSourcesByIndex)
+  }, [citationSourcesByIndex, isUser, message.content])
 
   const markdownComponents = useMemo(() => {
     return {
@@ -87,6 +156,50 @@ function MessageBubble({
         children,
         ...rest
       }: AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown }) => {
+        const citationIndexFromLink = citationIndexFromHref(href)
+        const citationIndexFromLinkText = citationIndexFromText(
+          textFromReactChildren(children)
+        )
+        const citationIndex = citationIndexFromLink ?? citationIndexFromLinkText
+        if (citationIndex != null) {
+          const source = citationSourcesByIndex.get(citationIndex)
+          if (source) {
+            const primaryLabel = citationSourcePrimaryLabel(source)
+            const tooltipLabel = citationSourceTooltipLabel(source)
+            return (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    className="inline rounded-sm px-0.5 font-semibold text-arse-black decoration-arse-pink/70 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink"
+                    aria-label={`Citation ${citationIndex}: ${primaryLabel}`}
+                  >
+                    {children}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="top"
+                  className="max-w-xs rounded-lg border-2 border-arse-black bg-white px-3 py-2 text-left text-xs text-arse-black"
+                >
+                  <p className="font-semibold">{tooltipLabel}</p>
+                  {source.excerpt ? (
+                    <p className="mt-1 leading-relaxed text-arse-black/75">{source.excerpt}</p>
+                  ) : null}
+                  {source.url ? (
+                    <a
+                      href={source.url}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="mt-1 inline-block underline decoration-arse-pink/70 underline-offset-2"
+                    >
+                      Open source
+                    </a>
+                  ) : null}
+                </TooltipContent>
+              </Tooltip>
+            )
+          }
+        }
         const resolvedTitle =
           citationLookup != null
             ? resolveCitationLinkTitle(citationLookup, href, title)
@@ -104,7 +217,7 @@ function MessageBubble({
         )
       },
     }
-  }, [citationLookup])
+  }, [citationLookup, citationSourcesByIndex])
 
   return (
     <div className={cn("flex gap-3", isUser ? "justify-end" : "justify-start")}>
@@ -136,12 +249,14 @@ function MessageBubble({
             "[&_hr]:my-8 [&_hr]:border-t [&_hr]:border-arse-black/15"
           )}
         >
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={markdownComponents}
-          >
-            {message.content}
-          </ReactMarkdown>
+          <TooltipProvider delayDuration={120}>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={markdownComponents}
+            >
+              {renderedMarkdown}
+            </ReactMarkdown>
+          </TooltipProvider>
         </div>
       </div>
       {isUser ? <Avatar label="ME" /> : null}
@@ -422,6 +537,7 @@ export function ProjectChat({
                       citationLookup={
                         item.role === "assistant" ? citationLookup : null
                       }
+                      citations={item.role === "assistant" ? item.citations : undefined}
                     />
                   )
                 })}

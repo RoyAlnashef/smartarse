@@ -87,6 +87,7 @@ export function chatMessagesFromStoredResult(input: {
       role: "assistant",
       content: assistantText,
       timestamp: input.created_at,
+      citations: shape.sources,
     },
   ]
 }

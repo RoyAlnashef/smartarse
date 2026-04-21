@@ -116,6 +116,15 @@ export interface UploadedFile {
   uploadProgress?: number
 }
 
+export interface ChatCitationSource {
+  index: number
+  displayName: string | null
+  documentTitle: string | null
+  sourceFileName: string | null
+  excerpt: string | null
+  url: string | null
+}
+
 export interface ChatMessage {
   id: string
   conversationId: string
@@ -123,6 +132,7 @@ export interface ChatMessage {
   content: string
   timestamp: string
   documentIds?: string[]
+  citations?: ChatCitationSource[]
 }
 
 /** Inline event when a segment persona is activated in the chat. */

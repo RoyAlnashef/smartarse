@@ -1,4 +1,4 @@
-import type { UploadedFile } from "@/lib/types"
+import type { ChatCitationSource, UploadedFile } from "@/lib/types"
 
 /** Drop the last `.<ext>` segment; keep the original if there is no stem. */
 export function fileNameWithoutExtension(name: string): string {
@@ -31,6 +31,32 @@ export function citationDocumentTooltip(file: CitationDocumentRef): string {
     return file.name
   }
   return `${label} (${file.name})`
+}
+
+function firstNonEmpty(...values: Array<string | null | undefined>): string | null {
+  for (const value of values) {
+    const trimmed = value?.trim()
+    if (trimmed) return trimmed
+  }
+  return null
+}
+
+/** Preferred tooltip title for a chat citation source entry. */
+export function citationSourcePrimaryLabel(source: ChatCitationSource): string {
+  return (
+    firstNonEmpty(source.displayName, source.documentTitle, source.sourceFileName) ??
+    `Source [${source.index}]`
+  )
+}
+
+/** Richer tooltip title when filename adds useful context. */
+export function citationSourceTooltipLabel(source: ChatCitationSource): string {
+  const primary = citationSourcePrimaryLabel(source)
+  const fileName = firstNonEmpty(source.sourceFileName)
+  if (!fileName || primary === fileName || primary === fileNameWithoutExtension(fileName)) {
+    return primary
+  }
+  return `${primary} (${fileName})`
 }
 
 export type CitationLabelLookup = {

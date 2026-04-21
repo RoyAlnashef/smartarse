@@ -1,7 +1,9 @@
 /** Normalized assistant payload for poll / UI (see chat-history-spec.md + summary_chat_result_rows.md). */
+import type { ChatCitationSource } from "@/lib/types"
+
 export type ChatResultForClient = {
   answer: string
-  sources: unknown[]
+  sources: ChatCitationSource[]
   visualizations: unknown[]
   route: string
   tool_calls_used: number
@@ -14,6 +16,74 @@ function asRecord(value: unknown): Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {}
+}
+
+function asStringOrNull(value: unknown): string | null {
+  if (typeof value !== "string") return null
+  const trimmed = value.trim()
+  return trimmed ? trimmed : null
+}
+
+function asNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value
+  if (typeof value === "string") {
+    const parsed = Number(value)
+    if (Number.isFinite(parsed)) return parsed
+  }
+  return null
+}
+
+function parseCitationSource(raw: unknown, fallbackIndex: number): ChatCitationSource | null {
+  const row = asRecord(raw)
+  const index =
+    asNumber(row.index) ??
+    asNumber(row.source_index) ??
+    asNumber(row.citation_index) ??
+    fallbackIndex
+  if (!Number.isInteger(index) || index < 1) return null
+
+  const displayName =
+    asStringOrNull(row.display_name) ??
+    asStringOrNull(row.displayName) ??
+    asStringOrNull(row.document_display_name)
+  const documentTitle =
+    asStringOrNull(row.document_title) ??
+    asStringOrNull(row.documentTitle) ??
+    asStringOrNull(row.title)
+  const sourceFileName =
+    asStringOrNull(row.source_filename) ??
+    asStringOrNull(row.sourceFileName) ??
+    asStringOrNull(row.filename) ??
+    asStringOrNull(row.file_name) ??
+    asStringOrNull(row.name)
+  const excerpt =
+    asStringOrNull(row.excerpt) ??
+    asStringOrNull(row.snippet) ??
+    asStringOrNull(row.quote) ??
+    asStringOrNull(row.chunk_preview)
+  const url =
+    asStringOrNull(row.url) ??
+    asStringOrNull(row.href) ??
+    asStringOrNull(row.link)
+
+  return {
+    index,
+    displayName,
+    documentTitle,
+    sourceFileName,
+    excerpt,
+    url,
+  }
+}
+
+function normalizeSources(rawSources: unknown): ChatCitationSource[] {
+  if (!Array.isArray(rawSources)) return []
+  const out: ChatCitationSource[] = []
+  for (const [idx, row] of rawSources.entries()) {
+    const source = parseCitationSource(row, idx + 1)
+    if (source) out.push(source)
+  }
+  return out
 }
 
 /** Keys that may hold the assistant string (Disrupt + common n8n / LLM shapes). */
@@ -114,7 +184,7 @@ export function resultPayloadToClientShape(
   const p = widenPayloadRoot(root)
   const answer = extractAnswerTextInner(root, MAX_ANSWER_DEPTH)
 
-  const sources = Array.isArray(p.sources) ? p.sources : []
+  const sources = normalizeSources(p.sources)
   const visualizations = Array.isArray(p.visualizations) ? p.visualizations : []
 
   return {

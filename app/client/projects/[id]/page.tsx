@@ -361,6 +361,7 @@ export default function ClientProjectDetailPage() {
           role: "assistant",
           content: text,
           timestamp: new Date().toISOString(),
+          citations: result.sources,
         },
       ])
       if (useRealChat && meta?.jobRequestId && !meta.threadAnchorRequestId) {
