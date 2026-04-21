@@ -1,5 +1,6 @@
 "use client"
 
+import { CardSectionHeaderWithInfoTooltip } from "@/components/client/project-detail/card-section-header-with-info-tooltip"
 import { Loader2 } from "lucide-react"
 import {
   useCallback,
@@ -13,6 +14,9 @@ import type {
 } from "@/lib/chat-history-types"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+
+const CHAT_HISTORY_INFO_TEXT =
+  "Each session is saved into a single chat history in the box below i.e. multiple Q&A's are stored as one chat. Start a new chat if you want conversations saved separately."
 
 export type ChatHistoryCardProps = {
   items: ChatHistoryRow[]
@@ -99,9 +103,10 @@ export function ChatHistoryCard({
         className,
       )}
     >
-      <div className="bg-arse-pink px-4 py-2 text-center font-arse-title text-xs font-bold tracking-wide text-arse-white">
-        Chat History
-      </div>
+      <CardSectionHeaderWithInfoTooltip
+        title="Chat History"
+        tooltipText={CHAT_HISTORY_INFO_TEXT}
+      />
       <div className="relative px-4 py-4">
         {loading ? (
           <div
@@ -118,11 +123,6 @@ export function ChatHistoryCard({
         ) : null}
 
         <div className="space-y-0">
-          <p className="px-2 pb-2 font-arse-body text-xs leading-relaxed text-arse-white/90">
-            Each session is saved into a single chat history in the box below i.e. multiple
-            Q&amp;A&apos;s are stored as one chat. Start a new chat if you want conversations saved
-            separately.
-          </p>
           {items.length === 0 && !loading ? (
             <p className="text-left font-arse-body text-sm leading-relaxed text-arse-white/90">
               Ask smartARSE your first question about the research data.

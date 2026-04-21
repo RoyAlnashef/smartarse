@@ -1,7 +1,11 @@
 "use client"
 
+import { CardSectionHeaderWithInfoTooltip } from "@/components/client/project-detail/card-section-header-with-info-tooltip"
 import type { UploadedFile } from "@/lib/types"
 import { sourceListLabel } from "@/lib/documents/display-label"
+
+const DATA_SOURCES_INFO_TEXT =
+  "This is the seed data SmartA.R.S.E. has ingested and from which all answers will be derived."
 
 export function SourcesSelector({
   files,
@@ -10,19 +14,16 @@ export function SourcesSelector({
 }) {
   return (
     <section className="overflow-hidden rounded-3xl bg-dark-950 text-arse-white shadow-[0_0_0_1px_rgba(0,0,0,0.08)]">
-      <div className="bg-arse-pink px-4 py-2 text-center font-arse-title text-xs font-bold tracking-wide text-arse-white">
-       Data Sources
-      </div>
+      <CardSectionHeaderWithInfoTooltip
+        title="Data Sources"
+        tooltipText={DATA_SOURCES_INFO_TEXT}
+      />
       <div className="px-4 py-4">
         <div className="space-y-0">
           {files.length === 0 ? (
             <p className="text-sm text-arse-white/70">No sources for this project yet.</p>
           ) : (
             <>
-              <p className="px-2 pb-2 font-arse-body text-xs leading-relaxed text-arse-white/90">
-                This is the seed data SmartA.R.S.E. has ingested and from which all answers will be
-                derived.
-              </p>
               {files.map((file, index) => {
                 return (
                   <div
