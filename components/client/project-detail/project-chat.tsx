@@ -494,6 +494,9 @@ export function ProjectChat({
                       </a>{" "}
                       for anything regarding the research findings / implications then talk to your
                       Disrupt project team.
+                      <br />
+                      <br />
+                      Time to start investigating…
                     </p>
                   </div>
                 </div>
