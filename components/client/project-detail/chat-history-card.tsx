@@ -299,7 +299,17 @@ export function ChatHistoryCard({
                             {item.user_query}
                           </span>
                           <span className="mt-0.5 flex shrink-0 items-center gap-1.5">
-                            {tokens.length > 1 ? (
+                            {rowLoading ? (
+                              <Loader2
+                                className={cn(
+                                  "h-4 w-4 shrink-0 animate-spin",
+                                  tokens.length > 0
+                                    ? personaSegmentTextClass(focusGroupPrimaryToken)
+                                    : "text-arse-pink",
+                                )}
+                                aria-hidden
+                              />
+                            ) : tokens.length > 1 ? (
                               <span className="inline-flex shrink-0 -space-x-1" aria-hidden>
                                 {tokens.map((token, index) => (
                                   <span
@@ -343,17 +353,6 @@ export function ChatHistoryCard({
                                 }
                               />
                             )}
-                            {rowLoading ? (
-                              <Loader2
-                                className={cn(
-                                  "h-4 w-4 shrink-0 animate-spin",
-                                  tokens.length > 0
-                                    ? personaSegmentTextClass(focusGroupPrimaryToken)
-                                    : "text-arse-pink",
-                                )}
-                                aria-hidden
-                              />
-                            ) : null}
                           </span>
                         </button>
                       </TooltipTrigger>
@@ -446,7 +445,17 @@ export function ChatHistoryCard({
                           {item.user_query}
                         </span>
                         <span className="mt-0.5 flex shrink-0 items-center gap-1.5">
-                          {hasContext && stackTokens.length > 1 ? (
+                          {rowLoading ? (
+                            <Loader2
+                              className={cn(
+                                "h-4 w-4 shrink-0 animate-spin",
+                                hasContext
+                                  ? personaSegmentTextClass(rowColorToken)
+                                  : "text-arse-pink",
+                              )}
+                              aria-hidden
+                            />
+                          ) : hasContext && stackTokens.length > 1 ? (
                             <span className="inline-flex shrink-0 -space-x-1" aria-hidden>
                               {stackTokens.slice(0, 4).map((token, index) => (
                                 <span
@@ -488,17 +497,6 @@ export function ChatHistoryCard({
                               }
                             />
                           )}
-                          {rowLoading ? (
-                            <Loader2
-                              className={cn(
-                                "h-4 w-4 shrink-0 animate-spin",
-                                hasContext
-                                  ? personaSegmentTextClass(rowColorToken)
-                                  : "text-arse-pink",
-                              )}
-                              aria-hidden
-                            />
-                          ) : null}
                         </span>
                       </button>
                     </TooltipTrigger>
