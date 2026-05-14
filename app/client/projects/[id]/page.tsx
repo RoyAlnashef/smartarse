@@ -1305,6 +1305,9 @@ export default function ClientProjectDetailPage() {
             documentIds: m.role === "user" ? sourceDocumentIds : undefined,
           }))
         )
+        setFocusGroupSession(null)
+        setFocusGroupRounds([])
+        setLiveFocusGroupRound(null)
         setActiveThreadRequestId(row.request_id)
       } catch (err) {
         toast.error(
@@ -1448,6 +1451,9 @@ export default function ClientProjectDetailPage() {
       const ts = new Date().toISOString()
       setOrderedTimelineItems(null)
       setActiveThreadRequestId(null)
+      setFocusGroupSession(null)
+      setFocusGroupRounds([])
+      setLiveFocusGroupRound(null)
       const personaId = item.persona_segment_id ?? null
       setAppliedPersonaId(personaId)
 
