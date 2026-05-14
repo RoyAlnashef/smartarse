@@ -3,17 +3,19 @@ import {
   File,
   FileSpreadsheet,
   FileText,
+  MessageSquareQuote,
   Presentation,
 } from "lucide-react"
 import type { UploadedFile } from "@/lib/types"
 
-/** Keep in sync with `supabase/migrations/*_project_documents_source_icon_key.sql` CHECK. */
+/** Keep in sync with `supabase/migrations/*_project_documents_source_icon_key*.sql` CHECK. */
 export const SOURCE_FILE_ICON_KEYS = [
   "pdf",
   "spreadsheet",
   "document",
   "presentation",
   "markdown",
+  "interview",
 ] as const
 
 export type SourceFileIconKey = (typeof SOURCE_FILE_ICON_KEYS)[number]
@@ -28,6 +30,7 @@ const iconByKey: Record<SourceFileIconKey, LucideIcon> = {
   document: File,
   presentation: Presentation,
   markdown: FileText,
+  interview: MessageSquareQuote,
 }
 
 /** Coarse `UploadedFile.type` from `inferUploadedFileType` → Lucide (no DB override). */

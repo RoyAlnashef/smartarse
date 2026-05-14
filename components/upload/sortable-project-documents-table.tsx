@@ -79,6 +79,7 @@ const SOURCE_ICON_LABELS: Record<SourceFileIconKey, string> = {
   document: "Document",
   presentation: "Presentation",
   markdown: "Markdown",
+  interview: "Interview",
 }
 
 const statusColors: Record<string, string> = {

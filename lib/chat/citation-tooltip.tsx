@@ -7,6 +7,7 @@ import {
   FileSpreadsheet,
   FileText,
   Globe,
+  MessageSquareQuote,
   Table2,
 } from "lucide-react"
 import { isSurveyCitationSource } from "@/lib/documents/display-label"
@@ -219,6 +220,9 @@ export function citationSourceIconHint(source: ChatCitationSource): string | nul
 
 function iconFromHint(hint: string): LucideIcon {
   const normalized = hint.trim().toLowerCase()
+  if (normalized.includes("interview") || normalized.includes("transcript") || normalized.includes("qualitative")) {
+    return MessageSquareQuote
+  }
   if (normalized.includes("survey")) {
     return FileSpreadsheet
   }

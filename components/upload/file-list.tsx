@@ -1,7 +1,8 @@
 "use client"
 
-import { FileText, FileSpreadsheet, File, MoreHorizontal, Trash2 } from "lucide-react"
+import { MoreHorizontal, Trash2 } from "lucide-react"
 import type { UploadedFile } from "@/lib/types"
+import { lucideIconForProjectDocument } from "@/lib/theme/source-file-icons"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,13 +11,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/ui/skeleton"
-
-const fileIcons: Record<string, typeof FileText> = {
-  pdf: FileText,
-  csv: FileSpreadsheet,
-  xlsx: FileSpreadsheet,
-  md: FileText,
-}
 
 const statusColors: Record<string, string> = {
   uploading: "bg-muted text-muted-foreground",
@@ -161,7 +155,7 @@ export function FileList({
         </thead>
         <tbody className="divide-y divide-border">
           {files.map((file) => {
-            const Icon = fileIcons[file.type] ?? File
+            const Icon = lucideIconForProjectDocument(file)
             const showActions =
               Boolean(onDelete) && file.status !== "uploading"
             const projectLabel = projectNamesById[file.projectId]

@@ -23,7 +23,7 @@
  * `chat-citation-sources-footer.tsx`.
  */
 
-import { MessageSquareQuote } from "lucide-react"
+import { MessageSquareQuote, type LucideIcon } from "lucide-react"
 import type { CSSProperties, ReactNode } from "react"
 import type { ChatCitationSource, InterviewChunkData } from "@/lib/types"
 import {
@@ -49,7 +49,18 @@ import {
   citeSourceIndexBadgeCn,
   citeSourceIndexBadgeStyle,
 } from "@/lib/theme/cite-color-tokens"
+import { lucideIconForCitationIconName } from "@/lib/theme/source-file-icons"
 import { cn } from "@/lib/utils"
+
+/**
+ * Resolve the header icon for the popover/dialog. Honors the admin's
+ * `sourceIconKey` (plumbed onto `source.iconName` by
+ * `mergeCitationSourcesWithDocIcons`) and falls back to `MessageSquareQuote`
+ * so legacy interview citations without an icon key still render sensibly.
+ */
+function resolveInterviewHeaderIcon(source: ChatCitationSource): LucideIcon {
+  return lucideIconForCitationIconName(source.iconName) ?? MessageSquareQuote
+}
 
 const PRECEDING_TEXT_WINDOW = 200
 const CHUNK_PREVIEW_CLAMP = 320
@@ -203,6 +214,7 @@ export function InterviewQuotesDialog({
 }) {
   const chunks: InterviewChunkData[] = source.interviewChunks ?? []
   const count = source.quoteCount ?? chunks.length
+  const HeaderIcon = resolveInterviewHeaderIcon(source)
 
   return (
     <Dialog>
@@ -210,7 +222,10 @@ export function InterviewQuotesDialog({
       <DialogContent className="flex max-h-[85vh] max-w-lg flex-col gap-0 overflow-hidden p-0">
         <DialogHeader className="shrink-0 border-b border-border px-5 py-4">
           <DialogTitle className="flex items-center gap-2 text-base">
-            <MessageSquareQuote className="h-4 w-4 shrink-0 text-emerald-600" />
+            <HeaderIcon
+              className="h-4 w-4 shrink-0"
+              style={{ color: citeColorCssValue(source.citeColorToken) }}
+            />
             Interview Quotes
             <span className="text-sm font-normal text-muted-foreground">
               ({count})
@@ -308,6 +323,7 @@ export function InlineInterviewCitation({
         matched.interview_segment,
         segmentPersonas
       )
+      const HeaderIcon = resolveInterviewHeaderIcon(source)
 
       return (
         <Popover>
@@ -320,7 +336,10 @@ export function InlineInterviewCitation({
           >
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2">
-                <MessageSquareQuote className="h-4 w-4 shrink-0 text-emerald-600" />
+                <HeaderIcon
+                  className="h-4 w-4 shrink-0"
+                  style={{ color: citeColorCssValue(source.citeColorToken) }}
+                />
                 <span className="text-sm font-medium text-foreground">
                   {hasModeratorQuestion ? "Moderator Question" : "Interview Quote"}
                 </span>
