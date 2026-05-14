@@ -1,0 +1,20 @@
+# Agent OS Standards Index — smartA.R.S.E.
+# Folders alphabetical; keys alphabetical within folder.
+
+css:
+  ui-styling:
+    description: shadcn ui vs feature folders, mint/dark tokens, cn, icons, fonts
+
+global:
+  app-routing-protected-shell:
+    description: Next.js route groups, root vs dashboard URLs, client auth gates, redirects, loading UI
+  developer-guide:
+    description: Developer guidelines for the smartA.R.S.E. project.
+  domain-data-layer:
+    description: lib/types entities, mock-data alignment, relations, Supabase migration notes
+  project-conventions:
+    description: @/ imports, cn, client boundaries, toasts, naming, smartA.R.S.E. branding
+
+javascript:
+  auth-rbac:
+    description: useAuth API, roles, project visibility, page RBAC vs layout, Supabase migration

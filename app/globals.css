@@ -1,0 +1,97 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* smart A.R.S.E client surface (also usable in raw CSS) */
+    --arse-cyan: #00ffff;
+    --arse-pink: #ff00e6;
+    /**
+     * Space-separated RGB for Tailwind `arse-cyan/{opacity}` and `arse-pink/{opacity}`
+     * (see tailwind `colors.arse.cyan` / `colors.arse.pink`).
+     */
+    --arse-cyan-rgb: 0 255 255;
+    --arse-pink-rgb: 255 0 230;
+    --arse-black-rgb: 0 0 0;
+    --arse-white-rgb: 255 255 255;
+
+    /**
+     * Named alpha stops for raw CSS (borders, fills, shadows) without Tailwind.
+     * Pattern: --arse-{cyan|pink}-a{NN} = NN% opacity of the brand color.
+     */
+    --arse-cyan-a05: rgb(var(--arse-cyan-rgb) / 0.05);
+    --arse-cyan-a08: rgb(var(--arse-cyan-rgb) / 0.08);
+    --arse-cyan-a10: rgb(var(--arse-cyan-rgb) / 0.1);
+    --arse-cyan-a12: rgb(var(--arse-cyan-rgb) / 0.12);
+    --arse-cyan-a15: rgb(var(--arse-cyan-rgb) / 0.15);
+    --arse-cyan-a20: rgb(var(--arse-cyan-rgb) / 0.2);
+    --arse-cyan-a25: rgb(var(--arse-cyan-rgb) / 0.25);
+    --arse-cyan-a30: rgb(var(--arse-cyan-rgb) / 0.3);
+    --arse-cyan-a40: rgb(var(--arse-cyan-rgb) / 0.4);
+    --arse-cyan-a50: rgb(var(--arse-cyan-rgb) / 0.5);
+    --arse-cyan-a60: rgb(var(--arse-cyan-rgb) / 0.6);
+    --arse-cyan-a70: rgb(var(--arse-cyan-rgb) / 0.7);
+    --arse-cyan-a80: rgb(var(--arse-cyan-rgb) / 0.8);
+    --arse-cyan-a90: rgb(var(--arse-cyan-rgb) / 0.9);
+
+    --arse-pink-a05: rgb(var(--arse-pink-rgb) / 0.05);
+    --arse-pink-a08: rgb(var(--arse-pink-rgb) / 0.08);
+    --arse-pink-a10: rgb(var(--arse-pink-rgb) / 0.1);
+    --arse-pink-a12: rgb(var(--arse-pink-rgb) / 0.12);
+    --arse-pink-a15: rgb(var(--arse-pink-rgb) / 0.15);
+    --arse-pink-a20: rgb(var(--arse-pink-rgb) / 0.2);
+    --arse-pink-a25: rgb(var(--arse-pink-rgb) / 0.25);
+    --arse-pink-a30: rgb(var(--arse-pink-rgb) / 0.3);
+    --arse-pink-a40: rgb(var(--arse-pink-rgb) / 0.4);
+    --arse-pink-a50: rgb(var(--arse-pink-rgb) / 0.5);
+    --arse-pink-a60: rgb(var(--arse-pink-rgb) / 0.6);
+    --arse-pink-a70: rgb(var(--arse-pink-rgb) / 0.7);
+    --arse-pink-a80: rgb(var(--arse-pink-rgb) / 0.8);
+    --arse-pink-a90: rgb(var(--arse-pink-rgb) / 0.9);
+
+    /** Light wash for icon wells / chips (pairs with --arse-pink); opaque hex */
+    --arse-pink-muted: #fdf7fb;
+    --arse-black: #000000;
+    --arse-white: #ffffff;
+
+    --background: #f9fafb;
+    --foreground: #262626;
+    --card: #ffffff;
+    --card-foreground: #262626;
+    --popover: #ffffff;
+    --popover-foreground: #262626;
+    --primary: var(--arse-cyan);
+    --primary-foreground: var(--arse-black);
+    --muted: #f3f4f6;
+    --muted-foreground: #6b7280;
+    --accent: var(--arse-cyan);
+    --accent-foreground: var(--arse-black);
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: #e5e7eb;
+    --input: #e5e7eb;
+    --ring: var(--arse-pink);
+    --radius: 0.5rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /** Login / client marketing backdrop */
+  .arse-surface-bg {
+    background: var(--arse-cyan);
+  }
+}
