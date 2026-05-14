@@ -11,6 +11,11 @@ import {
   Table2,
 } from "lucide-react"
 import { isSurveyCitationSource } from "@/lib/documents/display-label"
+import {
+  resolveSegmentColorToken,
+  segmentBadgeStyle,
+} from "@/lib/personas/segment-color"
+import type { PersonaMock } from "@/lib/personas/segment-mocks"
 import { sortSurveyQuestionCodesNumerically, surveyQuestionText } from "@/lib/survey-codes"
 import type { ChatCitationSource, ChatInlineCitation } from "@/lib/types"
 import { citeColorBorderStyle, citeColorTooltipBorderCn } from "@/lib/theme/cite-color-tokens"
@@ -23,20 +28,25 @@ export const CITATION_TOOLTIP_CONTENT_CLASS_DEFAULT =
 
 /** Shared with inline citations + `ChatCitationSourcesFooter` (dashboard `ChatWindow`). */
 export const CITATION_TOOLTIP_CONTENT_CLASS_COMPACT =
-  "max-w-xs rounded-lg border-2 bg-white px-3 py-2 text-left text-xs text-arse-black"
+  "max-w-xs rounded-lg border-2 bg-zinc-50 px-3 py-2 text-left text-xs text-arse-black"
 
 type CitationTooltipVariant = "default" | "compact"
 
+/**
+ * Tooltip container classes. Inner wells (`SurveyQuestionsBlock`,
+ * `SurveySamplePill`, non-survey excerpt) sit on top with `bg-white` so every
+ * citation tooltip reads as "light gray surface + white wells", matching the
+ * `[4]` interview popover.
+ */
 export function citationTooltipContentClass(
   variant: CitationTooltipVariant,
   citeColorToken: string | null | undefined,
-  source?: ChatCitationSource | null
+  _source?: ChatCitationSource | null
 ): string {
   return cn(
     variant === "compact"
       ? CITATION_TOOLTIP_CONTENT_CLASS_COMPACT
       : CITATION_TOOLTIP_CONTENT_CLASS_DEFAULT,
-    variant === "default" && source && isSurveyCitationSource(source) ? "bg-white" : null,
     citeColorTooltipBorderCn(citeColorToken)
   )
 }
@@ -310,7 +320,7 @@ function SurveyQuestionsBlock({
   if (codes.length === 0) return null
 
   const blockClass = cn(
-    "rounded-md border border-arse-black/10 bg-arse-black/[0.04]",
+    "rounded-xl border border-arse-black/10 bg-white",
     variant === "compact" ? "mt-2 px-2.5 py-1.5" : "mt-3 px-3 py-2"
   )
   const subtitleClass =
@@ -324,7 +334,7 @@ function SurveyQuestionsBlock({
     return (
       <div className={blockClass}>
         <p className={subtitleClass}>Survey Questions</p>
-        <ul className="space-y-1">
+        <ul className={cn(variant === "compact" ? "space-y-1.5" : "space-y-2.5")}>
           {codes.map((code) => (
             <li key={code} className={codeLineClass}>
               <span className="font-semibold text-arse-black">{code}.</span>{" "}
@@ -347,25 +357,69 @@ function SurveyQuestionsBlock({
   )
 }
 
+/**
+ * Survey sample pill.
+ *
+ * When `source.sampleDescription` / `source.respondentGroup` resolves to a
+ * known persona segment (via {@link resolveSegmentColorToken}), the
+ * description renders as a segment-tinted badge — matching the chunk-segment
+ * pill in the `[4]` interview popover — with the `n=` count as plain text
+ * alongside. When the description is generic (e.g. "All Respondents"), falls
+ * back to the previous neutral mono pill so the size + description still read
+ * as one unit.
+ */
 function SurveySamplePill({
   source,
   variant,
+  segmentPersonas = [],
 }: {
   source: ChatCitationSource
   variant: CitationTooltipVariant
+  segmentPersonas?: PersonaMock[]
 }) {
-  const text = buildSurveySamplePillText(source)
+  const description =
+    valueOrNull(source.sampleDescription) ??
+    valueOrNull(source.respondentGroup) ??
+    "All Respondents"
+  const nValue =
+    formatBaseSize(source.baseSize) ?? formatBaseSize(source.sampleSize)
+  const nText = nValue ? `n=${nValue}` : null
+
+  const segmentToken = resolveSegmentColorToken(description, segmentPersonas)
+  const badgeStyle = segmentBadgeStyle(segmentToken)
+
+  const isCompact = variant === "compact"
+  const sizeClass = isCompact ? "text-[10px]" : "text-[11px]"
+  const marginClass = isCompact ? "mt-2" : "mt-3"
+
+  if (!badgeStyle) {
+    const text = nText ? `${description}, ${nText}` : description
+    return (
+      <span
+        className={cn(
+          "inline-block self-start rounded border border-arse-black/10 bg-white font-mono text-arse-black/65",
+          isCompact ? "mt-2 px-1.5 py-0.5 text-[10px]" : "mt-3 px-2 py-0.5 text-[11px]"
+        )}
+      >
+        {text}
+      </span>
+    )
+  }
+
   return (
-    <span
-      className={cn(
-        "inline-block self-start rounded bg-arse-black/[0.06] font-mono text-arse-black/65",
-        variant === "compact"
-          ? "mt-2 px-1.5 py-0.5 text-[10px]"
-          : "mt-3 px-2 py-0.5 text-[11px]"
-      )}
-    >
-      {text}
-    </span>
+    <div className={cn("flex flex-wrap items-center gap-1.5", marginClass)}>
+      <span
+        className={cn("rounded px-1.5 py-0.5 font-medium", sizeClass)}
+        style={badgeStyle}
+      >
+        {description}
+      </span>
+      {nText ? (
+        <span className={cn("font-mono text-arse-black/65", sizeClass)}>
+          {nText}
+        </span>
+      ) : null}
+    </div>
   )
 }
 
@@ -374,12 +428,15 @@ export function CitationTooltipBody({
   primaryLabel,
   variant = "default",
   inlineCitation,
+  segmentPersonas,
 }: {
   source: ChatCitationSource
   primaryLabel: string
   variant?: CitationTooltipVariant
   /** Per-`[n]`-occurrence row resolved by the caller; narrows survey Q codes. */
   inlineCitation?: ChatInlineCitation | null
+  /** Resolved persona list; drives the survey sample-pill segment color. */
+  segmentPersonas?: PersonaMock[]
 }) {
   const survey = isSurveyCitationSource(source)
   const metadataRows = buildCitationMetadataRows(source)
@@ -403,7 +460,11 @@ export function CitationTooltipBody({
             inlineCitation={inlineCitation}
             variant={variant}
           />
-          <SurveySamplePill source={source} variant={variant} />
+          <SurveySamplePill
+            source={source}
+            variant={variant}
+            segmentPersonas={segmentPersonas}
+          />
         </>
       ) : null}
       {metadataRows.length > 0 ? (

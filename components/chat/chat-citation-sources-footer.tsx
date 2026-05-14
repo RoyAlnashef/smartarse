@@ -136,6 +136,7 @@ export function ChatCitationSourcesFooter({
                     primaryLabel={primaryLabel}
                     variant={tooltipVariant}
                     inlineCitation={footerSurveyInlineByIndex.get(source.index)}
+                    segmentPersonas={segmentPersonas}
                   />
                 </TooltipContent>
               </Tooltip>

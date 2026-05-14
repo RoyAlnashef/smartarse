@@ -199,6 +199,7 @@ export function MessageBubble({
                               markerPosition={inlineCitation?.marker_position ?? 0}
                               ariaLabel={`Citation ${citationIndex}: ${primaryLabel}`}
                               segmentPersonas={segmentPersonas}
+                              variant="compact"
                             />
                           )
                         }
@@ -227,6 +228,7 @@ export function MessageBubble({
                                 primaryLabel={primaryLabel}
                                 variant="compact"
                                 inlineCitation={inlineCitation}
+                                segmentPersonas={segmentPersonas}
                               />
                             </TooltipContent>
                           </Tooltip>

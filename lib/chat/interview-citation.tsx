@@ -6,13 +6,16 @@
  * Ported and re-skinned from the Disrupt citation prototype
  * (`agent-os/product/notes-archive/disrupt-mvp-frontend-handover_may-7-26/components/CitationChip.tsx`).
  *
- * Two surfaces live in this file:
+ * Trigger semantics intentionally mirror the rest of the citation system:
+ * **hover surfaces a tooltip, click opens a dialog.** That keeps `[4]` parity
+ * with `[1]`/`[2]`/`[3]` and prevents users from having to learn a different
+ * interaction for one citation type.
  *
- * - {@link InlineInterviewCitation}: click-Popover for an inline `[4]` pill
+ * - {@link InlineInterviewCitation}: hover-Tooltip for an inline `[4]` pill
  *   that shows the specific interview chunk matched against the preceding
- *   sentence. Falls back to {@link InterviewQuotesDialog} when no chunk can
- *   be matched (e.g. AI placed a single `[4]` at the end of a header that
- *   summarises multiple quotes below it).
+ *   sentence. Falls back to {@link InterviewQuotesDialog} (click) when no
+ *   chunk can be matched (e.g. AI placed a single `[4]` at the end of a
+ *   header that summarises multiple quotes below it).
  *
  * - {@link InterviewQuotesDialog}: click-Dialog that aggregates every cited
  *   interview chunk on the source. Triggered from both the inline fallback
@@ -24,8 +27,12 @@
  */
 
 import { MessageSquareQuote, type LucideIcon } from "lucide-react"
-import type { CSSProperties, ReactNode } from "react"
+import type { ReactNode } from "react"
 import type { ChatCitationSource, InterviewChunkData } from "@/lib/types"
+import {
+  citationTooltipContentClass,
+  citationTooltipContentStyle,
+} from "@/lib/chat/citation-tooltip"
 import {
   Dialog,
   DialogContent,
@@ -35,22 +42,28 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { findChunkByContext } from "@/lib/citation-utils"
 import {
   MOCK_SEGMENT_PERSONAS,
   type PersonaMock,
 } from "@/lib/personas/segment-mocks"
 import {
-  citeColorCssValue,
+  resolveSegmentColorToken,
+  segmentBadgeStyle,
+} from "@/lib/personas/segment-color"
+import {
+  citeColorBorderStyle,
   citeSourceIndexBadgeCn,
   citeSourceIndexBadgeStyle,
 } from "@/lib/theme/cite-color-tokens"
 import { lucideIconForCitationIconName } from "@/lib/theme/source-file-icons"
 import { cn } from "@/lib/utils"
+
+type InterviewCitationVariant = "default" | "compact"
 
 /**
  * Resolve the header icon for the popover/dialog. Honors the admin's
@@ -69,52 +82,6 @@ const MODERATOR_QUESTION_MIN_LEN = 20
 function clampText(value: string, max: number): string {
   if (value.length <= max) return value
   return value.slice(0, max).trimEnd() + "\u2026"
-}
-
-/** Strip leading "The " and lower-case so "The Minimalists" / "minimalists" both match. */
-function normalizeSegmentKey(value: string | null | undefined): string {
-  if (!value) return ""
-  return value
-    .toLowerCase()
-    .replace(/^the\s+/, "")
-    .trim()
-}
-
-/**
- * Resolve the admin-set cite color token for an interview chunk's segment
- * label by fuzzy-matching against the project's `segmentPersonas` list.
- *
- * `chunk.interview_segment` comes from the n8n payload and may be a short
- * variant ("Minimalists") of the persona title ("The Minimalists"); we
- * normalise both sides and accept partial overlaps either way.
- */
-function interviewSegmentColorToken(
-  segmentName: string | null | undefined,
-  personas: PersonaMock[]
-): string | null {
-  const key = normalizeSegmentKey(segmentName)
-  if (!key) return null
-  for (const persona of personas) {
-    const personaKey = normalizeSegmentKey(persona.title)
-    if (!personaKey) continue
-    if (
-      personaKey === key ||
-      personaKey.includes(key) ||
-      key.includes(personaKey)
-    ) {
-      return persona.colorCiteToken ?? null
-    }
-  }
-  return null
-}
-
-function segmentBadgeStyle(token: string | null | undefined): CSSProperties | undefined {
-  if (!token) return undefined
-  const hex = citeColorCssValue(token)
-  return {
-    backgroundColor: `${hex}1f`,
-    color: hex,
-  }
 }
 
 function ChunkDemographicsRow({
@@ -167,7 +134,7 @@ function ChunkListItem({
   const showModeratorQuestion =
     moderatorQuestion.length >= MODERATOR_QUESTION_MIN_LEN
   const chunkPreview = chunk.chunk_preview?.trim() ?? ""
-  const segmentColorToken = interviewSegmentColorToken(
+  const segmentColorToken = resolveSegmentColorToken(
     chunk.interview_segment,
     segmentPersonas
   )
@@ -200,7 +167,7 @@ function ChunkListItem({
  * `quoteCount` when the parser set it). The trigger is supplied by the caller
  * so this component can wrap an inline pill button (fallback path) or a
  * footer chip button identically. Segment badges colour-match the admin-set
- * `segment_color_token` via {@link interviewSegmentColorToken}; pass the
+ * `segment_color_token` via {@link resolveSegmentColorToken}; pass the
  * already-resolved persona list (typically `resolveSegmentPersonasFromFiles`).
  */
 export function InterviewQuotesDialog({
@@ -219,13 +186,13 @@ export function InterviewQuotesDialog({
   return (
     <Dialog>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="flex max-h-[85vh] max-w-lg flex-col gap-0 overflow-hidden p-0">
+      <DialogContent
+        className="flex max-h-[85vh] max-w-lg flex-col gap-0 overflow-hidden rounded-2xl border-2 p-0 sm:rounded-2xl"
+        style={citeColorBorderStyle(source.citeColorToken)}
+      >
         <DialogHeader className="shrink-0 border-b border-border px-5 py-4">
           <DialogTitle className="flex items-center gap-2 text-base">
-            <HeaderIcon
-              className="h-4 w-4 shrink-0"
-              style={{ color: citeColorCssValue(source.citeColorToken) }}
-            />
+            <HeaderIcon className="h-4 w-4 shrink-0 text-arse-black/60" />
             Interview Quotes
             <span className="text-sm font-normal text-muted-foreground">
               ({count})
@@ -259,13 +226,15 @@ export function InterviewQuotesDialog({
 }
 
 /**
- * Inline `[4]` chip rendered in place of the existing hover Tooltip for
- * `sourceType === "interview"`. Clicking opens a Popover with the matched
- * chunk's moderator question (preferred) or chunk preview, plus segment +
- * demographics. When no chunk matches the preceding text — or the matched
- * chunk has neither a usable moderator question nor preview — the same
- * trigger falls back to {@link InterviewQuotesDialog} so the user always
- * lands on the cited evidence.
+ * Inline `[4]` chip with parity to other source citations:
+ *
+ * - **Hover** surfaces a Tooltip with the matched chunk's moderator question
+ *   (preferred) or chunk preview, plus segment + demographics — same trigger
+ *   semantics as `[1]`/`[2]`/`[3]`.
+ * - **Click** falls back to {@link InterviewQuotesDialog} when no chunk
+ *   matches the preceding text (or the matched chunk has neither a usable
+ *   moderator question nor preview), so the user always lands on the cited
+ *   evidence rather than seeing an empty tooltip.
  */
 export function InlineInterviewCitation({
   source,
@@ -273,6 +242,7 @@ export function InlineInterviewCitation({
   markerPosition,
   ariaLabel,
   segmentPersonas = MOCK_SEGMENT_PERSONAS,
+  variant = "default",
 }: {
   source: ChatCitationSource
   /** Original assistant `message.content` (raw markdown, pre-rewrite). */
@@ -281,6 +251,12 @@ export function InlineInterviewCitation({
   markerPosition: number
   ariaLabel: string
   segmentPersonas?: PersonaMock[]
+  /**
+   * Surface variant; mirrors the existing citation tooltip variants so the
+   * `[4]` popover matches the other source tooltips on the same surface
+   * (`compact` = dashboard `ChatWindow`, `default` = client `ProjectChat`).
+   */
+  variant?: InterviewCitationVariant
 }) {
   const chunks = source.interviewChunks ?? []
   const precedingText =
@@ -319,41 +295,49 @@ export function InlineInterviewCitation({
       const body = hasModeratorQuestion
         ? moderatorQuestion
         : clampText(chunkPreview, CHUNK_PREVIEW_CLAMP)
-      const segmentColorToken = interviewSegmentColorToken(
+      const segmentColorToken = resolveSegmentColorToken(
         matched.interview_segment,
         segmentPersonas
       )
       const HeaderIcon = resolveInterviewHeaderIcon(source)
+      const isCompact = variant === "compact"
+      const bodyClass = isCompact
+        ? "mt-2 text-[11px] leading-relaxed text-arse-black/85"
+        : "mt-3 rounded-xl border border-arse-black/10 bg-white p-3 text-xs leading-relaxed text-arse-black/85"
+      const demographicsMarginClass = isCompact ? "mt-2" : "mt-3"
 
       return (
-        <Popover>
-          <PopoverTrigger asChild>{button}</PopoverTrigger>
-          <PopoverContent
-            className="w-80 p-3"
-            sideOffset={8}
-            align="end"
-            collisionPadding={16}
+        <Tooltip>
+          <TooltipTrigger asChild>{button}</TooltipTrigger>
+          <TooltipContent
+            side="top"
+            className={citationTooltipContentClass(
+              variant,
+              source.citeColorToken,
+              source
+            )}
+            style={citationTooltipContentStyle(source.citeColorToken)}
           >
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <HeaderIcon
-                  className="h-4 w-4 shrink-0"
-                  style={{ color: citeColorCssValue(source.citeColorToken) }}
-                />
-                <span className="text-sm font-medium text-foreground">
-                  {hasModeratorQuestion ? "Moderator Question" : "Interview Quote"}
-                </span>
-              </div>
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                {body}
+            <div className="flex items-center gap-2 text-sm font-semibold leading-none">
+              <HeaderIcon
+                className={cn(
+                  "shrink-0 text-arse-black/60",
+                  isCompact ? "h-3.5 w-3.5" : "h-4 w-4"
+                )}
+              />
+              <p className="leading-none">
+                {hasModeratorQuestion ? "Moderator Question" : "Interview Quote"}
               </p>
+            </div>
+            <p className={bodyClass}>{body}</p>
+            <div className={demographicsMarginClass}>
               <ChunkDemographicsRow
                 chunk={matched}
                 segmentColorToken={segmentColorToken}
               />
             </div>
-          </PopoverContent>
-        </Popover>
+          </TooltipContent>
+        </Tooltip>
       )
     }
   }
