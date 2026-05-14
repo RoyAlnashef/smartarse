@@ -191,6 +191,40 @@ export interface ChatCitationSource {
    * the static `Q_CODE_QUESTIONS` dictionary has prose for a Q code.
    */
   chunkTopic?: string | null
+  /**
+   * Per-chunk interview data aggregated on the `[4]` source for inline-popover
+   * matching and the bottom-chip quotes dialog. Maps to Disrupt
+   * `interview_chunks_data` (snake_case fields retained for parity with the
+   * ported `lib/citation-utils.ts` matching helpers).
+   */
+  interviewChunks?: InterviewChunkData[] | null
+  /**
+   * Cited interview chunk count surfaced next to the `[4]` chip label
+   * (e.g. "Qualitative Interviews (3)"). Maps to Disrupt `quote_count`.
+   * When omitted, consumers should fall back to `interviewChunks.length`.
+   */
+  quoteCount?: number | null
+}
+
+/**
+ * Per-chunk row aggregated onto the `[4]` interview citation source. Field
+ * names mirror the Disrupt n8n payload (`interview_chunks_data`) so the
+ * matching helpers ported from the citation-handoff bundle remain
+ * untouched.
+ *
+ * Wire aliases supported by the parser:
+ * - `respondent_id` / `interview_id`
+ * - `interview_segment` / `segment_name`
+ */
+export interface InterviewChunkData {
+  respondent_id: string | null
+  interview_country: string | null
+  interview_gender: string | null
+  interview_age: string | null
+  interview_segment: string | null
+  moderator_question: string | null
+  chunk_preview: string | null
+  similarity: number | null
 }
 
 /**

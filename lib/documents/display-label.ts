@@ -50,9 +50,20 @@ export function isSurveyCitationSource(source: ChatCitationSource): boolean {
   return source.sourceType?.trim().toLowerCase() === "survey"
 }
 
+/** Qualitative interview citations from the assistant payload (`source_type` / `type` → `sourceType`). */
+export function isInterviewCitationSource(source: ChatCitationSource): boolean {
+  return source.sourceType?.trim().toLowerCase() === "interview"
+}
+
 /** Preferred tooltip title for a chat citation source entry. */
 export function citationSourcePrimaryLabel(source: ChatCitationSource): string {
   if (isSurveyCitationSource(source)) return "Survey Data"
+  if (isInterviewCitationSource(source)) {
+    const count = source.quoteCount ?? source.interviewChunks?.length ?? null
+    return count != null && count > 0
+      ? `Qualitative Interviews (${count})`
+      : "Qualitative Interviews"
+  }
   return (
     firstNonEmpty(source.displayName, source.documentTitle, source.sourceFileName) ??
     `Source [${source.index}]`

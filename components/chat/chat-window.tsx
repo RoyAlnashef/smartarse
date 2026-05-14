@@ -6,6 +6,7 @@ import Image from "next/image"
 import robotAvatar from "@/public/robot-avatar.png"
 import type { ChatMessage } from "@/lib/types"
 import type { CitationDocumentRef } from "@/lib/documents/display-label"
+import type { PersonaMock } from "@/lib/personas/segment-mocks"
 import { MessageBubble } from "./message-bubble"
 import { AdminFocusGroupTranscriptRound } from "./admin-focus-group-transcript"
 import type { AdminFocusGroupSessionPayload } from "@/lib/admin-project-focus-group-session"
@@ -51,6 +52,7 @@ export function ChatWindow({
   isLoading = false,
   emptyState = "default",
   citationDocuments,
+  segmentPersonas,
   userName,
   focusGroupSession,
 }: {
@@ -59,6 +61,8 @@ export function ChatWindow({
   isLoading?: boolean
   emptyState?: "default" | "skeleton"
   citationDocuments?: CitationDocumentRef[]
+  /** Resolved persona list; forwarded into each bubble for `[4]` segment colors. */
+  segmentPersonas?: PersonaMock[]
   userName?: string | null
   /**
    * When set, the window renders the full focus-group transcript (rounds +
@@ -128,6 +132,7 @@ export function ChatWindow({
           key={msg.id}
           message={msg}
           citationDocuments={citationDocuments}
+          segmentPersonas={segmentPersonas}
           userName={userName}
         />
       ))}

@@ -25,6 +25,7 @@ import {
 import {
   buildCitationLabelLookup,
   citationSourcePrimaryLabel,
+  isInterviewCitationSource,
   mergeCitationSourcesWithDocColors,
   mergeCitationSourcesWithDocIcons,
   resolveCitationLinkTitle,
@@ -36,6 +37,7 @@ import {
   citationTooltipContentClass,
   citationTooltipContentStyle,
 } from "@/lib/chat/citation-tooltip"
+import { InlineInterviewCitation } from "@/lib/chat/interview-citation"
 import {
   parseCitationHref,
   resolveInlineCitation,
@@ -138,6 +140,7 @@ function MessageBubble({
   citationLookup,
   citations,
   citationDocuments,
+  segmentPersonas,
   assistantTone = DEFAULT_CHAT_TONE,
 }: {
   message: ChatMessage
@@ -146,6 +149,8 @@ function MessageBubble({
   citations?: ChatCitationSource[]
   /** Ordered ready project documents; merges cite colors onto citations by index. */
   citationDocuments?: CitationDocumentRef[]
+  /** Resolved persona list; drives segment-badge colors in `[4]` interview citations. */
+  segmentPersonas?: PersonaMock[]
   assistantTone?: { cardBorder: string; cardBg: string; headingText: string; dotBg: string }
 }) {
   const isUser = message.role === "user"
@@ -191,6 +196,17 @@ function MessageBubble({
               citationIndex,
               hrefParts?.occurrence ?? 0
             )
+            if (isInterviewCitationSource(source)) {
+              return (
+                <InlineInterviewCitation
+                  source={source}
+                  content={message.content}
+                  markerPosition={inlineCitation?.marker_position ?? 0}
+                  ariaLabel={`Citation ${citationIndex}: ${primaryLabel}`}
+                  segmentPersonas={segmentPersonas}
+                />
+              )
+            }
             return (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -238,7 +254,13 @@ function MessageBubble({
         )
       },
     }
-  }, [citationLookup, citationSourcesByIndex, message.inlineCitations])
+  }, [
+    citationLookup,
+    citationSourcesByIndex,
+    message.content,
+    message.inlineCitations,
+    segmentPersonas,
+  ])
 
   return (
     <div className={cn("flex gap-3", isUser ? "justify-end" : "justify-start")}>
@@ -283,6 +305,7 @@ function MessageBubble({
                 tooltipVariant="default"
                 messageContent={message.content}
                 inlineCitations={message.inlineCitations}
+                segmentPersonas={segmentPersonas}
               />
             ) : null}
           </TooltipProvider>
@@ -989,6 +1012,9 @@ export function ProjectChat({
                       citations={item.role === "assistant" ? item.citations : undefined}
                       citationDocuments={
                         item.role === "assistant" ? citationDocuments : undefined
+                      }
+                      segmentPersonas={
+                        item.role === "assistant" ? segmentPersonas : undefined
                       }
                     />
                   )

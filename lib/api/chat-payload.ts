@@ -1,5 +1,9 @@
 /** Normalized assistant payload for poll / UI (see chat-history-spec.md + summary_chat_result_rows.md). */
-import type { ChatCitationSource, ChatInlineCitation } from "@/lib/types"
+import type {
+  ChatCitationSource,
+  ChatInlineCitation,
+  InterviewChunkData,
+} from "@/lib/types"
 
 export type { ChatInlineCitation }
 
@@ -48,6 +52,71 @@ function asStringArrayOrNull(value: unknown): string[] | null {
   for (const item of value) {
     const s = asStringOrNull(item)
     if (s) out.push(s)
+  }
+  return out.length > 0 ? out : null
+}
+
+function parseInterviewChunk(raw: unknown): InterviewChunkData | null {
+  const row = asRecord(raw)
+  if (Object.keys(row).length === 0) return null
+  const respondent_id =
+    asStringOrNull(row.respondent_id) ??
+    asStringOrNull(row.respondentId) ??
+    asStringOrNull(row.interview_id) ??
+    asStringOrNull(row.interviewId)
+  const interview_country =
+    asStringOrNull(row.interview_country) ??
+    asStringOrNull(row.interviewCountry) ??
+    asStringOrNull(row.country)
+  const interview_gender =
+    asStringOrNull(row.interview_gender) ??
+    asStringOrNull(row.interviewGender) ??
+    asStringOrNull(row.gender) ??
+    asStringOrNull(row.gender_label) ??
+    asStringOrNull(row.genderLabel)
+  const interview_age =
+    asStringOrNull(row.interview_age) ??
+    asStringOrNull(row.interviewAge) ??
+    asStringOrNull(row.age) ??
+    asStringOrNull(row.age_band) ??
+    asStringOrNull(row.ageBand)
+  const interview_segment =
+    asStringOrNull(row.interview_segment) ??
+    asStringOrNull(row.interviewSegment) ??
+    asStringOrNull(row.segment_name) ??
+    asStringOrNull(row.segmentName) ??
+    asStringOrNull(row.segment)
+  const moderator_question =
+    asStringOrNull(row.moderator_question) ??
+    asStringOrNull(row.moderatorQuestion) ??
+    asStringOrNull(row.question)
+  const chunk_preview =
+    asStringOrNull(row.chunk_preview) ??
+    asStringOrNull(row.chunkPreview) ??
+    asStringOrNull(row.preview) ??
+    asStringOrNull(row.excerpt) ??
+    asStringOrNull(row.content)
+  const similarity =
+    asNumber(row.similarity) ?? asNumber(row.score) ?? asNumber(row.relevance)
+
+  return {
+    respondent_id,
+    interview_country,
+    interview_gender,
+    interview_age,
+    interview_segment,
+    moderator_question,
+    chunk_preview,
+    similarity,
+  }
+}
+
+function normalizeInterviewChunks(raw: unknown): InterviewChunkData[] | null {
+  if (!Array.isArray(raw)) return null
+  const out: InterviewChunkData[] = []
+  for (const item of raw) {
+    const chunk = parseInterviewChunk(item)
+    if (chunk) out.push(chunk)
   }
   return out.length > 0 ? out : null
 }
@@ -175,6 +244,13 @@ export function parseCitationSource(raw: unknown, fallbackIndex: number): ChatCi
     asStringOrNull(row.cite_color_token) ??
     asStringOrNull(row.citeColorToken) ??
     asStringOrNull(row.source_cite_color_token)
+  const interviewChunks = normalizeInterviewChunks(
+    row.interview_chunks_data ?? row.interviewChunks ?? row.interviewChunksData
+  )
+  const quoteCount =
+    asNumber(row.quote_count) ??
+    asNumber(row.quoteCount) ??
+    (interviewChunks ? interviewChunks.length : null)
 
   return {
     index,
@@ -199,6 +275,8 @@ export function parseCitationSource(raw: unknown, fallbackIndex: number): ChatCi
     iconUrl,
     citeColorToken,
     chunkTopic,
+    interviewChunks,
+    quoteCount,
   }
 }
 

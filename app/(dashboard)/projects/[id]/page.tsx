@@ -1626,6 +1626,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                 isLoading={adminChatWindowLoading}
                 emptyState={isChatReadOnly ? "skeleton" : "default"}
                 citationDocuments={chatCitationDocuments}
+                segmentPersonas={segmentPersonas}
                 userName={
                   useAdminProjectHistory && adminFocusGroupSession
                     ? (adminHistory.find(

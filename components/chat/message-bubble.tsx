@@ -8,6 +8,7 @@ import robotAvatar from "@/public/robot-avatar.png"
 import type { ChatCitationSource, ChatMessage } from "@/lib/types"
 import {
   citationSourcePrimaryLabel,
+  isInterviewCitationSource,
   mergeCitationSourcesWithDocColors,
   mergeCitationSourcesWithDocIcons,
   type CitationDocumentRef,
@@ -18,6 +19,8 @@ import {
   citationTooltipContentClass,
   citationTooltipContentStyle,
 } from "@/lib/chat/citation-tooltip"
+import { InlineInterviewCitation } from "@/lib/chat/interview-citation"
+import type { PersonaMock } from "@/lib/personas/segment-mocks"
 import {
   parseCitationHref,
   resolveInlineCitation,
@@ -73,11 +76,14 @@ function initialsFromName(name?: string | null): string {
 export function MessageBubble({
   message,
   citationDocuments,
+  segmentPersonas,
   userName,
 }: {
   message: ChatMessage
   /** When set, citation indices merge document colors for inline + tooltip UI. */
   citationDocuments?: CitationDocumentRef[]
+  /** Resolved persona list; drives segment-badge colors in `[4]` interview citations. */
+  segmentPersonas?: PersonaMock[]
   userName?: string | null
 }) {
   const isUser = message.role === "user"
@@ -185,6 +191,17 @@ export function MessageBubble({
                           citationIndex,
                           hrefParts?.occurrence ?? 0
                         )
+                        if (isInterviewCitationSource(source)) {
+                          return (
+                            <InlineInterviewCitation
+                              source={source}
+                              content={message.content}
+                              markerPosition={inlineCitation?.marker_position ?? 0}
+                              ariaLabel={`Citation ${citationIndex}: ${primaryLabel}`}
+                              segmentPersonas={segmentPersonas}
+                            />
+                          )
+                        }
                         return (
                           <Tooltip>
                             <TooltipTrigger asChild>
@@ -232,6 +249,7 @@ export function MessageBubble({
                   tooltipVariant="compact"
                   messageContent={message.content}
                   inlineCitations={message.inlineCitations}
+                  segmentPersonas={segmentPersonas}
                 />
               ) : null}
             </TooltipProvider>
