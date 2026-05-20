@@ -7,6 +7,23 @@ const roleBadgeColors: Record<UserRole, string> = {
   user: "bg-amber-100 text-amber-700",
 }
 
-export function userRoleBadgeClassName(role: UserRole): string {
-  return `inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${roleBadgeColors[role]}`
+const demoBadgeColors = "bg-teal-100 text-teal-700"
+
+export function userRoleBadgeLabel(
+  role: UserRole,
+  isDemoUser?: boolean
+): string {
+  if (role === "user" && isDemoUser) return "demo"
+  return role
+}
+
+export function userRoleBadgeClassName(
+  role: UserRole,
+  isDemoUser?: boolean
+): string {
+  const label = userRoleBadgeLabel(role, isDemoUser)
+  const isDemoBadge = label === "demo"
+  const casing = isDemoBadge ? "normal-case" : "capitalize"
+  const colors = isDemoBadge ? demoBadgeColors : roleBadgeColors[role]
+  return `inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${casing} ${colors}`
 }

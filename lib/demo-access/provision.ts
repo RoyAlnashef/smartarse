@@ -148,6 +148,11 @@ export async function approveDemoAccessRequest(
       demoProject.organizationId
     )
     await ensureProjectUserAssignment(adminClient, demoProject.id, userId)
+
+    await adminClient
+      .from("demo_access_requests")
+      .update({ user_id: userId })
+      .eq("id", requestId)
   } catch (error) {
     await adminClient
       .from("demo_access_requests")

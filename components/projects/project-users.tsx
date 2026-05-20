@@ -18,7 +18,10 @@ import {
 } from "@/lib/supabase/projects"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { cn } from "@/lib/utils"
-import { userRoleBadgeClassName } from "@/lib/user-role-badge"
+import {
+  userRoleBadgeClassName,
+  userRoleBadgeLabel,
+} from "@/lib/user-role-badge"
 import type { Project, User } from "@/lib/types"
 
 export interface ProjectUsersProps {
@@ -158,8 +161,13 @@ export function ProjectUsers({
                       >
                         {user.name}
                       </span>
-                      <span className={userRoleBadgeClassName(user.role)}>
-                        {user.role}
+                      <span
+                        className={userRoleBadgeClassName(
+                          user.role,
+                          user.isDemoUser
+                        )}
+                      >
+                        {userRoleBadgeLabel(user.role, user.isDemoUser)}
                       </span>
                       {user.status === "inactive" ? (
                         <span className="inline-flex items-center rounded-full bg-dark-100 px-2 py-0.5 text-xs font-medium capitalize text-dark-500">

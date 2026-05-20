@@ -17,7 +17,10 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
 import { initialAvatarClass } from "@/lib/avatar-palette"
-import { userRoleBadgeClassName } from "@/lib/user-role-badge"
+import {
+  userRoleBadgeClassName,
+  userRoleBadgeLabel,
+} from "@/lib/user-role-badge"
 
 const statusColors: Record<string, string> = {
   active: "bg-mint-100 text-mint-700",
@@ -214,8 +217,13 @@ export function UserTable({
                       </div>
                     </td>
                     <td className="hidden px-4 py-3 sm:table-cell">
-                      <span className={userRoleBadgeClassName(user.role)}>
-                        {user.role}
+                      <span
+                        className={userRoleBadgeClassName(
+                          user.role,
+                          user.isDemoUser
+                        )}
+                      >
+                        {userRoleBadgeLabel(user.role, user.isDemoUser)}
                       </span>
                     </td>
                     <td className="hidden px-4 py-3 text-muted-foreground md:table-cell">

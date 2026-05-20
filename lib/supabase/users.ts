@@ -43,6 +43,28 @@ function rowToUser(row: UserRow): User {
   }
 }
 
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase()
+}
+
+const PROVISIONED_DEMO_STATUSES = ["approved", "magic_link_sent"] as const
+
+type DemoAccessIdentityRow = {
+  user_id: string | null
+  email: string | null
+}
+
+function applyDemoAccessRows(
+  rows: DemoAccessIdentityRow[],
+  demoUserIds: Set<string>,
+  demoUserEmails: Set<string>
+): void {
+  for (const row of rows) {
+    if (row.user_id) demoUserIds.add(row.user_id)
+    if (row.email) demoUserEmails.add(normalizeEmail(row.email))
+  }
+}
+
 export async function listUsersForDashboard(): Promise<User[]> {
   const supabase = getSupabaseBrowserClient()
   if (!supabase) return []
@@ -56,10 +78,45 @@ export async function listUsersForDashboard(): Promise<User[]> {
 
   const users = ((data ?? []) as UserRow[]).map(rowToUser)
 
-  const { data: spendRows, error: spendError } = await supabase.rpc(
-    "dashboard_users_credit_spend"
-  )
+  const [{ data: spendRows, error: spendError }, { data: demoRows, error: demoError }, { data: demoProject, error: demoProjectError }] =
+    await Promise.all([
+      supabase.rpc("dashboard_users_credit_spend"),
+      supabase
+        .from("demo_access_requests")
+        .select("user_id, email, status, provisioned_project_id"),
+      supabase.from("projects").select("id").eq("is_demo", true).maybeSingle(),
+    ])
   if (spendError) throw new Error(spendError.message)
+  if (demoError) throw new Error(demoError.message)
+  if (demoProjectError) throw new Error(demoProjectError.message)
+
+  const demoUserIds = new Set<string>()
+  const demoUserEmails = new Set<string>()
+  const provisionedDemoRows = ((demoRows ?? []) as (DemoAccessIdentityRow & {
+    status: string | null
+    provisioned_project_id: string | null
+  })[]).filter(
+    (row) =>
+      (row.status != null &&
+        PROVISIONED_DEMO_STATUSES.includes(
+          row.status as (typeof PROVISIONED_DEMO_STATUSES)[number]
+        )) ||
+      row.provisioned_project_id != null
+  )
+  applyDemoAccessRows(provisionedDemoRows, demoUserIds, demoUserEmails)
+
+  if (demoProject?.id) {
+    const { data: demoProjectUsers, error: demoProjectUsersError } = await supabase
+      .from("project_users")
+      .select("user_id")
+      .eq("project_id", demoProject.id)
+
+    if (demoProjectUsersError) throw new Error(demoProjectUsersError.message)
+
+    for (const row of (demoProjectUsers ?? []) as { user_id: string }[]) {
+      if (row.user_id) demoUserIds.add(row.user_id)
+    }
+  }
 
   const spendById = new Map<string, number>()
   for (const row of (spendRows ?? []) as {
@@ -72,6 +129,9 @@ export async function listUsersForDashboard(): Promise<User[]> {
   return users.map((u) => ({
     ...u,
     creditsSpentLifetime: spendById.get(u.id) ?? 0,
+    isDemoUser:
+      demoUserIds.has(u.id) ||
+      demoUserEmails.has(normalizeEmail(u.email)),
   }))
 }
 

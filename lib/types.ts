@@ -31,6 +31,8 @@ export interface User {
    * dashboard RPC; 0 when not loaded or mock.
    */
   creditsSpentLifetime: number
+  /** True when provisioned via the demo access flow (request email/id or demo project assignment). */
+  isDemoUser?: boolean
 }
 
 export interface Client {
