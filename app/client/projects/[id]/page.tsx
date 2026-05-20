@@ -10,11 +10,13 @@ import {
 } from "react"
 import Link from "next/link"
 import { Coins, Plus } from "lucide-react"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { format, parseISO } from "date-fns"
 import type { ChatResultForClient } from "@/lib/api/chat-payload"
 import { useAuth } from "@/lib/auth-context"
+import { useDemoSession } from "@/hooks/useDemoSession"
+import { demoProjectRedirectPath } from "@/lib/demo-access/session"
 import { uploadedFiles, conversations as mockConversations } from "@/lib/mock-data"
 import { chatHydrationFromStoredResult, isoOneMsBefore } from "@/lib/chat-thread"
 import { getChatResult } from "@/lib/chat-result"
@@ -90,7 +92,17 @@ const WORKSPACE_INTERACTIVE_SELECTOR =
 export default function ClientProjectDetailPage() {
   const params = useParams()
   const id = typeof params.id === "string" ? params.id : ""
+  const router = useRouter()
   const { user, getVisibleProjects } = useAuth()
+  const { isDemoUser, demoProjectId, isLoading: demoSessionLoading } =
+    useDemoSession(!!user)
+
+  useEffect(() => {
+    if (demoSessionLoading || !isDemoUser || !demoProjectId || !id) return
+    if (id !== demoProjectId) {
+      router.replace(demoProjectRedirectPath(demoProjectId))
+    }
+  }, [demoSessionLoading, isDemoUser, demoProjectId, id, router])
 
   const mockProject = useMemo(
     () => getVisibleProjects().find((p) => p.id === id) ?? null,
@@ -1565,36 +1577,45 @@ export default function ClientProjectDetailPage() {
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col px-4 pb-12 pt-6 sm:px-6 lg:px-8">
-      <nav
-        aria-label="Breadcrumb"
-        className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1"
-      >
-        <Link
-          href="/client/projects"
-          aria-disabled={isResponseLoading}
-          className={cn(
-            "shrink-0 font-arse-body text-sm font-medium text-arse-black/70",
-            isResponseLoading
-              ? "cursor-not-allowed opacity-60"
-              : "hover:text-arse-pink"
-          )}
+      {!isDemoUser ? (
+        <nav
+          aria-label="Breadcrumb"
+          className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1"
         >
-          ← Projects
-        </Link>
-        <span
-          className="select-none font-arse-body text-sm text-arse-black/35"
-          aria-hidden
-        >
-          /
-        </span>
+          <Link
+            href="/client/projects"
+            aria-disabled={isResponseLoading}
+            className={cn(
+              "shrink-0 font-arse-body text-sm font-medium text-arse-black/70",
+              isResponseLoading
+                ? "cursor-not-allowed opacity-60"
+                : "hover:text-arse-pink"
+            )}
+          >
+            ← Projects
+          </Link>
+          <span
+            className="select-none font-arse-body text-sm text-arse-black/35"
+            aria-hidden
+          >
+            /
+          </span>
+          <span
+            className="min-w-0 truncate font-arse-title text-sm font-bold tracking-tight text-arse-black"
+            title={project.name}
+            aria-current="page"
+          >
+            {project.name}
+          </span>
+        </nav>
+      ) : (
         <span
           className="min-w-0 truncate font-arse-title text-sm font-bold tracking-tight text-arse-black"
           title={project.name}
-          aria-current="page"
         >
           {project.name}
         </span>
-      </nav>
+      )}
 
       {workspaceChatBlocked ? (
         <Popover

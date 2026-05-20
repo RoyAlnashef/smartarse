@@ -1,14 +1,21 @@
 "use client"
 
 import { useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { ClientShellHeader } from "@/components/client/client-shell-header"
 import { ClientShellFooter } from "@/components/client/client-shell-footer"
 import { useAuth } from "@/lib/auth-context"
+import { useDemoSession } from "@/hooks/useDemoSession"
+import { demoProjectRedirectPath } from "@/lib/demo-access/session"
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
+  const allowedClientShell =
+    user?.role === "client" || user?.role === "user"
+  const { isDemoUser, demoProjectId, isLoading: demoSessionLoading } =
+    useDemoSession(allowedClientShell && !isLoading)
 
   useEffect(() => {
     if (isLoading) return
@@ -25,8 +32,19 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     }
   }, [user, isLoading, router])
 
-  const allowedClientShell =
-    user?.role === "client" || user?.role === "user"
+  useEffect(() => {
+    if (isLoading || demoSessionLoading || !isDemoUser || !demoProjectId) return
+    if (pathname === "/client/projects") {
+      router.replace(demoProjectRedirectPath(demoProjectId))
+    }
+  }, [
+    isLoading,
+    demoSessionLoading,
+    isDemoUser,
+    demoProjectId,
+    pathname,
+    router,
+  ])
 
   if (isLoading || !user || !allowedClientShell) {
     return (

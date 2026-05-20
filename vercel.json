@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/pause-expired-projects",
       "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/cron/expire-demo-requests",
+      "schedule": "0 3 * * *"
     }
   ]
 }

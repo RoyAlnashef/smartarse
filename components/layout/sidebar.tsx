@@ -9,6 +9,7 @@ import {
   FolderOpen,
   Building2,
   Users,
+  Mail,
   HelpCircle,
   Shield,
   Settings,
@@ -22,6 +23,7 @@ const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard, roles: ["admin", "client"] },
   { name: "Projects", href: "/projects", icon: FolderOpen, roles: ["admin", "client"] },
   { name: "Users", href: "/users", icon: Users, roles: ["admin"] },
+  { name: "Demo requests", href: "/demo-requests", icon: Mail, roles: ["admin"] },
   { name: "Organizations", href: "/organizations", icon: Building2, roles: ["admin"] },
 ]
 

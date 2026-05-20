@@ -5,6 +5,8 @@ import { usePathname, useRouter } from "next/navigation"
 import { LogOut, Settings } from "lucide-react"
 import { ArseLogoGroup } from "@/components/arse-logo-group"
 import { useAuth } from "@/lib/auth-context"
+import { useDemoSession } from "@/hooks/useDemoSession"
+import { demoProjectRedirectPath } from "@/lib/demo-access/session"
 import { cn } from "@/lib/utils"
 
 const signInPillClass = cn(
@@ -27,8 +29,15 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
   const client = user ? getClientForUser() : null
   const displayName = (client?.name ?? user?.name ?? "User").toUpperCase()
   const isProjectListPage = pathname === "/client/projects"
+  const sessionEnabled = !isHelp && !showGuestHelp
+  const { isDemoUser, demoProjectId } = useDemoSession(sessionEnabled)
 
-  const homeHref = isHelp && showGuestHelp ? "/" : "/client/projects"
+  const homeHref =
+    isHelp && showGuestHelp
+      ? "/"
+      : isDemoUser && demoProjectId
+        ? demoProjectRedirectPath(demoProjectId)
+        : "/client/projects"
 
   async function handleLogout() {
     await logout()
@@ -64,8 +73,8 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
             <Link
               href={homeHref}
               className="flex items-center gap-1 sm:gap-1.5 lg:hidden hover:opacity-90"
-              title="Go to project list"
-              aria-label="Go to project list"
+              title={isDemoUser ? "Go to demo project" : "Go to project list"}
+              aria-label={isDemoUser ? "Go to demo project" : "Go to project list"}
             >
               <span className="max-[638px]:hidden">
                 <ArseLogoGroup variant="inline" showTagline={false} />
@@ -92,8 +101,8 @@ export function ClientShellHeader({ variant = "client" }: { variant?: "client" |
             <Link
               href={homeHref}
               className="flex items-center gap-1 sm:gap-1.5 hover:opacity-90"
-              title="Go to project list"
-              aria-label="Go to project list"
+              title={isDemoUser ? "Go to demo project" : "Go to project list"}
+              aria-label={isDemoUser ? "Go to demo project" : "Go to project list"}
             >
               <ArseLogoGroup variant="inline" showTagline={false} />
               <span

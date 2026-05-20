@@ -97,6 +97,7 @@ import {
   ProjectCreditsMeter,
 } from "@/components/dashboard/project-credits-meter"
 import { ProjectUsers } from "@/components/projects/project-users"
+import { DemoProjectSetting } from "@/components/dashboard/demo-project-setting"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import {
@@ -1943,6 +1944,9 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                           className="mt-1.5 block w-full rounded-lg border border-border bg-muted px-3.5 py-2.5 text-sm text-muted-foreground"
                         />
                       </div>
+                      {user.role === "admin" && useRemoteDetail ? (
+                        <DemoProjectSetting projectId={project.id} />
+                      ) : null}
                       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div>
                           <label className="block text-sm font-medium text-foreground">
