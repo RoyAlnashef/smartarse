@@ -18,6 +18,7 @@ Status legend: ✅ built, 🟡 partial/in progress, ⚪ planned/not built yet
 - ✅ **Admin user provisioning API**: Admin can create users with temporary passwords via secure server route; user removal via `DELETE /api/admin/users/[id]`
 - ✅ **RLS-backed admin workflows**: Policies and constraints enforce role checks and org-safe data relationships
 - ✅ **Forgot password flow**: Send reset email from sign-in, recover session from email link, and land on settings to update password
+- ✅ **Demo access flow**: Public `/demo` signup, manual approve/reject via email links, Supabase magic-link provisioning into the admin-designated **demo project**, direct entry to that project (no project list), admin **Demo requests** dashboard, stale-request cron
 - 🟡 **Project chat + n8n**: Client chat POSTs to an n8n webhook (`NEXT_PUBLIC_N8N_URL` or `NEXT_PUBLIC_N8N_WEBHOOK_URL`), then `POST /api/chat/persist` and polling via `GET /api/chat/poll` until `chat_results` completes. Long-running workflows can call `POST /api/chat/n8n-complete` when `CHAT_N8N_CALLBACK_SECRET` is set (see `agent-os/specs/2026-03-26-1400-project-chat-n8n-integration/`).
 - 🟡 **Tabbed project sidebar (client)**: Right column uses **Chat History** and **Personas** tabs (line-style tabs); **Studio** is scaffolded but hidden until ready. Mobile uses the same tabbed shell inside the overlay drawer.
 - 🟡 **Chat history (past questions)**: `GET /api/chat/history` backed by `chat_results`; client page uses `useChatHistory` and merges API rows with in-session items (falls back to mock data when Supabase is off or the list is empty). Spec-level pagination/re-run polish may still evolve.
@@ -37,6 +38,7 @@ _Last updated: April 2026._
   - Chat routes: `GET /api/chat/history`, `GET /api/chat/result`, `GET /api/chat/poll`, `POST /api/chat/persist`, `POST /api/chat/n8n-complete`
   - Admin project chat helpers: `GET /api/admin/projects/[id]/chat-history`, `GET /api/admin/projects/[id]/chat-result`
   - Scheduled maintenance: `GET /api/cron/pause-expired-projects` (Bearer `CRON_SECRET`) calls `pause_all_projects_expired_access` for batch pause of expired access windows
+  - Demo access: `POST /api/demo/request`, email approve/reject links, `GET /api/admin/demo-requests`, `GET /api/cron/expire-demo-requests`
   - Client hooks: `hooks/useChatHistory.ts`, `hooks/useChatQuestion.ts`
   - Supabase migrations for admin RLS, active-with-organization constraints, project status/credits (including auto-pause when `credit_balance` is 0), storage RLS, `chat_results`, and `access_until` + pause helpers
 - **Recent progress**:
@@ -239,6 +241,32 @@ CHAT_N8N_CALLBACK_SECRET=your_shared_secret
 CRON_SECRET=your_cron_secret
 ```
 
+**Demo access** (manual approval + magic links — see [`agent-os/specs/2026-05-19-1200-demo-access-flow/smoke-test-checklist.md`](agent-os/specs/2026-05-19-1200-demo-access-flow/smoke-test-checklist.md)):
+
+```env
+DEMO_APPROVAL_SECRET=long_random_secret_for_hmac_email_links
+# Optional: override support inbox for demo approve/reject emails (e.g. your address while testing)
+DEMO_NOTIFICATION_EMAIL=you@example.com
+DEMO_REQUEST_TTL_DAYS=7
+DEMO_APPROVAL_TOKEN_TTL_HOURS=72
+EMAIL_PROVIDER_API_KEY=re_...
+EMAIL_FROM_ADDRESS=Disrupt <noreply@your-verified-domain.com>
+NEXT_PUBLIC_APP_URL=https://your-production-domain
+```
+
+**Resend / email troubleshooting**
+
+- Production requires a **verified sending domain** in [Resend → Domains](https://resend.com/domains). `EMAIL_FROM_ADDRESS` must use an address on that domain (e.g. `smart-arse@disrupt-insight.com` only works after `disrupt-insight.com` is verified with DNS).
+- Until the domain is verified, local testing can use Resend’s sandbox sender:
+
+```env
+EMAIL_RESEND_SANDBOX=true
+```
+
+  This sends from `onboarding@resend.dev`. Resend may only deliver to the **email on your Resend account** until a domain is verified — set `DEMO_NOTIFICATION_EMAIL` to that address for approval notifications. Magic links to other prospect addresses also require a verified domain.
+
+- The public `/demo` form always shows success even if the notification email fails (anti-enumeration). Check the terminal running `pnpm dev` for `[demo/request] notification email failed:` or approve from **Demo requests** to see Resend errors in the UI.
+
 Important notes:
 
 - `NEXT_PUBLIC_*` variables are required for browser auth flows (sign in, forgot password, password update).
@@ -248,6 +276,8 @@ Important notes:
 - In Supabase Auth settings, allow these redirect URLs:
   - `http://localhost:3000/auth/reset-password`
   - `https://<your-production-domain>/auth/reset-password`
+  - `http://localhost:3000/auth/callback`
+  - `https://<your-production-domain>/auth/callback`
 
 ## License
 

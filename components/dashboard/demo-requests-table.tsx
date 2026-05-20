@@ -1,0 +1,204 @@
+"use client"
+
+import { Skeleton } from "@/components/ui/skeleton"
+import type { DemoAccessRequestDto, DemoAccessRequestStatus } from "@/lib/demo-access/types"
+
+const statusBadgeClass: Record<DemoAccessRequestStatus, string> = {
+  pending: "bg-amber-100 text-amber-800",
+  approved: "bg-mint-100 text-mint-700",
+  magic_link_sent: "bg-mint-100 text-mint-700",
+  rejected: "bg-dark-100 text-dark-500",
+  expired: "bg-dark-100 text-dark-500",
+}
+
+function formatStatusLabel(status: DemoAccessRequestStatus): string {
+  return status.replace(/_/g, " ")
+}
+
+function formatDate(value: string | null): string {
+  if (!value) return "—"
+  return new Date(value).toLocaleString("en-GB", {
+    dateStyle: "short",
+    timeStyle: "short",
+  })
+}
+
+const thClass =
+  "px-4 py-3 text-left font-medium text-muted-foreground"
+const tdClass = "px-4 py-3"
+
+export function DemoRequestsTableSkeleton() {
+  const rows = [0, 1, 2, 3]
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-border bg-muted/50">
+              <th className={thClass}>Email</th>
+              <th className={thClass}>Status</th>
+              <th className={`hidden ${thClass} md:table-cell`}>Requested</th>
+              <th className={`hidden ${thClass} lg:table-cell`}>Approved</th>
+              <th className={`hidden ${thClass} lg:table-cell`}>Rejected</th>
+              <th className={`hidden ${thClass} xl:table-cell`}>Link sent</th>
+              <th className={`hidden ${thClass} xl:table-cell`}>First login</th>
+              <th className={thClass}>
+                <span className="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {rows.map((row) => (
+              <tr key={row}>
+                <td className={tdClass}>
+                  <Skeleton className="h-4 w-48 max-w-full" />
+                </td>
+                <td className={tdClass}>
+                  <Skeleton className="h-5 w-20 rounded-full" />
+                </td>
+                <td className={`hidden ${tdClass} md:table-cell`}>
+                  <Skeleton className="h-4 w-28" />
+                </td>
+                <td className={`hidden ${tdClass} lg:table-cell`}>
+                  <Skeleton className="h-4 w-28" />
+                </td>
+                <td className={`hidden ${tdClass} lg:table-cell`}>
+                  <Skeleton className="h-4 w-28" />
+                </td>
+                <td className={`hidden ${tdClass} xl:table-cell`}>
+                  <Skeleton className="h-4 w-28" />
+                </td>
+                <td className={`hidden ${tdClass} xl:table-cell`}>
+                  <Skeleton className="h-4 w-28" />
+                </td>
+                <td className={`${tdClass} text-right`}>
+                  <div className="ml-auto flex justify-end gap-2">
+                    <Skeleton className="h-8 w-20 rounded-lg" />
+                    <Skeleton className="h-8 w-16 rounded-lg" />
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+export function DemoRequestsTable({
+  items,
+  actingId,
+  emptyMessage,
+  onApprove,
+  onReject,
+}: {
+  items: DemoAccessRequestDto[]
+  actingId: string | null
+  emptyMessage: string
+  onApprove: (id: string) => void
+  onReject: (id: string) => void
+}) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-card">
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-border bg-muted/50">
+              <th className={thClass}>Email</th>
+              <th className={thClass}>Status</th>
+              <th className={`hidden ${thClass} md:table-cell`}>Requested</th>
+              <th className={`hidden ${thClass} lg:table-cell`}>Approved</th>
+              <th className={`hidden ${thClass} lg:table-cell`}>Rejected</th>
+              <th className={`hidden ${thClass} xl:table-cell`}>Link sent</th>
+              <th className={`hidden ${thClass} xl:table-cell`}>First login</th>
+              <th className={thClass}>
+                <span className="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {items.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={8}
+                  className="px-4 py-10 text-center text-sm text-muted-foreground"
+                >
+                  {emptyMessage}
+                </td>
+              </tr>
+            ) : null}
+            {items.map((row) => {
+              const canAct = row.status === "pending"
+              const busy = actingId === row.id
+              return (
+                <tr key={row.id}>
+                  <td className={`${tdClass} font-medium text-foreground`}>
+                    {row.email}
+                  </td>
+                  <td className={tdClass}>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${statusBadgeClass[row.status]}`}
+                    >
+                      {formatStatusLabel(row.status)}
+                    </span>
+                  </td>
+                  <td
+                    className={`hidden ${tdClass} text-muted-foreground md:table-cell`}
+                  >
+                    {formatDate(row.requestedAt)}
+                  </td>
+                  <td
+                    className={`hidden ${tdClass} text-muted-foreground lg:table-cell`}
+                  >
+                    {formatDate(row.approvedAt)}
+                  </td>
+                  <td
+                    className={`hidden ${tdClass} text-muted-foreground lg:table-cell`}
+                  >
+                    {formatDate(row.rejectedAt)}
+                  </td>
+                  <td
+                    className={`hidden ${tdClass} text-muted-foreground xl:table-cell`}
+                  >
+                    {formatDate(row.magicLinkSentAt)}
+                  </td>
+                  <td
+                    className={`hidden ${tdClass} text-muted-foreground xl:table-cell`}
+                  >
+                    {formatDate(row.firstLoginAt)}
+                  </td>
+                  <td className={`${tdClass} text-right`}>
+                    {canAct ? (
+                      <div className="flex justify-end gap-2">
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => onApprove(row.id)}
+                          className="inline-flex items-center rounded-lg bg-dark-950 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-dark-800 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => onReject(row.id)}
+                          className="inline-flex items-center rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
