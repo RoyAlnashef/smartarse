@@ -11,8 +11,16 @@ const statusBadgeClass: Record<DemoAccessRequestStatus, string> = {
   expired: "bg-dark-100 text-dark-500",
 }
 
+const statusLabel: Record<DemoAccessRequestStatus, string> = {
+  pending: "Pending",
+  approved: "Approved",
+  magic_link_sent: "Link sent",
+  rejected: "Rejected",
+  expired: "Expired",
+}
+
 function formatStatusLabel(status: DemoAccessRequestStatus): string {
-  return status.replace(/_/g, " ")
+  return statusLabel[status]
 }
 
 function formatDate(value: string | null): string {
@@ -124,7 +132,7 @@ export function DemoRequestsTable({
                   </td>
                   <td className={tdClass}>
                     <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium capitalize ${statusBadgeClass[row.status]}`}
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${statusBadgeClass[row.status]}`}
                     >
                       {formatStatusLabel(row.status)}
                     </span>
