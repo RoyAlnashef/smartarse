@@ -38,11 +38,8 @@ export function DemoRequestsTableSkeleton() {
             <tr className="border-b border-border bg-muted/50">
               <th className={thClass}>Email</th>
               <th className={thClass}>Status</th>
-              <th className={`hidden ${thClass} md:table-cell`}>Requested</th>
-              <th className={`hidden ${thClass} lg:table-cell`}>Approved</th>
-              <th className={`hidden ${thClass} lg:table-cell`}>Rejected</th>
-              <th className={`hidden ${thClass} xl:table-cell`}>Link sent</th>
-              <th className={`hidden ${thClass} xl:table-cell`}>First login</th>
+              <th className={thClass}>Link sent</th>
+              <th className={thClass}>First login</th>
               <th className={thClass}>
                 <span className="sr-only">Actions</span>
               </th>
@@ -57,19 +54,10 @@ export function DemoRequestsTableSkeleton() {
                 <td className={tdClass}>
                   <Skeleton className="h-5 w-20 rounded-full" />
                 </td>
-                <td className={`hidden ${tdClass} md:table-cell`}>
+                <td className={tdClass}>
                   <Skeleton className="h-4 w-28" />
                 </td>
-                <td className={`hidden ${tdClass} lg:table-cell`}>
-                  <Skeleton className="h-4 w-28" />
-                </td>
-                <td className={`hidden ${tdClass} lg:table-cell`}>
-                  <Skeleton className="h-4 w-28" />
-                </td>
-                <td className={`hidden ${tdClass} xl:table-cell`}>
-                  <Skeleton className="h-4 w-28" />
-                </td>
-                <td className={`hidden ${tdClass} xl:table-cell`}>
+                <td className={tdClass}>
                   <Skeleton className="h-4 w-28" />
                 </td>
                 <td className={`${tdClass} text-right`}>
@@ -108,11 +96,8 @@ export function DemoRequestsTable({
             <tr className="border-b border-border bg-muted/50">
               <th className={thClass}>Email</th>
               <th className={thClass}>Status</th>
-              <th className={`hidden ${thClass} md:table-cell`}>Requested</th>
-              <th className={`hidden ${thClass} lg:table-cell`}>Approved</th>
-              <th className={`hidden ${thClass} lg:table-cell`}>Rejected</th>
-              <th className={`hidden ${thClass} xl:table-cell`}>Link sent</th>
-              <th className={`hidden ${thClass} xl:table-cell`}>First login</th>
+              <th className={thClass}>Link sent</th>
+              <th className={thClass}>First login</th>
               <th className={thClass}>
                 <span className="sr-only">Actions</span>
               </th>
@@ -122,7 +107,7 @@ export function DemoRequestsTable({
             {items.length === 0 ? (
               <tr>
                 <td
-                  colSpan={8}
+                  colSpan={5}
                   className="px-4 py-10 text-center text-sm text-muted-foreground"
                 >
                   {emptyMessage}
@@ -144,29 +129,10 @@ export function DemoRequestsTable({
                       {formatStatusLabel(row.status)}
                     </span>
                   </td>
-                  <td
-                    className={`hidden ${tdClass} text-muted-foreground md:table-cell`}
-                  >
-                    {formatDate(row.requestedAt)}
-                  </td>
-                  <td
-                    className={`hidden ${tdClass} text-muted-foreground lg:table-cell`}
-                  >
-                    {formatDate(row.approvedAt)}
-                  </td>
-                  <td
-                    className={`hidden ${tdClass} text-muted-foreground lg:table-cell`}
-                  >
-                    {formatDate(row.rejectedAt)}
-                  </td>
-                  <td
-                    className={`hidden ${tdClass} text-muted-foreground xl:table-cell`}
-                  >
+                  <td className={`${tdClass} text-muted-foreground`}>
                     {formatDate(row.magicLinkSentAt)}
                   </td>
-                  <td
-                    className={`hidden ${tdClass} text-muted-foreground xl:table-cell`}
-                  >
+                  <td className={`${tdClass} text-muted-foreground`}>
                     {formatDate(row.firstLoginAt)}
                   </td>
                   <td className={`${tdClass} text-right`}>
