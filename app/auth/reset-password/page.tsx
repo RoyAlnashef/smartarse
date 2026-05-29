@@ -1,20 +1,62 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth-context"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { establishSessionFromUrl } from "@/lib/supabase/session-from-url"
+
+type ResetPhase = "establishing" | "ready" | "failed"
 
 export default function ResetPasswordPage() {
   const { user, isLoading } = useAuth()
   const router = useRouter()
+  const [phase, setPhase] = useState<ResetPhase>("establishing")
+  const [establishError, setEstablishError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (isLoading || !user) return
-    router.replace(user.role === "admin" ? "/settings" : "/client/settings")
-  }, [isLoading, router, user])
+    let cancelled = false
 
-  if (isLoading) {
+    void (async () => {
+      const supabase = getSupabaseBrowserClient()
+      if (!supabase) {
+        if (!cancelled) {
+          setEstablishError("Authentication is not configured.")
+          setPhase("failed")
+        }
+        return
+      }
+
+      const result = await establishSessionFromUrl(supabase)
+      if (cancelled) return
+
+      if (!result.ok) {
+        if (result.reason === "no_tokens") {
+          setPhase("failed")
+          return
+        }
+        setEstablishError(result.message ?? "Could not verify reset link.")
+        setPhase("failed")
+        return
+      }
+
+      setPhase("ready")
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (phase !== "ready" || isLoading || !user) return
+    router.replace(user.role === "admin" ? "/settings" : "/client/settings")
+  }, [phase, isLoading, router, user])
+
+  const isWorking = phase === "establishing" || isLoading || (phase === "ready" && !user)
+
+  if (isWorking) {
     return (
       <div className="arse-surface-bg flex min-h-screen items-center justify-center">
         <div className="h-10 w-10 animate-spin rounded-full border-2 border-arse-pink border-t-transparent" />
@@ -30,7 +72,7 @@ export default function ResetPasswordPage() {
             Invalid or expired reset link
           </p>
           <p className="mt-2 text-sm text-arse-black/70">
-            Request a new password reset email from sign in.
+            {establishError ?? "Request a new password reset email from sign in."}
           </p>
           <Link
             href="/"
