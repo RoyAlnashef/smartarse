@@ -271,6 +271,7 @@ Important notes:
 
 - `NEXT_PUBLIC_*` variables are required for browser auth flows (sign in, forgot password, password update).
 - `SUPABASE_SERVICE_ROLE_KEY` is required for `POST /api/admin/users` (admin user provisioning).
+- **Demo magic-link expiry** is configured in Supabase Auth (email OTP / magic link expiry), not per-request in app code. Set it to `86400` seconds (24 hours) to match demo email copy.
 - **Row-level security on `public.users`:** enable a policy so each signed-in user can **read their own profile row** (for example `USING (auth.uid() = id)` on `SELECT`). If `SELECT` is denied, the app falls back to JWT metadata or mock email matching, and **routing may not match the row you see in the Table Editor**.
 - Apply project migrations in `supabase/migrations/` so admin RLS, project lifecycle (status, credits, `access_until`), and related helpers are enforced consistently.
 - In Supabase Auth settings, allow these redirect URLs:

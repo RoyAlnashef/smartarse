@@ -80,14 +80,14 @@ export async function sendDemoMagicLinkEmail(options: {
     intro: "Your demo access to smartA.R.S.E. has been approved.",
     bodyHtml: `<p style="margin:0;">${renderEmailButton(options.magicLink, "Open demo", "primary")}</p>`,
     footer:
-      "This link expires in about one hour. If it expires, contact the team to request a new link.",
+      "This link expires in about 24 hours. If it expires, contact the team to request a new link.",
   })
 
   return sendEmail({
     to: options.to,
     subject: "Your Disrupt - smartA.R.S.E. demo access",
     html,
-    text: `Your demo access to smartA.R.S.E. has been approved.\n\nOpen demo: ${options.magicLink}\n\nThis link expires in about one hour.`,
+    text: `Your demo access to smartA.R.S.E. has been approved.\n\nOpen demo: ${options.magicLink}\n\nThis link expires in about 24 hours.`,
   })
 }
 
