@@ -65,7 +65,7 @@ export async function sendDemoRequestNotificationEmail(options: {
 
   return sendEmail({
     to,
-    subject: `New demo request from ${options.requesterEmail}`,
+    subject: `New smartA.R.S.E. demo request from ${options.requesterEmail}`,
     html,
     text: `New demo request\n\nEmail: ${options.requesterEmail}\nRequested: ${requestedLabel}\n\nApprove: ${options.approveUrl}\nReject: ${options.rejectUrl}`,
   })
@@ -85,7 +85,7 @@ export async function sendDemoMagicLinkEmail(options: {
 
   return sendEmail({
     to: options.to,
-    subject: "Your Disrupt demo access",
+    subject: "Your Disrupt - smartA.R.S.E. demo access",
     html,
     text: `Your demo access to smartA.R.S.E. has been approved.\n\nOpen demo: ${options.magicLink}\n\nThis link expires in about one hour.`,
   })
@@ -104,7 +104,7 @@ export async function sendDemoRejectionEmail(options: {
 
   return sendEmail({
     to: options.to,
-    subject: "Your demo request",
+    subject: "Your Disrupt - smartA.R.S.E. demo access",
     html,
     text: `Thank you for your interest in smartA.R.S.E.\n\nWe are unable to approve demo access for your request at this time. If you believe this is an error, please contact our team.\n\n— Disrupt Insight`,
   })
