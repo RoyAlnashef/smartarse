@@ -16,6 +16,7 @@ export default defineConfig({
       "lib/chat-thread.test.ts",
       "lib/supabase/session-from-url.test.ts",
       "lib/demo-access/tokens.test.ts",
+      "lib/demo-access/config.test.ts",
     ],
   },
 })

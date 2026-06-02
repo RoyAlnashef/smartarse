@@ -1,8 +1,11 @@
 import { Resend } from "resend"
 import { getSupportNotificationEmail } from "@/lib/support-notification-email"
 import {
-  getEmailFromAddress,
+  extractEmailAddress,
   getEmailProviderApiKey,
+  getTransactionalFromAddress,
+  getTransactionalReplyToAddress,
+  isSameMailbox,
 } from "@/lib/demo-access/config"
 import {
   escapeHtml,
@@ -23,15 +26,28 @@ async function sendEmail(options: {
   html?: string
   text?: string
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  const from = getEmailFromAddress()
+  const from = getTransactionalFromAddress()
+  const replyTo = getTransactionalReplyToAddress()
   const resend = getResendClient()
   if (!from || !resend) {
     return { ok: false, error: "Email is not configured." }
   }
 
+  const recipients = Array.isArray(options.to) ? options.to : [options.to]
+  if (
+    process.env.NODE_ENV === "development" &&
+    recipients.some((to) => isSameMailbox(extractEmailAddress(from), to))
+  ) {
+    console.warn(
+      "[demo/email] From and To use the same mailbox; forwarding rules may not run.",
+      { from, to: options.to },
+    )
+  }
+
   const { error } = await resend.emails.send({
     from,
     to: options.to,
+    replyTo,
     subject: options.subject,
     html: options.html,
     text: options.text,

@@ -250,13 +250,21 @@ DEMO_NOTIFICATION_EMAIL=you@example.com
 DEMO_REQUEST_TTL_DAYS=7
 DEMO_APPROVAL_TOKEN_TTL_HOURS=72
 EMAIL_PROVIDER_API_KEY=re_...
-EMAIL_FROM_ADDRESS=Disrupt <noreply@your-verified-domain.com>
+# Optional: transactional sender on your verified domain (see sender vs support inbox below)
+EMAIL_FROM_ADDRESS=smartA.R.S.E. <noreply@your-verified-domain.com>
 NEXT_PUBLIC_APP_URL=https://your-production-domain
 ```
 
+**Demo email sender vs support inbox**
+
+- Approve/reject **notifications** are delivered **To** `smart-arse@disrupt-insight.com` (or `DEMO_NOTIFICATION_EMAIL` when testing).
+- **From** for all demo emails (notifications, magic links, rejections) should be a **notification sender** such as `noreply@disrupt-insight.com`, not the support inbox. If `EMAIL_FROM_ADDRESS` is unset or points at the same mailbox as the support inbox, the app uses `smartA.R.S.E. <noreply@<support-domain>>` automatically so forwarding rules treat mail as external inbound.
+- **Reply-To** on every demo email is the support inbox (`smart-arse@disrupt-insight.com`) so replies reach the team.
+- Ensure `noreply@` is allowed on your verified Resend domain (alias or catch-all on the verified domain).
+
 **Resend / email troubleshooting**
 
-- Production requires a **verified sending domain** in [Resend → Domains](https://resend.com/domains). `EMAIL_FROM_ADDRESS` must use an address on that domain (e.g. `smart-arse@disrupt-insight.com` only works after `disrupt-insight.com` is verified with DNS).
+- Production requires a **verified sending domain** in [Resend → Domains](https://resend.com/domains). `EMAIL_FROM_ADDRESS` (or the default `noreply@…`) must use an address on that domain after DNS verification.
 - Until the domain is verified, local testing can use Resend’s sandbox sender:
 
 ```env

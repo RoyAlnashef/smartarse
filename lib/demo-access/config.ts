@@ -1,3 +1,5 @@
+import { SUPPORT_EMAIL } from "@/lib/support-contact"
+
 export function getAppBaseUrl(): string {
   const url =
     process.env.NEXT_PUBLIC_APP_URL?.trim() ||
@@ -26,16 +28,65 @@ export function getDemoRequestTtlDays(): number {
 /** Resend allows this sender without domain verification (see README demo email section). */
 const RESEND_SANDBOX_FROM = "Disrupt Demo <onboarding@resend.dev>"
 
+const DEFAULT_FROM_DISPLAY_NAME = "smartA.R.S.E."
+
 export function isResendSandboxMode(): boolean {
   const flag = process.env.EMAIL_RESEND_SANDBOX?.trim().toLowerCase()
   return flag === "1" || flag === "true" || flag === "yes"
 }
 
-export function getEmailFromAddress(): string | null {
+/** Extract bare email from `Name <addr>` or a plain address (case-insensitive). */
+export function extractEmailAddress(fromHeader: string): string {
+  const trimmed = fromHeader.trim()
+  const angleMatch = trimmed.match(/<([^>]+)>/)
+  const raw = angleMatch ? angleMatch[1] : trimmed
+  return raw.trim().toLowerCase()
+}
+
+export function normalizeEmailAddress(email: string): string {
+  return email.trim().toLowerCase()
+}
+
+export function isSameMailbox(a: string, b: string): boolean {
+  return normalizeEmailAddress(a) === normalizeEmailAddress(b)
+}
+
+function getDefaultTransactionalFrom(): string {
+  const domain = SUPPORT_EMAIL.split("@")[1]
+  if (!domain) {
+    return `${DEFAULT_FROM_DISPLAY_NAME} <noreply@disrupt-insight.com>`
+  }
+  return `${DEFAULT_FROM_DISPLAY_NAME} <noreply@${domain}>`
+}
+
+/** Reply-To for all demo transactional emails (support inbox). */
+export function getTransactionalReplyToAddress(): string {
+  return SUPPORT_EMAIL
+}
+
+/**
+ * From header for demo emails. Avoids using the support inbox as From when it
+ * would match the notification To (breaks many forward rules).
+ */
+export function getTransactionalFromAddress(): string {
   if (isResendSandboxMode()) {
     return RESEND_SANDBOX_FROM
   }
-  return process.env.EMAIL_FROM_ADDRESS?.trim() || null
+
+  const configured = process.env.EMAIL_FROM_ADDRESS?.trim()
+  if (
+    configured &&
+    !isSameMailbox(extractEmailAddress(configured), SUPPORT_EMAIL)
+  ) {
+    return configured
+  }
+
+  return getDefaultTransactionalFrom()
+}
+
+/** @deprecated Prefer getTransactionalFromAddress — kept for existing call sites. */
+export function getEmailFromAddress(): string | null {
+  return getTransactionalFromAddress()
 }
 
 export function getEmailProviderApiKey(): string | null {
@@ -43,5 +94,5 @@ export function getEmailProviderApiKey(): string | null {
 }
 
 export function isDemoAccessEmailConfigured(): boolean {
-  return Boolean(getEmailFromAddress() && getEmailProviderApiKey())
+  return Boolean(getTransactionalFromAddress() && getEmailProviderApiKey())
 }
