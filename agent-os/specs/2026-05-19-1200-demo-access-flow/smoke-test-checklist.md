@@ -11,7 +11,8 @@
 
 - [ ] Open `/demo`, submit a valid email → success message (no enumeration)
 - [ ] Notification inbox receives email with Approve / Reject buttons
-- [ ] Notification headers: **From** `noreply@disrupt-insight.com` (not support inbox), **To** support inbox, **Reply-To** support inbox — confirm IT helpdesk receives forwarded copy
+- [ ] Notification headers: **From** `noreply@disrupt-insight.com`, **To** support inbox, **Reply-To** support inbox — confirm IT helpdesk receives forwarded copy
+- [ ] Prospect magic-link / rejection headers: **From** support inbox (`smart-arse@…`), **Reply-To** support inbox
 - [ ] Re-submit same email while pending → same generic success, no duplicate row
 
 ## Email approve / reject

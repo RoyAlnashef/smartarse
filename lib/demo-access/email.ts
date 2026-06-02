@@ -3,8 +3,9 @@ import { getSupportNotificationEmail } from "@/lib/support-notification-email"
 import {
   extractEmailAddress,
   getEmailProviderApiKey,
-  getTransactionalFromAddress,
+  getFromAddressForRecipients,
   getTransactionalReplyToAddress,
+  isSupportNotificationRecipient,
   isSameMailbox,
 } from "@/lib/demo-access/config"
 import {
@@ -26,17 +27,21 @@ async function sendEmail(options: {
   html?: string
   text?: string
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  const from = getTransactionalFromAddress()
+  const from = getFromAddressForRecipients(options.to)
   const replyTo = getTransactionalReplyToAddress()
   const resend = getResendClient()
-  if (!from || !resend) {
+  if (!resend) {
     return { ok: false, error: "Email is not configured." }
   }
 
   const recipients = Array.isArray(options.to) ? options.to : [options.to]
   if (
     process.env.NODE_ENV === "development" &&
-    recipients.some((to) => isSameMailbox(extractEmailAddress(from), to))
+    recipients.some(
+      (to) =>
+        isSupportNotificationRecipient(to) &&
+        isSameMailbox(extractEmailAddress(from), to),
+    )
   ) {
     console.warn(
       "[demo/email] From and To use the same mailbox; forwarding rules may not run.",

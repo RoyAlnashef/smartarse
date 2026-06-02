@@ -257,10 +257,10 @@ NEXT_PUBLIC_APP_URL=https://your-production-domain
 
 **Demo email sender vs support inbox**
 
-- Approve/reject **notifications** are delivered **To** `smart-arse@disrupt-insight.com` (or `DEMO_NOTIFICATION_EMAIL` when testing).
-- **From** for all demo emails (notifications, magic links, rejections) should be a **notification sender** such as `noreply@disrupt-insight.com`, not the support inbox. If `EMAIL_FROM_ADDRESS` is unset or points at the same mailbox as the support inbox, the app uses `smartA.R.S.E. <noreply@<support-domain>>` automatically so forwarding rules treat mail as external inbound.
-- **Reply-To** on every demo email is the support inbox (`smart-arse@disrupt-insight.com`) so replies reach the team.
-- Ensure `noreply@` is allowed on your verified Resend domain (alias or catch-all on the verified domain).
+- Approve/reject **notifications** are delivered **To** `smart-arse@disrupt-insight.com` (or `DEMO_NOTIFICATION_EMAIL` when testing), **From** `noreply@<support-domain>` so forwarding rules treat mail as external inbound.
+- **Magic link** and **rejection** emails to prospects use **From** the support inbox (`smart-arse@disrupt-insight.com`). Set `EMAIL_FROM_ADDRESS` to a `Name <smart-arse@…>` value to customize the display name.
+- **Reply-To** on every demo email is the support inbox so replies reach the team.
+- Ensure both `noreply@` and `smart-arse@` are allowed on your verified Resend domain.
 
 **Resend / email troubleshooting**
 

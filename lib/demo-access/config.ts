@@ -1,4 +1,5 @@
 import { SUPPORT_EMAIL } from "@/lib/support-contact"
+import { getSupportNotificationEmail } from "@/lib/support-notification-email"
 
 export function getAppBaseUrl(): string {
   const url =
@@ -51,7 +52,7 @@ export function isSameMailbox(a: string, b: string): boolean {
   return normalizeEmailAddress(a) === normalizeEmailAddress(b)
 }
 
-function getDefaultTransactionalFrom(): string {
+function getDefaultNoreplyFrom(): string {
   const domain = SUPPORT_EMAIL.split("@")[1]
   if (!domain) {
     return `${DEFAULT_FROM_DISPLAY_NAME} <noreply@disrupt-insight.com>`
@@ -59,16 +60,35 @@ function getDefaultTransactionalFrom(): string {
   return `${DEFAULT_FROM_DISPLAY_NAME} <noreply@${domain}>`
 }
 
+function getDefaultProspectFrom(): string {
+  return `${DEFAULT_FROM_DISPLAY_NAME} <${SUPPORT_EMAIL}>`
+}
+
 /** Reply-To for all demo transactional emails (support inbox). */
 export function getTransactionalReplyToAddress(): string {
   return SUPPORT_EMAIL
 }
 
+export function isSupportNotificationRecipient(email: string): boolean {
+  return isSameMailbox(email, getSupportNotificationEmail())
+}
+
 /**
- * From header for demo emails. Avoids using the support inbox as From when it
- * would match the notification To (breaks many forward rules).
+ * From for approve/reject notifications to the support notification inbox.
+ * Uses noreply@ so From ≠ To and forwarding rules treat mail as external inbound.
  */
-export function getTransactionalFromAddress(): string {
+export function getInternalNotificationFromAddress(): string {
+  if (isResendSandboxMode()) {
+    return RESEND_SANDBOX_FROM
+  }
+  return getDefaultNoreplyFrom()
+}
+
+/**
+ * From for prospect-facing emails (magic link, rejection).
+ * Uses the support inbox so messages appear to come from the team.
+ */
+export function getProspectFromAddress(): string {
   if (isResendSandboxMode()) {
     return RESEND_SANDBOX_FROM
   }
@@ -76,17 +96,31 @@ export function getTransactionalFromAddress(): string {
   const configured = process.env.EMAIL_FROM_ADDRESS?.trim()
   if (
     configured &&
-    !isSameMailbox(extractEmailAddress(configured), SUPPORT_EMAIL)
+    isSameMailbox(extractEmailAddress(configured), SUPPORT_EMAIL)
   ) {
     return configured
   }
 
-  return getDefaultTransactionalFrom()
+  return getDefaultProspectFrom()
 }
 
-/** @deprecated Prefer getTransactionalFromAddress — kept for existing call sites. */
+/** Pick internal (noreply) vs prospect (support) From based on recipients. */
+export function getFromAddressForRecipients(to: string | string[]): string {
+  const recipients = Array.isArray(to) ? to : [to]
+  if (recipients.some(isSupportNotificationRecipient)) {
+    return getInternalNotificationFromAddress()
+  }
+  return getProspectFromAddress()
+}
+
+/** @deprecated Prefer getFromAddressForRecipients — kept for existing call sites. */
+export function getTransactionalFromAddress(): string {
+  return getInternalNotificationFromAddress()
+}
+
+/** @deprecated Prefer getFromAddressForRecipients — kept for existing call sites. */
 export function getEmailFromAddress(): string | null {
-  return getTransactionalFromAddress()
+  return getFromAddressForRecipients(SUPPORT_EMAIL)
 }
 
 export function getEmailProviderApiKey(): string | null {
@@ -94,5 +128,5 @@ export function getEmailProviderApiKey(): string | null {
 }
 
 export function isDemoAccessEmailConfigured(): boolean {
-  return Boolean(getTransactionalFromAddress() && getEmailProviderApiKey())
+  return Boolean(getEmailProviderApiKey())
 }
