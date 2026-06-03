@@ -11,6 +11,7 @@ import {
   type FormEvent,
 } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { toast } from "sonner"
 import { format, parseISO } from "date-fns"
 import {
@@ -70,6 +71,7 @@ import {
   removeProjectCredits,
   updateProject,
 } from "@/lib/supabase/projects"
+import { requestEvaluateCreditAlert } from "@/lib/support-notifications/evaluate-client"
 import { listUsersForDashboard } from "@/lib/supabase/users"
 import { ChatWindow } from "@/components/chat/chat-window"
 import { ChatInput } from "@/components/chat/chat-input"
@@ -273,6 +275,23 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     }
   }, [id, user?.id, user?.role])
 
+  const runEvaluateCreditAlert = useCallback(async () => {
+    if (!useRemoteDetail || user?.role !== "admin") return
+    const supabase = getSupabaseBrowserClient()
+    if (!supabase) return
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession()
+    if (!session?.access_token) return
+
+    try {
+      await requestEvaluateCreditAlert(id, session.access_token)
+    } catch {
+      // Non-blocking; DB trigger covers the primary path.
+    }
+  }, [useRemoteDetail, user?.role, id])
+
   const [remoteDocuments, setRemoteDocuments] = useState<
     UploadedFile[] | undefined
   >(undefined)
@@ -466,7 +485,12 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
   const [isTyping, setIsTyping] = useState(false)
   const [isDeletingProject, setIsDeletingProject] = useState(false)
   const [creditAmountInput, setCreditAmountInput] = useState("")
+  const [creditAlertThresholdInput, setCreditAlertThresholdInput] = useState("")
   const [creditsBusy, setCreditsBusy] = useState<false | "add" | "remove">(false)
+  const [creditThresholdBusy, setCreditThresholdBusy] = useState(false)
+  const [creditAlertPlatformEnabled, setCreditAlertPlatformEnabled] = useState<
+    boolean | null
+  >(null)
   const [settingsName, setSettingsName] = useState("")
   const [settingsDescription, setSettingsDescription] = useState("")
   const [settingsStatus, setSettingsStatus] = useState<Project["status"]>("live")
@@ -843,6 +867,11 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     setSettingsAccessUntil(project.accessUntil ?? null)
     setSettingsDisplayDate(project.displayDate ?? null)
     setSettingsCardSubline(project.cardSubline ?? "")
+    setCreditAlertThresholdInput(
+      project.creditAlertThreshold != null
+        ? String(project.creditAlertThreshold)
+        : "",
+    )
   }, [
     project?.id,
     project?.name,
@@ -851,7 +880,53 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     project?.accessUntil,
     project?.displayDate,
     project?.cardSubline,
+    project?.creditAlertThreshold,
   ])
+
+  useEffect(() => {
+    if (
+      !useRemoteDetail ||
+      user?.role !== "admin" ||
+      activeTab !== "settings" ||
+      settingsSection !== "credits"
+    ) {
+      return
+    }
+
+    let cancelled = false
+    void (async () => {
+      setCreditAlertPlatformEnabled(null)
+      const supabase = getSupabaseBrowserClient()
+      if (!supabase) return
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      if (!session?.access_token) return
+
+      try {
+        const res = await fetch("/api/admin/platform-settings", {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        })
+        if (!res.ok) {
+          if (!cancelled) setCreditAlertPlatformEnabled(true)
+          return
+        }
+        const data = (await res.json()) as {
+          settings: { notifyCreditBalanceLow: boolean }
+        }
+        if (!cancelled) {
+          setCreditAlertPlatformEnabled(data.settings.notifyCreditBalanceLow)
+        }
+      } catch {
+        if (!cancelled) setCreditAlertPlatformEnabled(true)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [useRemoteDetail, user?.role, activeTab, settingsSection])
 
   const activeConversation = useMemo(
     () => conversations.find((c) => c.id === activeConversationId) ?? null,
@@ -1388,6 +1463,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         toast.success(`Added ${parsed.toLocaleString()} credits.`)
         setCreditAmountInput("")
         await refreshProjectFromServer()
+        await runEvaluateCreditAlert()
       } catch (err: unknown) {
         toast.error(
           err instanceof Error ? err.message : "Could not add credits."
@@ -1402,6 +1478,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
       creditAmountInput,
       id,
       refreshProjectFromServer,
+      runEvaluateCreditAlert,
     ]
   )
 
@@ -1425,6 +1502,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
       toast.success(`Removed ${parsed.toLocaleString()} credits.`)
       setCreditAmountInput("")
       await refreshProjectFromServer()
+      await runEvaluateCreditAlert()
     } catch (err: unknown) {
       toast.error(
         err instanceof Error ? err.message : "Could not remove credits."
@@ -1439,7 +1517,56 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
     creditAmountInput,
     id,
     refreshProjectFromServer,
+    runEvaluateCreditAlert,
   ])
+
+  const handleSaveCreditAlertThreshold = useCallback(async () => {
+    if (!useRemoteDetail || user?.role !== "admin" || !project) return
+    if (creditAlertPlatformEnabled !== true) return
+
+    const trimmed = creditAlertThresholdInput.trim()
+    let parsedThreshold: number | null = null
+    if (trimmed !== "") {
+      parsedThreshold = Number.parseInt(trimmed, 10)
+      if (!Number.isFinite(parsedThreshold) || parsedThreshold <= 0) {
+        toast.error("Enter a positive whole number or leave blank to disable alerts.")
+        return
+      }
+    }
+
+    setCreditThresholdBusy(true)
+    try {
+      await updateProject({
+        id,
+        creditAlertThreshold: parsedThreshold,
+      })
+      toast.success(
+        parsedThreshold == null
+          ? "Credit alert threshold cleared."
+          : `Support will be emailed when balance drops below ${parsedThreshold.toLocaleString()}.`,
+      )
+      await refreshProjectFromServer()
+      await runEvaluateCreditAlert()
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Could not save alert threshold.",
+      )
+    } finally {
+      setCreditThresholdBusy(false)
+    }
+  }, [
+    useRemoteDetail,
+    user?.role,
+    project,
+    creditAlertThresholdInput,
+    id,
+    refreshProjectFromServer,
+    runEvaluateCreditAlert,
+    creditAlertPlatformEnabled,
+  ])
+
+  const creditAlertThresholdUiDisabled =
+    creditAlertPlatformEnabled !== true || creditThresholdBusy
 
   const openSettingsCredits = useCallback(() => {
     focusCreditsAmountAfterMeterClick.current = true
@@ -2363,6 +2490,78 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                               </Button>
                             </div>
                           </form>
+                          <div
+                            className={cn(
+                              "border-t border-border pt-6",
+                              creditAlertPlatformEnabled === false &&
+                                "opacity-60",
+                            )}
+                          >
+                            <label
+                              htmlFor="credit-alert-threshold"
+                              className={cn(
+                                "block text-sm font-medium",
+                                creditAlertPlatformEnabled === false
+                                  ? "text-muted-foreground"
+                                  : "text-foreground",
+                              )}
+                            >
+                              Email support when balance below
+                            </label>
+                            {creditAlertPlatformEnabled === false ? (
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                Low-credit support emails are turned off in{" "}
+                                <Link
+                                  href="/settings/support-notifications"
+                                  className="font-medium text-foreground underline underline-offset-2 hover:text-arse-cyan"
+                                >
+                                  Support alerts
+                                </Link>
+                                . Enable them there to set a threshold for this
+                                project.
+                              </p>
+                            ) : creditAlertPlatformEnabled === null ? (
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                Checking platform notification settings…
+                              </p>
+                            ) : (
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                Leave blank to disable low-credit emails for this
+                                project.
+                              </p>
+                            )}
+                            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-end">
+                              <input
+                                id="credit-alert-threshold"
+                                type="number"
+                                min={1}
+                                step={1}
+                                inputMode="numeric"
+                                placeholder={
+                                  creditAlertPlatformEnabled === false
+                                    ? "Unavailable"
+                                    : "e.g. 50"
+                                }
+                                value={creditAlertThresholdInput}
+                                onChange={(event) =>
+                                  setCreditAlertThresholdInput(event.target.value)
+                                }
+                                disabled={creditAlertThresholdUiDisabled}
+                                aria-disabled={creditAlertThresholdUiDisabled}
+                                className={cn(
+                                  "block w-full max-w-xs rounded-lg border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-arse-cyan focus:outline-none focus:ring-2 focus:ring-arse-pink/30 disabled:cursor-not-allowed disabled:opacity-50",
+                                )}
+                              />
+                              <Button
+                                type="button"
+                                variant="secondary"
+                                disabled={creditAlertThresholdUiDisabled}
+                                onClick={() => void handleSaveCreditAlertThreshold()}
+                              >
+                                {creditThresholdBusy ? "Saving…" : "Save threshold"}
+                              </Button>
+                            </div>
+                          </div>
                         </div>
                       </section>
                     </TabsContent>

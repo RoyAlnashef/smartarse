@@ -1,218 +1,232 @@
 ---
-name: Disrupt Support Email Estimate
-overview: Estimate and shaped plan for Disrupt-facing support email notifications (low credits, access expiry at 4w/2w), Resend delivery, platform admin settings, and per-project credit thresholds. Full spec folder is deferred until the estimate is approved.
+name: Disrupt Support Email Notifications
+overview: Implementation spec for Disrupt support inbox notifications (low credits, 28d/14d access expiry), reconciled with the codebase — reuse existing Resend/demo-access patterns, DB-triggered credit crossing, admin API routes, and dedicated crons.
 todos:
-  - id: estimate-review
-    content: Disrupt reviews ~8 dev-day estimate (+ risks); approve or adjust scope
-    status: pending
   - id: save-spec
-    content: "After approval: save agent-os/specs/2026-05-19-*-disrupt-support-email-notifications/ (plan, shape, standards, references)"
-    status: pending
+    content: "Save agent-os/specs/2026-05-19-*-disrupt-support-email-notifications/ (plan, shape, standards, references)"
+    status: completed
   - id: schema
-    content: "Migrations: platform_settings, credit_alert_threshold, support_notification_log (+ RLS)"
-    status: pending
+    content: "Migrations: platform_settings, credit_alert_threshold, support_notification_log, credit_balance crossing trigger (+ RLS + seed)"
+    status: completed
   - id: resend
-    content: Resend integration, templates, env docs
+    content: lib/support-notifications/ send + templates; reuse demo-access Resend/config; extend getSupportNotificationEmail()
     status: pending
   - id: admin-ui
-    content: Admin platform notifications page + project credit threshold in settings
+    content: GET/PATCH /api/admin/platform-settings + /settings/support-notifications page + sidebar link
+    status: pending
+  - id: project-threshold
+    content: "Credits tab: per-project credit_alert_threshold field + ProjectRow mapping"
     status: pending
   - id: credit-pipeline
-    content: Low-credit crossing detection, dedupe, send
+    content: DB crossing trigger, outbox cron (15m), optional evaluate API after admin credit RPCs
     status: pending
   - id: expiry-cron
-    content: Cron for 28d/14d access_until reminders
+    content: Daily /api/cron/support-notifications for 28d/14d access_until reminders
     status: pending
   - id: tests-docs
-    content: Unit tests for date/dedupe; README cron/env
+    content: Vitest for date/dedupe/crossing helpers; README env section; manual QA checklist
     status: pending
 isProject: false
 ---
 
-# Disrupt support email notifications — estimate & shaped plan
+# Disrupt support email notifications — implementation spec
 
 ## Goal
 
-Give the Disrupt team a **reviewable estimate** for three automated emails to the support inbox (default [`smart-arse@disrupt-insight.com`](lib/support-contact.ts)), plus **dashboard-admin** controls to toggle notification types and change the support address. **Spec documentation** (`agent-os/specs/…`) is **Task 1 but blocked** until estimate approval.
+Automated emails to the Disrupt support inbox for **low credits** and **access expiry** (28d / 14d), with **dashboard-admin** toggles and configurable support address. Per-project **credit alert threshold** only (no org overrides). Real-time credit crossing via DB trigger + outbox cron; dedicated expiry cron; Vitest coverage for pure helpers.
 
-## Confirmed scope (from shaping)
+---
 
-| Topic            | Decision                                                                                                                                                                                 |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Recipients       | Disrupt support inbox (configurable by **dashboard admins only**)                                                                                                                        |
-| Org overrides    | **None** — client orgs cannot override email or toggles                                                                                                                                  |
-| Credit alert     | **Once per threshold crossing** — re-fires only after balance is topped back **at or above** threshold, then drops below again                                                           |
-| Credit threshold | **Per project**, set in project Settings (admin project detail today: [`app/(dashboard)/projects/[id]/page.tsx`](<app/(dashboard)/projects/[id]/page.tsx>), credits section)             |
-| Expiry reminders | **28 days** and **14 days** before `access_until` (UTC calendar, aligned with existing [`lib/project-status.ts`](lib/project-status.ts)); **live projects only** with `access_until` set |
-| Email provider   | **Resend** (new integration; no outbound email in repo today)                                                                                                                            |
-| Visuals          | None — match existing settings / project settings patterns ([`components/settings/notifications-section.tsx`](components/settings/notifications-section.tsx) is UI-only mock today)      |
+## Codebase alignment
 
-**Clarification vs initial “hybrid” answer:** Settings are **platform-wide for Disrupt admins**, not per-organization. Per-project config is limited to the **credit alert threshold** only.
+These updates supersede stale assumptions in the original draft.
 
-## What exists today (reduces risk)
+| Original draft claim | Actual codebase |
+|---|---|
+| "No outbound email in repo" | **Resend is live** for demo-access ([`lib/demo-access/email.ts`](lib/demo-access/email.ts), `resend@^6.12.3`) |
+| New env `RESEND_API_KEY`, `RESEND_FROM` | Use existing **`EMAIL_PROVIDER_API_KEY`**, **`EMAIL_FROM_ADDRESS`**, **`EMAIL_RESEND_SANDBOX`** ([`lib/demo-access/config.ts`](lib/demo-access/config.ts), [README demo section](README.md)) |
+| New `lib/email/send-support-notification.ts` in isolation | **Extend** demo-access email stack: shared `sendEmail()` wrapper, `getFromAddressForRecipients()` (noreply→support pattern), [`lib/demo-access/templates/shared.ts`](lib/demo-access/templates/shared.ts) for branded HTML |
+| Support inbox from constant only | [`getSupportNotificationEmail()`](lib/support-notification-email.ts) already exists — extend to read `platform_settings.support_email` with `DEMO_NOTIFICATION_EMAIL` env override kept for local testing |
+| Credit charge hook in `n8n-complete` / persist routes | Billing is a **Postgres trigger** on `chat_results` → updates `projects.credit_balance` ([`202604132000_chat_results_project_credit_charge.sql`](supabase/migrations/202604132000_chat_results_project_credit_charge.sql)); app routes only upsert rows |
+| Platform settings via browser Supabase | [`lib/supabase/projects.ts`](lib/supabase/projects.ts) is `"use client"` — platform singleton writes should use **`/api/admin/platform-settings`** with [`requireDashboardAdmin`](lib/api/require-dashboard-admin.ts) (same pattern as [`app/api/admin/demo-requests/route.ts`](app/api/admin/demo-requests/route.ts)) |
+| 2 Vercel crons | **Already 2** in [`vercel.json`](vercel.json) (`pause-expired-projects`, `expire-demo-requests`); this feature adds **2 more** — confirm Vercel plan cron limits |
 
-- **Support email constant:** [`lib/support-contact.ts`](lib/support-contact.ts)
-- **Credits:** `projects.credit_balance`, charge on terminal chat ([`supabase/migrations/202604132000_chat_results_project_credit_charge.sql`](supabase/migrations/202604132000_chat_results_project_credit_charge.sql)); UI warning uses hardcoded `CREDIT_BALANCE_WARNING_THRESHOLD = 50` ([`components/dashboard/project-credits-meter.tsx`](components/dashboard/project-credits-meter.tsx)) — **not** persisted per project yet
-- **Expiry:** `projects.access_until` + auto-pause triggers/RPCs; daily cron [`app/api/cron/pause-expired-projects/route.ts`](app/api/cron/pause-expired-projects/route.ts) + [`vercel.json`](vercel.json)
-- **Notifications UI:** Mock toggles on [`app/(dashboard)/settings/page.tsx`](<app/(dashboard)/settings/page.tsx>) — not wired to DB or email
+---
 
-## Proposed architecture
+## Product scope
+
+| Topic | Decision |
+|---|---|
+| Recipients | Disrupt support inbox (default [`smart-arse@disrupt-insight.com`](lib/support-contact.ts)) |
+| Who configures | Dashboard admins only — no org/client overrides |
+| Credit alert | Once per threshold crossing; re-fires after balance restored **≥ threshold**, then drops below again |
+| Credit threshold | Per project, Credits tab on [`app/(dashboard)/projects/[id]/page.tsx`](app/(dashboard)/projects/[id]/page.tsx) (admin-gated today) |
+| Expiry reminders | **28** and **14** UTC calendar days before `access_until`; **live** projects with date set ([`utcCalendarDaysUntil`](lib/project-status.ts)) |
+| Visuals | Match [`SettingsBlock`](components/settings/settings-block.tsx) + [`NotificationsSection`](components/settings/notifications-section.tsx) toggle pattern |
+
+**Out of scope:** client `/settings` mock toggles, emails to client users, weekly summaries, aligning in-app meter warning (`CREDIT_BALANCE_WARNING_THRESHOLD = 50` in [`project-credits-meter.tsx`](components/dashboard/project-credits-meter.tsx)) with per-project threshold.
+
+Settings are **platform-wide for Disrupt admins**, not per-organization. Per-project config is limited to the **credit alert threshold** only.
+
+---
+
+## Architecture
 
 ```mermaid
 flowchart TB
-  subgraph triggers [Triggers]
-    CreditUpdate[projects.credit_balance decreases]
-    DailyCron[Vercel cron daily]
+  subgraph creditPaths [Credit balance changes]
+    ChatTrigger["chat_results trigger"]
+    AdminRPC["add/remove_project_credits RPC"]
   end
 
-  subgraph eval [Evaluation]
-    CreditCheck{Crossed below project threshold?}
-    ExpiryCheck{Live + access_until in 28d or 14d window?}
-    ToggleCheck{Notification type enabled?}
-    Dedupe{Not already sent for this event key?}
+  subgraph dbLayer [Database]
+    ProjectsTable[projects.credit_balance]
+    CrossingFn["detect_credit_crossing() trigger"]
+    LogTable[support_notification_log]
+    PlatformSettings[platform_settings]
   end
 
-  subgraph delivery [Delivery]
-    Resend[Resend API]
-    Inbox[Support inbox]
+  subgraph schedulers [Schedulers]
+    SupportCron["GET /api/cron/support-notifications daily"]
+    OutboxCron["GET /api/cron/support-notifications-outbox every 15m"]
   end
 
-  subgraph admin [Admin UI]
-    PlatformSettings[Platform notification settings]
-    ProjectSettings[Project credits: alert threshold]
+  subgraph appLayer [App layer]
+    SendHelper["lib/support-notifications/send.ts"]
+    ResendReuse["demo-access Resend wrapper"]
+    AdminAPI["/api/admin/platform-settings"]
+    AdminUI["/settings/support-notifications"]
+    ProjUI["Project Credits: alert threshold"]
   end
 
-  CreditUpdate --> CreditCheck
-  DailyCron --> ExpiryCheck
-  CreditCheck --> ToggleCheck
-  ExpiryCheck --> ToggleCheck
-  ToggleCheck --> Dedupe
-  Dedupe --> Resend --> Inbox
-  PlatformSettings --> ToggleCheck
-  ProjectSettings --> CreditCheck
+  ChatTrigger --> ProjectsTable
+  AdminRPC --> ProjectsTable
+  ProjectsTable --> CrossingFn
+  CrossingFn -->|"insert pending or clear credit_low"| LogTable
+  SupportCron -->|"28d/14d expiry checks"| LogTable
+  OutboxCron -->|"drain pending credit_low"| LogTable
+  LogTable --> SendHelper --> ResendReuse
+  AdminAPI --> PlatformSettings
+  AdminUI --> AdminAPI
+  ProjUI --> ProjectsTable
+  PlatformSettings --> SendHelper
 ```
 
-### Data model (recommended)
+### Credit crossing detection
 
-1. **`platform_settings`** (singleton row) — `support_email`, JSON toggles for:
-   - `credit_balance_low`
-   - `access_expires_4_weeks`
-   - `access_expires_2_weeks`
-2. **`projects.credit_alert_threshold`** — `integer null` (null = no email for that project)
-3. **`support_notification_log`** — idempotency: `(notification_type, project_id, event_key)` unique; e.g. event keys `credit_low`, `access_28d`, `access_14d`; for credit crossing, clear or supersede `credit_low` when balance returns `>= threshold`
+Because chat billing is **DB-triggered**, real-time detection belongs in the database, not in Next route handlers.
 
-**Credit crossing detection:** Prefer **database trigger** on `projects` after `credit_balance` decreases (same transaction as chat billing), calling a small **SECURITY DEFINER** function that inserts into a `notification_outbox` queue **or** relies on log table + server cron — trigger-only email from Postgres is awkward; **pragmatic approach:** trigger writes `pending_support_notifications` row; **daily + on-demand API** or **immediate** send via Next route invoked from trigger is not ideal. **Recommended:** trigger only **records intent** in log/outbox; **send in app layer** via:
+**Approach:**
 
-- Option A: Extend existing daily cron + new cron every 15m for outbox (simpler ops)
-- Option B: After `chat_results` credit RPC path, server-side check in [`app/api/chat/n8n-complete/route.ts`](app/api/chat/n8n-complete/route.ts) / persist routes (misses manual admin credit edits unless those routes also call helper)
+1. **`AFTER UPDATE OF credit_balance` trigger on `projects`** calling `SECURITY DEFINER` function `support_notify_on_credit_balance_change()`:
+   - If `NEW.credit_balance >= NEW.credit_alert_threshold` (or threshold is null): **delete** `support_notification_log` row where `event_key = 'credit_low'` for that project (enables re-crossing)
+   - Else if threshold set and `NEW.credit_balance < NEW.credit_alert_threshold` and (`OLD.credit_balance >= threshold` OR no existing `credit_low` log): **upsert** log row with `status = 'pending'`
+2. **Outbox poller cron** (every 15m): load pending rows, check platform toggle, send via Resend, mark `sent_at`
+3. **Belt-and-suspenders:** after successful `addProjectCredits` / `removeProjectCredits` in project settings UI, call `POST /api/admin/projects/[id]/evaluate-credit-alert` to re-run crossing reset logic server-side (covers edge cases if trigger missed)
 
-**Estimate assumes Option A + hook admin credit RPC paths** (`add_project_credits` / `remove_project_credits` browser calls) so manual top-ups reset crossing logic.
+Do **not** rely solely on `n8n-complete` / `persist` routes — they do not own credit math.
 
-### Expiry cron
+### Expiry reminders
 
-Extend [`vercel.json`](vercel.json) with e.g. `GET /api/cron/support-notifications` (same `CRON_SECRET` pattern as pause job):
+New daily cron **`GET /api/cron/support-notifications`** (02:30 UTC to stagger from pause job at 02:00):
 
-- Query live projects where `utcCalendarDaysUntil(access_until)` is **28** or **14** (reuse [`utcCalendarDaysUntil`](lib/project-status.ts))
-- Respect toggles + dedupe log
-- Send via Resend
+- Query live projects with `access_until` set where `utcCalendarDaysUntil(access_until)` is **28** or **14**
+- Respect platform toggles + dedupe log (`event_key`: `access_28d`, `access_14d`)
+- Send via shared send helper
 
-### Resend
+Keep existing [`pause-expired-projects`](app/api/cron/pause-expired-projects/route.ts) unchanged.
 
-- Add `resend` package, `lib/email/send-support-notification.ts`, HTML/text templates per type
-- Env: `RESEND_API_KEY`, `RESEND_FROM` (verified domain — **Disrupt must provision**; risk if domain not ready)
+### Data model
+
+1. **`platform_settings`** (singleton row, id fixed e.g. `'default'`)
+   - `support_email text not null`
+   - `notify_credit_balance_low boolean default true`
+   - `notify_access_expires_4_weeks boolean default true`
+   - `notify_access_expires_2_weeks boolean default true`
+   - RLS: `is_dashboard_admin()` read/write; service role for cron reads
+2. **`projects.credit_alert_threshold`** — `integer null` (null = no low-credit email)
+3. **`support_notification_log`** — unique `(notification_type, project_id, event_key)`; columns: `status` (`pending`/`sent`), `sent_at`, `created_at`
+   - Event keys: `credit_low`, `access_28d`, `access_14d`
+
+Seed singleton with default support email matching [`SUPPORT_EMAIL`](lib/support-contact.ts).
+
+### Email delivery (reuse, don't reinvent)
+
+Create [`lib/support-notifications/`](lib/support-notifications/):
+
+- `send.ts` — thin wrapper calling the same Resend send pattern as demo-access (extract shared `sendEmail` from demo-access into `lib/email/send-transactional.ts` **only if** duplication exceeds ~30 lines; otherwise import helpers from demo-access config)
+- `templates.ts` — 3 notification bodies using `renderEmailLayout` + `escapeHtml`
+- `get-recipient.ts` — async `getSupportNotificationEmail()` reading DB with env override fallback
+
+**From/To pattern:** internal notifications to support inbox use **`noreply@<domain>` From** (already handled by `getFromAddressForRecipients`) so forwarding rules work — same as demo approve/reject emails.
 
 ### Admin UI
 
-- New **admin-only** page under dashboard, e.g. [`app/(dashboard)/settings/support-notifications/page.tsx`](<app/(dashboard)/settings/support-notifications/page.tsx>) (or `/platform/notifications`) — gate with `user.role === "admin"` per [auth-rbac](agent-os/standards/javascript/auth-rbac.md)
-- List three notification types with description + Switch; support email input with validation
-- Sidebar link for admins only ([`components/layout/sidebar.tsx`](components/layout/sidebar.tsx))
-- Project Settings → Credits: numeric **“Alert when balance below”** field (admin-only, alongside existing credit add/remove)
+| Surface | Path | Notes |
+|---|---|---|
+| Platform toggles + support email | [`app/(dashboard)/settings/support-notifications/page.tsx`](app/(dashboard)/settings/support-notifications/page.tsx) | Admin gate `user.role === "admin"`; sidebar link in [`sidebar.tsx`](components/layout/sidebar.tsx) with `roles: ["admin"]` |
+| Project threshold | Credits tab on project detail page | Numeric input "Email support when balance below"; null/empty = disabled |
+| API | `GET/PATCH /api/admin/platform-settings` | `requireDashboardAdmin` + service role |
+| Project threshold update | Extend existing `updateProject` path or dedicated admin PATCH | Map to `credit_alert_threshold` in [`ProjectRow`](lib/supabase/projects.ts) type + select |
 
-### Standards (for spec when saved)
+Reuse [`NotificationsSection`](components/settings/notifications-section.tsx) layout pattern (or inline three Switch rows like it) — **do not wire** the user-facing `/settings` mock toggles.
+
+### Cron wiring ([`vercel.json`](vercel.json))
+
+```json
+{ "path": "/api/cron/support-notifications", "schedule": "30 2 * * *" },
+{ "path": "/api/cron/support-notifications-outbox", "schedule": "*/15 * * * *" }
+```
+
+Both use existing `Authorization: Bearer CRON_SECRET` pattern.
+
+### Standards
 
 - `javascript/auth-rbac` — admin-only surfaces
 - `global/app-routing-protected-shell` — new dashboard route
 - `global/project-conventions` — UI patterns
-- **Cron pattern** from [`app/api/cron/pause-expired-projects/route.ts`](app/api/cron/pause-expired-projects/route.ts)
-
----
-
-## Estimate for Disrupt (implementation only)
-
-Assumes one experienced full-stack dev familiar with the repo, Resend domain ready, no major scope creep.
-
-| Workstream                                                | Days (range)         | Notes                                            |
-| --------------------------------------------------------- | -------------------- | ------------------------------------------------ |
-| DB migrations (settings, threshold, notification log)     | 0.5–1                | Includes RLS: admin read/write platform settings |
-| Resend integration + 3 email templates                    | 1–1.5                | Depends on copy approval                         |
-| Credit threshold — project settings UI + persistence      | 0.5–1                | Extend existing credits settings tab             |
-| Low-credit detection + send + dedupe                      | 1.5–2                | Trigger/log + hooks on credit-changing paths     |
-| Expiry cron (4w / 2w) + dedupe                            | 1–1.5                | Shares cron auth pattern                         |
-| Platform admin notifications page                         | 1–1.5                | Toggles + support email                          |
-| Tests (unit for date/dedupe helpers; smoke for cron auth) | 0.5–1                |                                                  |
-| README / env docs + staging verification                  | 0.5                  |                                                  |
-| **Total**                                                 | **6.5–9.5 dev-days** | **~1.5–2 weeks** calendar with review/QA         |
-
-**Rounded proposal for stakeholders:** **8 dev-days** (~2 calendar weeks including review), **+2–3 days** if Resend domain verification or email copy/legal review slips.
-
-### Out of scope (call out in estimate)
-
-- Client-facing notification prefs (existing mock user settings)
-- Emails to client users / org leads
-- Weekly usage summary or “new query” emails
-- Replacing in-app `CREDIT_BALANCE_WARNING_THRESHOLD` UI with per-project threshold (optional follow-up; can stay at 50 for meter styling or align later)
+- Cron pattern from [`app/api/cron/pause-expired-projects/route.ts`](app/api/cron/pause-expired-projects/route.ts)
 
 ### Dependencies / risks
 
-- **Resend:** verified sending domain + API key from Disrupt
+- **Resend:** verified sending domain + API key (existing `EMAIL_PROVIDER_API_KEY` setup)
 - **Copy:** subject lines and body content for three emails
 - **Timezone:** `access_until` is UTC calendar day in DB — email copy should say so
-- **Vercel cron limits** on hobby vs pro (second cron job)
+- **Vercel cron limits** on hobby vs pro (two additional cron entries)
 
 ---
 
-## Plan structure (execution after estimate approval)
+## Execution tasks
 
-### Task 1: Save spec documentation (blocked until estimate approved)
+### Task 1: Save spec documentation
 
-Create `agent-os/specs/2026-05-19-HHMM-disrupt-support-email-notifications/` with:
+Create `agent-os/specs/2026-05-19-HHMM-disrupt-support-email-notifications/` modeled on [`agent-os/specs/2026-05-19-1200-demo-access-flow/`](agent-os/specs/2026-05-19-1200-demo-access-flow/):
 
-- `plan.md`, `shape.md`, `standards.md`, `references.md`, `visuals/` (empty README)
+- `plan.md`, `shape.md`, `standards.md`, `references.md`, `visuals/README.md`
 
-**References to capture in `references.md`:**
+**Key references for `references.md`:**
 
+- [`lib/demo-access/email.ts`](lib/demo-access/email.ts) — Resend send pattern
+- [`lib/support-notification-email.ts`](lib/support-notification-email.ts) — recipient stub to extend
 - [`app/api/cron/pause-expired-projects/route.ts`](app/api/cron/pause-expired-projects/route.ts) — cron auth
 - [`lib/project-status.ts`](lib/project-status.ts) — UTC date math
-- [`components/settings/notifications-section.tsx`](components/settings/notifications-section.tsx) — toggle UI pattern
-- [`app/(dashboard)/projects/[id]/page.tsx`](<app/(dashboard)/projects/[id]/page.tsx>) — project settings / credits
+- [`supabase/migrations/202604132000_chat_results_project_credit_charge.sql`](supabase/migrations/202604132000_chat_results_project_credit_charge.sql) — why crossing is DB-side
+- [`components/settings/notifications-section.tsx`](components/settings/notifications-section.tsx) — toggle UI
+- [`app/(dashboard)/projects/[id]/page.tsx`](app/(dashboard)/projects/[id]/page.tsx) — Credits tab
 
-### Task 2: Schema + RLS
+### Task 2: Schema + RLS + credit crossing trigger
 
-Migrations for `platform_settings`, `projects.credit_alert_threshold`, `support_notification_log` (+ optional outbox).
+### Task 3: Send helper + templates (reuse Resend stack)
 
-### Task 3: Resend + send helper + templates
+### Task 4: `/api/admin/platform-settings` + admin notifications page
 
-`lib/email/…`, env vars, typed notification payloads.
+### Task 5: Per-project `credit_alert_threshold` field
 
-### Task 4: Platform admin settings page
+### Task 6: Outbox cron + optional evaluate API hook on admin credit changes
 
-Load/save singleton settings; admin gate.
+### Task 7: Expiry cron (`support-notifications`)
 
-### Task 5: Per-project credit threshold
-
-Admin project settings field + Supabase update.
-
-### Task 6: Low-credit notification pipeline
-
-Crossing detection, dedupe, send, reset on top-up.
-
-### Task 7: Expiry notification cron
-
-28d / 14d windows, dedupe, wire `vercel.json`.
-
-### Task 8: Tests + documentation
-
-Vitest for date/dedupe; document cron URL and env in root README.
+### Task 8: Vitest + README
 
 ---
 
@@ -222,6 +236,8 @@ From [`agent-os/product/mission.md`](agent-os/product/mission.md) and [`roadmap.
 
 ---
 
-## Next step
+## Known follow-ups
 
-**Disrupt reviews the 8 dev-day estimate** (and risks). On approval, run Task 1 to persist this shape, then implementation Tasks 2–8.
+- Align in-app credit meter warning with per-project threshold
+- Extend `ACCESS_UNTIL_WARNING_DAYS` UI (14d) to also signal at 28d
+- Consolidate/delete duplicate plan at [`.cursor/plans/disrupt_support_email_notifications.plan.md`](.cursor/plans/disrupt_support_email_notifications.plan.md) once agent-os spec is saved

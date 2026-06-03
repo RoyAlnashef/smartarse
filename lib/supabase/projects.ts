@@ -28,6 +28,7 @@ type ProjectRow = {
   status: string
   used_credits: number
   credit_balance: number
+  credit_alert_threshold: number | null
   access_until: string | null
   display_date: string | null
   card_subline: string | null
@@ -45,6 +46,7 @@ const projectSelect = `
   status,
   used_credits,
   credit_balance,
+  credit_alert_threshold,
   access_until,
   display_date,
   card_subline,
@@ -87,6 +89,7 @@ function rowToProject(
     createdAt: row.created_at,
     lastActivity,
     totalCredits: row.credit_balance,
+    creditAlertThreshold: row.credit_alert_threshold ?? null,
     usedCredits:
       usedCreditsAttributed !== undefined
         ? usedCreditsAttributed
@@ -372,6 +375,7 @@ export async function updateProject(input: {
   displayDate?: string | null
   cardSubline?: string | null
   usedCredits?: number
+  creditAlertThreshold?: number | null
 }): Promise<void> {
   const supabase = getSupabaseBrowserClient()
   if (!supabase) throw new Error("Supabase is not configured.")
@@ -387,6 +391,9 @@ export async function updateProject(input: {
     patch.card_subline = s ? s : null
   }
   if (input.usedCredits !== undefined) patch.used_credits = input.usedCredits
+  if (input.creditAlertThreshold !== undefined) {
+    patch.credit_alert_threshold = input.creditAlertThreshold
+  }
 
   if (Object.keys(patch).length === 0) return
 

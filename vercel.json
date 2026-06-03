@@ -7,6 +7,14 @@
     {
       "path": "/api/cron/expire-demo-requests",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/support-notifications",
+      "schedule": "30 2 * * *"
+    },
+    {
+      "path": "/api/cron/support-notifications-outbox",
+      "schedule": "*/15 * * * *"
     }
   ]
 }

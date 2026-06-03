@@ -275,6 +275,22 @@ EMAIL_RESEND_SANDBOX=true
 
 - The public `/demo` form always shows success even if the notification email fails (anti-enumeration). Check the terminal running `pnpm dev` for `[demo/request] notification email failed:` or approve from **Demo requests** to see Resend errors in the UI.
 
+**Support notifications** (low credits + access expiry — see [`agent-os/specs/2026-06-02-1200-disrupt-support-email-notifications/plan.md`](agent-os/specs/2026-06-02-1200-disrupt-support-email-notifications/plan.md)):
+
+- Admin settings: `/settings/support-notifications` (support inbox + three toggles).
+- Per-project threshold: project **Settings → Credits → Email support when balance below**.
+- Uses the same `EMAIL_PROVIDER_API_KEY` / Resend setup as demo access.
+- `DEMO_NOTIFICATION_EMAIL` overrides the support inbox for all internal notification emails during testing.
+- Scheduled jobs (require `CRON_SECRET`):
+  - `GET /api/cron/support-notifications` — daily 02:30 UTC — 28d / 14d access expiry reminders
+  - `GET /api/cron/support-notifications-outbox` — every 15 minutes — pending low-credit emails queued by the DB trigger
+- Manual cron test:
+
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" \
+  "http://localhost:3000/api/cron/support-notifications-outbox"
+```
+
 Important notes:
 
 - `NEXT_PUBLIC_*` variables are required for browser auth flows (sign in, forgot password, password update).

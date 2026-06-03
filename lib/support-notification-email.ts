@@ -1,9 +1,9 @@
 import { SUPPORT_EMAIL } from "@/lib/support-contact"
 
 /**
- * Inbox for demo-access approval notifications (not footer "Contact the team").
- * Override with DEMO_NOTIFICATION_EMAIL for local/testing; replace with company
- * settings lookup when that page exists.
+ * Inbox for internal Disrupt notifications (demo requests, support alerts).
+ * Override with DEMO_NOTIFICATION_EMAIL for local/testing; production reads
+ * `platform_settings.support_email` via `resolveSupportNotificationEmail()`.
  */
 export function getSupportNotificationEmail(): string {
   const override = process.env.DEMO_NOTIFICATION_EMAIL?.trim()

@@ -10,6 +10,7 @@ import {
   Building2,
   Users,
   Mail,
+  Bell,
   HelpCircle,
   Shield,
   Settings,
@@ -24,6 +25,12 @@ const navigation = [
   { name: "Projects", href: "/projects", icon: FolderOpen, roles: ["admin", "client"] },
   { name: "Users", href: "/users", icon: Users, roles: ["admin"] },
   { name: "Demo requests", href: "/demo-requests", icon: Mail, roles: ["admin"] },
+  {
+    name: "Support alerts",
+    href: "/settings/support-notifications",
+    icon: Bell,
+    roles: ["admin"],
+  },
   { name: "Organizations", href: "/organizations", icon: Building2, roles: ["admin"] },
 ]
 

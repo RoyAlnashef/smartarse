@@ -17,6 +17,8 @@ export default defineConfig({
       "lib/supabase/session-from-url.test.ts",
       "lib/demo-access/tokens.test.ts",
       "lib/demo-access/config.test.ts",
+      "lib/support-notifications/evaluate.test.ts",
+      "lib/api/authorize-cron-request.test.ts",
     ],
   },
 })
