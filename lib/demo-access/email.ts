@@ -1,4 +1,5 @@
-import { getSupportNotificationEmail } from "@/lib/support-notification-email"
+import type { SupabaseClient } from "@supabase/supabase-js"
+import { resolveSupportNotificationEmail } from "@/lib/support-notifications/get-recipient"
 import {
   formatDemoTimestamp,
   renderEmailButton,
@@ -12,6 +13,7 @@ async function sendEmail(options: {
   subject: string
   html?: string
   text?: string
+  internalNotification?: boolean
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   return sendTransactionalEmail(options)
 }
@@ -24,16 +26,19 @@ function formatRequesterName(
   return parts.length > 0 ? parts.join(" ") : null
 }
 
-export async function sendDemoRequestNotificationEmail(options: {
-  requesterEmail: string
-  firstName: string | null
-  lastName: string | null
-  organizationName: string | null
-  requestedAt: string
-  approveUrl: string
-  rejectUrl: string
-}): Promise<{ ok: true } | { ok: false; error: string }> {
-  const to = getSupportNotificationEmail()
+export async function sendDemoRequestNotificationEmail(
+  admin: SupabaseClient,
+  options: {
+    requesterEmail: string
+    firstName: string | null
+    lastName: string | null
+    organizationName: string | null
+    requestedAt: string
+    approveUrl: string
+    rejectUrl: string
+  },
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  const to = await resolveSupportNotificationEmail(admin)
   const requestedLabel = formatDemoTimestamp(options.requestedAt)
   const name =
     formatRequesterName(options.firstName, options.lastName) ?? "—"
@@ -55,6 +60,7 @@ export async function sendDemoRequestNotificationEmail(options: {
     subject: `New smartA.R.S.E. demo request from ${options.requesterEmail}`,
     html,
     text: `New demo request\n\nName: ${name}\nEmail: ${options.requesterEmail}\nOrganization: ${organization}\nRequested: ${requestedLabel}\n\nApprove: ${options.approveUrl}\nReject: ${options.rejectUrl}`,
+    internalNotification: true,
   })
 }
 

@@ -31,7 +31,7 @@ curl -H "Authorization: Bearer $CRON_SECRET" \
   "http://localhost:3000/api/cron/support-notifications-outbox"
 ```
 
-4. Confirm email to support inbox (or `DEMO_NOTIFICATION_EMAIL` override).
+4. Confirm email to support inbox from dashboard **Support email** (or `DEMO_NOTIFICATION_EMAIL` env override for local/testing).
 5. Re-run cron — no duplicate email while balance stays below threshold.
 6. Add credits back to **≥ threshold** — crossing state clears; crossing again sends a new email.
 

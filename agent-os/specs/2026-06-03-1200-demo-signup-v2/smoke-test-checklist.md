@@ -38,6 +38,7 @@ Supersedes the v1 paths in [`../2026-05-19-1200-demo-access-flow/smoke-test-chec
 
 ### Support notification
 
+- [ ] Notification delivered to dashboard **Support email** (Settings; same resolver as credit/access alerts), unless `DEMO_NOTIFICATION_EMAIL` is set for local testing
 - [ ] Notification email includes name, email, organization
 - [ ] Approve / Reject links work
 

@@ -3,6 +3,7 @@ import {
   extractEmailAddress,
   getEmailProviderApiKey,
   getFromAddressForRecipients,
+  getInternalNotificationFromAddress,
   getTransactionalReplyToAddress,
   isSameMailbox,
   isSupportNotificationRecipient,
@@ -19,8 +20,12 @@ export async function sendTransactionalEmail(options: {
   subject: string
   html?: string
   text?: string
+  /** Use noreply From for internal alerts to the support inbox (DB-resolved recipient). */
+  internalNotification?: boolean
 }): Promise<{ ok: true } | { ok: false; error: string }> {
-  const from = getFromAddressForRecipients(options.to)
+  const from = options.internalNotification
+    ? getInternalNotificationFromAddress()
+    : getFromAddressForRecipients(options.to)
   const replyTo = getTransactionalReplyToAddress()
   const resend = getResendClient()
   if (!resend) {

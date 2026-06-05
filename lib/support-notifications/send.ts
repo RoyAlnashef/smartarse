@@ -44,6 +44,7 @@ export async function sendSupportNotificationEmail(options: {
     subject: rendered.subject,
     html: rendered.html,
     text: rendered.text,
+    internalNotification: true,
   })
 
   if (!result.ok) {

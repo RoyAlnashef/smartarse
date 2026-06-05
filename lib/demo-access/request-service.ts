@@ -1,6 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 import { getAppBaseUrl } from "@/lib/demo-access/config"
-import { getSupportNotificationEmail } from "@/lib/support-notification-email"
 import { sendDemoRequestNotificationEmail } from "@/lib/demo-access/email"
 import { buildDemoActionUrl } from "@/lib/demo-access/tokens"
 import type { DemoAccessRequestRow } from "@/lib/demo-access/types"
@@ -85,7 +84,7 @@ export async function createDemoAccessRequest(
       .select("*")
       .single()
     const row = (updateError ? existingPending : (updated as DemoAccessRequestRow)) ?? existingPending
-    const notified = await notifyDisruptForRequest(row)
+    const notified = await notifyDisruptForRequest(adminClient, row)
     return { ok: true, row, notified }
   }
 
@@ -106,7 +105,7 @@ export async function createDemoAccessRequest(
     if (error.code === "23505") {
       const pending = await findPendingRequestByEmail(adminClient, email)
       if (pending) {
-        const notified = await notifyDisruptForRequest(pending)
+        const notified = await notifyDisruptForRequest(adminClient, pending)
         return { ok: true, row: pending, notified }
       }
     }
@@ -114,19 +113,20 @@ export async function createDemoAccessRequest(
   }
 
   const row = data as DemoAccessRequestRow
-  const notified = await notifyDisruptForRequest(row)
+  const notified = await notifyDisruptForRequest(adminClient, row)
   return { ok: true, row, notified }
 }
 
 async function notifyDisruptForRequest(
-  row: DemoAccessRequestRow
+  adminClient: SupabaseClient,
+  row: DemoAccessRequestRow,
 ): Promise<boolean> {
   const baseUrl = getAppBaseUrl()
   const approveUrl = buildDemoActionUrl(row.id, "approve", baseUrl)
   const rejectUrl = buildDemoActionUrl(row.id, "reject", baseUrl)
   if (!approveUrl || !rejectUrl) return false
 
-  const result = await sendDemoRequestNotificationEmail({
+  const result = await sendDemoRequestNotificationEmail(adminClient, {
     requesterEmail: row.email,
     firstName: row.first_name,
     lastName: row.last_name,
@@ -136,12 +136,7 @@ async function notifyDisruptForRequest(
     rejectUrl,
   })
   if (!result.ok) {
-    console.error(
-      "[demo/request] notification email failed:",
-      result.error,
-      "→",
-      getSupportNotificationEmail()
-    )
+    console.error("[demo/request] notification email failed:", result.error)
   }
   return result.ok
 }
