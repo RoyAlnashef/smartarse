@@ -44,6 +44,8 @@ export function DemoRequestsTableSkeleton() {
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/50">
+              <th className={thClass}>Name</th>
+              <th className={thClass}>Organization</th>
               <th className={thClass}>Email</th>
               <th className={thClass}>Status</th>
               <th className={thClass}>Link sent</th>
@@ -56,6 +58,12 @@ export function DemoRequestsTableSkeleton() {
           <tbody className="divide-y divide-border">
             {rows.map((row) => (
               <tr key={row}>
+                <td className={tdClass}>
+                  <Skeleton className="h-4 w-32 max-w-full" />
+                </td>
+                <td className={tdClass}>
+                  <Skeleton className="h-4 w-36 max-w-full" />
+                </td>
                 <td className={tdClass}>
                   <Skeleton className="h-4 w-48 max-w-full" />
                 </td>
@@ -102,6 +110,8 @@ export function DemoRequestsTable({
         <table className="w-full text-left text-sm">
           <thead>
             <tr className="border-b border-border bg-muted/50">
+              <th className={thClass}>Name</th>
+              <th className={thClass}>Organization</th>
               <th className={thClass}>Email</th>
               <th className={thClass}>Status</th>
               <th className={thClass}>Link sent</th>
@@ -115,7 +125,7 @@ export function DemoRequestsTable({
             {items.length === 0 ? (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={7}
                   className="px-4 py-10 text-center text-sm text-muted-foreground"
                 >
                   {emptyMessage}
@@ -127,6 +137,12 @@ export function DemoRequestsTable({
               const busy = actingId === row.id
               return (
                 <tr key={row.id}>
+                  <td className={`${tdClass} font-medium text-foreground`}>
+                    {row.name ?? "—"}
+                  </td>
+                  <td className={`${tdClass} text-muted-foreground`}>
+                    {row.organizationName ?? "—"}
+                  </td>
                   <td className={`${tdClass} font-medium text-foreground`}>
                     {row.email}
                   </td>

@@ -1,11 +1,13 @@
 # Demo access flow — smoke test checklist
 
+> **v2 signup:** For split layout, four fields, password setup, and GDPR consent, use [`../2026-06-03-1200-demo-signup-v2/smoke-test-checklist.md`](../2026-06-03-1200-demo-signup-v2/smoke-test-checklist.md). This checklist remains the baseline for core approve/reject/provision flows.
+
 ## Prerequisites
 
 - [ ] Migrations applied (`202605191200_demo_access_requests.sql`, `202605201200_demo_project_flag.sql`)
 - [ ] Env set: `DEMO_APPROVAL_SECRET`, `EMAIL_PROVIDER_API_KEY`, `EMAIL_FROM_ADDRESS`, `SUPABASE_SERVICE_ROLE_KEY`
 - [ ] Admin has set **Use as demo project** on one project (Settings tab)
-- [ ] Supabase Auth redirect URLs include `/auth/callback` for local and production
+- [ ] Supabase Auth redirect URLs include `/auth/callback` and `/auth/demo-setup` for local and production
 
 ## Public signup
 
@@ -19,7 +21,7 @@
 
 - [ ] Approve without demo project configured → clear error (HTML or dashboard)
 - [ ] Approve link provisions user, assigns `project_users`, sends magic link
-- [ ] Prospect opens magic link → `/auth/callback` → **`/client/projects/{demoProjectId}`** (not list)
+- [ ] Prospect opens activation link → `/auth/demo-setup` (password) or legacy `/auth/callback` → demo project (see v2 checklist)
 - [ ] `first_login_at` and `provisioned_project_id` set on `demo_access_requests`
 - [ ] Reject link marks request rejected and sends plain-text email to prospect
 - [ ] Expired or invalid token shows friendly HTML error page

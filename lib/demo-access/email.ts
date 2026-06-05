@@ -16,19 +16,33 @@ async function sendEmail(options: {
   return sendTransactionalEmail(options)
 }
 
+function formatRequesterName(
+  firstName: string | null,
+  lastName: string | null
+): string | null {
+  const parts = [firstName, lastName].map((s) => s?.trim()).filter(Boolean)
+  return parts.length > 0 ? parts.join(" ") : null
+}
+
 export async function sendDemoRequestNotificationEmail(options: {
   requesterEmail: string
+  firstName: string | null
+  lastName: string | null
+  organizationName: string | null
   requestedAt: string
   approveUrl: string
   rejectUrl: string
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   const to = getSupportNotificationEmail()
   const requestedLabel = formatDemoTimestamp(options.requestedAt)
+  const name =
+    formatRequesterName(options.firstName, options.lastName) ?? "—"
+  const organization = options.organizationName?.trim() || "—"
 
   const html = renderEmailLayout({
     title: "New demo request",
     intro: "A new demo access request was submitted.",
-    bodyHtml: `<p style="margin:0 0 14px;"><strong>Email:</strong> ${escapeHtml(options.requesterEmail)}<br /><strong>Requested:</strong> ${escapeHtml(requestedLabel)}</p>
+    bodyHtml: `<p style="margin:0 0 14px;"><strong>Name:</strong> ${escapeHtml(name)}<br /><strong>Email:</strong> ${escapeHtml(options.requesterEmail)}<br /><strong>Organization:</strong> ${escapeHtml(organization)}<br /><strong>Requested:</strong> ${escapeHtml(requestedLabel)}</p>
 <p style="margin:0;display:flex;gap:10px;flex-wrap:wrap;">
   ${renderEmailButton(options.approveUrl, "Approve", "primary")}
   ${renderEmailButton(options.rejectUrl, "Reject", "secondary")}
@@ -40,7 +54,7 @@ export async function sendDemoRequestNotificationEmail(options: {
     to,
     subject: `New smartA.R.S.E. demo request from ${options.requesterEmail}`,
     html,
-    text: `New demo request\n\nEmail: ${options.requesterEmail}\nRequested: ${requestedLabel}\n\nApprove: ${options.approveUrl}\nReject: ${options.rejectUrl}`,
+    text: `New demo request\n\nName: ${name}\nEmail: ${options.requesterEmail}\nOrganization: ${organization}\nRequested: ${requestedLabel}\n\nApprove: ${options.approveUrl}\nReject: ${options.rejectUrl}`,
   })
 }
 
@@ -50,17 +64,19 @@ export async function sendDemoMagicLinkEmail(options: {
 }): Promise<{ ok: true } | { ok: false; error: string }> {
   const html = renderEmailLayout({
     title: "Your Disrupt demo access",
-    intro: "Your demo access to smartA.R.S.E. has been approved.",
-    bodyHtml: `<p style="margin:0;">${renderEmailButton(options.magicLink, "Open demo", "primary")}</p>`,
+    intro:
+      "Your demo access to smartA.R.S.E. has been approved. Use the link below to activate your account and set a password.",
+    bodyHtml: `<p style="margin:0 0 12px;">${renderEmailButton(options.magicLink, "Set up your password", "primary")}</p>
+<p style="margin:0;font-size:14px;color:#444;">After you create a password, sign in anytime with your email and password.</p>`,
     footer:
-      "This link expires in about 24 hours. If it expires, contact the team to request a new link.",
+      "This activation link expires in about 24 hours. If it expires, contact the team to request a new link.",
   })
 
   return sendEmail({
     to: options.to,
     subject: "Your Disrupt - smartA.R.S.E. demo access",
     html,
-    text: `Your demo access to smartA.R.S.E. has been approved.\n\nOpen demo: ${options.magicLink}\n\nThis link expires in about 24 hours.`,
+    text: `Your demo access to smartA.R.S.E. has been approved.\n\nActivate demo access and set your password: ${options.magicLink}\n\nThis link expires in about 24 hours. After setup, sign in with your email and password.`,
   })
 }
 

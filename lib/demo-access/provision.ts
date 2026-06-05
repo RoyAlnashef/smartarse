@@ -5,6 +5,7 @@ import {
   getActiveDemoProject,
 } from "@/lib/demo-access/demo-project"
 import { sendDemoMagicLinkEmail } from "@/lib/demo-access/email"
+import { displayNameFromDemoRequest } from "@/lib/demo-access/password-setup"
 import { getDemoAccessRequestById } from "@/lib/demo-access/request-service"
 
 export type ApproveDemoRequestResult =
@@ -39,9 +40,14 @@ async function findAuthUserIdByEmail(
 async function ensureDemoUser(
   adminClient: SupabaseClient,
   email: string,
-  organizationId: string
+  organizationId: string,
+  displayName: string
 ): Promise<string> {
-  const displayName = email.split("@")[0] || "Demo User"
+  const demoAppMetadata = {
+    admin_provisioned: true,
+    demo_user: true,
+    requires_password_setup: true,
+  }
   let userId = await findAuthUserIdByEmail(adminClient, email)
 
   if (!userId) {
@@ -53,10 +59,7 @@ async function ensureDemoUser(
           full_name: displayName,
           admin_provisioned: true,
         },
-        app_metadata: {
-          admin_provisioned: true,
-          demo_user: true,
-        },
+        app_metadata: demoAppMetadata,
       })
     if (createError || !created.user) {
       throw new Error(createError?.message ?? "Failed to create auth user.")
@@ -66,7 +69,7 @@ async function ensureDemoUser(
     const { error: updateMetaError } = await adminClient.auth.admin.updateUserById(
       userId,
       {
-        app_metadata: { admin_provisioned: true, demo_user: true },
+        app_metadata: demoAppMetadata,
         user_metadata: { admin_provisioned: true, full_name: displayName },
       }
     )
@@ -140,12 +143,15 @@ export async function approveDemoAccessRequest(
     return { ok: false, reason: approveMarkError.message }
   }
 
+  const displayName = displayNameFromDemoRequest(row)
+
   let userId: string
   try {
     userId = await ensureDemoUser(
       adminClient,
       row.email,
-      demoProject.organizationId
+      demoProject.organizationId,
+      displayName
     )
     await ensureProjectUserAssignment(adminClient, demoProject.id, userId)
 
@@ -164,7 +170,7 @@ export async function approveDemoAccessRequest(
     }
   }
 
-  const redirectTo = `${getAppBaseUrl()}/auth/callback`
+  const redirectTo = `${getAppBaseUrl()}/auth/demo-setup`
   const { data: linkData, error: linkError } =
     await adminClient.auth.admin.generateLink({
       type: "magiclink",
@@ -212,7 +218,7 @@ export function approveResultMessage(
     case "already_sent":
       return {
         title: "Already sent",
-        message: "A magic link was already emailed to this prospect.",
+        message: "An activation link was already emailed to this prospect.",
         isError: false,
       }
     case "already_approved":
@@ -224,7 +230,7 @@ export function approveResultMessage(
     default:
       return {
         title: "Approved",
-        message: `A magic link has been sent to ${result.email}.`,
+        message: `An activation link has been sent to ${result.email}.`,
         isError: false,
       }
   }
