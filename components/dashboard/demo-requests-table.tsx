@@ -2,6 +2,7 @@
 
 import { Skeleton } from "@/components/ui/skeleton"
 import type { DemoAccessRequestDto, DemoAccessRequestStatus } from "@/lib/demo-access/types"
+import { formatLocalDateTime } from "@/lib/datetime"
 
 const statusBadgeClass: Record<DemoAccessRequestStatus, string> = {
   pending: "bg-amber-100 text-amber-800",
@@ -25,10 +26,7 @@ function formatStatusLabel(status: DemoAccessRequestStatus): string {
 
 function formatDate(value: string | null): string {
   if (!value) return "—"
-  return new Date(value).toLocaleString("en-GB", {
-    dateStyle: "short",
-    timeStyle: "short",
-  })
+  return formatLocalDateTime(value)
 }
 
 const thClass =

@@ -8,21 +8,13 @@ import {
   projectStatusBadgeClassName,
   projectStatusLabel,
 } from "@/lib/project-status"
+import { formatCalendarDateLocal } from "@/lib/datetime"
 import { cn } from "@/lib/utils"
 import {
   CREDIT_BALANCE_WARNING_THRESHOLD,
   ProjectCreditsMeter,
 } from "@/components/dashboard/project-credits-meter"
 import { Skeleton } from "@/components/ui/skeleton"
-
-/** `accessUntil` is `YYYY-MM-DD`; anchor at noon to avoid TZ boundary issues. */
-function formatAccessDate(ymd: string) {
-  return new Date(`${ymd}T12:00:00`).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  })
-}
 
 export function ProjectCard({ project }: { project: Project }) {
   const creditWarning = project.totalCredits < CREDIT_BALANCE_WARNING_THRESHOLD
@@ -67,11 +59,11 @@ export function ProjectCard({ project }: { project: Project }) {
                   ? "font-medium text-orange-600 dark:text-orange-400"
                   : "text-muted-foreground"
               )}
-              title={`Access until ${formatAccessDate(project.accessUntil)}`}
+              title={`Access until ${formatCalendarDateLocal(project.accessUntil)}`}
             >
               <OctagonPause className="h-3.5 w-3.5 shrink-0" aria-hidden />
               <span className="sr-only">Access until </span>
-              {formatAccessDate(project.accessUntil)}
+              {formatCalendarDateLocal(project.accessUntil)}
             </span>
           ) : null}
         </div>

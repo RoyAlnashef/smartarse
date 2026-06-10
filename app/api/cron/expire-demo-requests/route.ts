@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import type { ApiError } from "@/lib/api/require-dashboard-admin"
+import { authorizeCronRequest } from "@/lib/api/authorize-cron-request"
 import { getDemoRequestTtlDays } from "@/lib/demo-access/config"
 import { getSupabaseAdminClient } from "@/lib/supabase/admin"
 
@@ -11,21 +12,8 @@ import { getSupabaseAdminClient } from "@/lib/supabase/admin"
  *   Header: Authorization: Bearer <CRON_SECRET>
  */
 export async function GET(request: Request) {
-  const expected = process.env.CRON_SECRET?.trim()
-  if (!expected) {
-    return NextResponse.json<ApiError>(
-      { error: "CRON_SECRET is not configured." },
-      { status: 503 }
-    )
-  }
-
-  const auth = request.headers.get("authorization")
-  const token = auth?.startsWith("Bearer ")
-    ? auth.slice("Bearer ".length).trim()
-    : ""
-  if (!token || token !== expected) {
-    return NextResponse.json<ApiError>({ error: "Unauthorized." }, { status: 401 })
-  }
+  const authError = authorizeCronRequest(request)
+  if (authError) return authError
 
   let admin
   try {

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
 import { initialAvatarClass } from "@/lib/avatar-palette"
+import { formatLocalDate } from "@/lib/datetime"
 import {
   userRoleBadgeClassName,
   userRoleBadgeLabel,
@@ -28,11 +29,7 @@ const statusColors: Record<string, string> = {
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  })
+  return formatLocalDate(iso)
 }
 
 export function UserTableSkeleton() {

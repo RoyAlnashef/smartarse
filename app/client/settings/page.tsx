@@ -9,6 +9,7 @@ import {
   type ChangePasswordValues,
 } from "@/components/settings/change-password-form"
 import { SettingsBlock } from "@/components/settings/settings-block"
+import { formatLocalTime } from "@/lib/datetime"
 import { useAuth } from "@/lib/auth-context"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 
@@ -105,7 +106,7 @@ export default function ClientSettingsPage() {
 
         {lastSavedAt ? (
           <p className="text-center text-xs text-muted-foreground">
-            Saved at {new Date(lastSavedAt).toLocaleTimeString()}
+            Saved at {formatLocalTime(lastSavedAt)}
           </p>
         ) : null}
       </div>

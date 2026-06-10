@@ -1,5 +1,9 @@
 import type { Project } from "@/lib/types"
 import { SUPPORT_EMAIL } from "@/lib/support-contact"
+import {
+  londonCalendarDateString,
+  londonCalendarDaysUntil,
+} from "@/lib/datetime"
 
 /** Plain copy for toasts, API errors, and non-HTML contexts. */
 export const PROJECT_NOT_LIVE_CHAT_MESSAGE =
@@ -31,31 +35,20 @@ export function isProjectLiveForChat(status: Project["status"]): boolean {
   return status === "live"
 }
 
-/** Calendar day in UTC as `YYYY-MM-DD` (aligned with Postgres `current_date` in UTC). */
-export function utcCalendarDateString(d: Date = new Date()): string {
-  return d.toISOString().slice(0, 10)
-}
+export { londonCalendarDateString, londonCalendarDaysUntil }
 
-/** True when `accessUntil` is strictly before today's UTC calendar date. */
+/** True when `accessUntil` is strictly before today's London calendar date. */
 export function isAccessDateExpired(accessUntil: string | null): boolean {
   if (accessUntil == null || accessUntil === "") return false
-  return accessUntil < utcCalendarDateString()
+  return accessUntil < londonCalendarDateString()
 }
 
-/** Inclusive end of the “access ending soon” window (days from today UTC calendar). */
+/** Inclusive end of the “access ending soon” window (days from today London calendar). */
 export const ACCESS_UNTIL_WARNING_DAYS = 14
-
-/** Whole days from today (UTC `YYYY-MM-DD`) until `accessUntil`; negative if that date is in the past. */
-export function utcCalendarDaysUntil(ymd: string): number {
-  const today = utcCalendarDateString()
-  const a = new Date(`${today}T12:00:00.000Z`).getTime()
-  const b = new Date(`${ymd}T12:00:00.000Z`).getTime()
-  return Math.round((b - a) / 86_400_000)
-}
 
 /**
  * True when project access has not yet lapsed but ends within {@link ACCESS_UNTIL_WARNING_DAYS}
- * calendar days (UTC), inclusive of the last day.
+ * calendar days (London), inclusive of the last day.
  */
 export function isAccessDateNearing(
   accessUntil: string | null,
@@ -63,5 +56,5 @@ export function isAccessDateNearing(
 ): boolean {
   if (accessUntil == null || accessUntil === "") return false
   if (isAccessDateExpired(accessUntil)) return false
-  return utcCalendarDaysUntil(accessUntil) <= warningDays
+  return londonCalendarDaysUntil(accessUntil) <= warningDays
 }

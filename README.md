@@ -24,7 +24,7 @@ Status legend: ✅ built, 🟡 partial/in progress, ⚪ planned/not built yet
 - 🟡 **Chat history (past questions)**: `GET /api/chat/history` backed by `chat_results`; client page uses `useChatHistory` and merges API rows with in-session items (falls back to mock data when Supabase is off or the list is empty). Spec-level pagination/re-run polish may still evolve.
 - 🟡 **Document-based queries**: Upload and selection UX exists; production document-grounded query backend is still evolving
 - 🟡 **Credit system**: Balance and management surfaces exist; live projects auto-pause when remaining **credit_balance** hits zero (DB trigger; remaining pool, not “used ≥ allocated”); end-to-end consumption reporting is still evolving
-- ✅ **Project access window**: Optional end date (`access_until`, inclusive UTC calendar day). Live projects auto-pause after that day via row triggers, `pause_project_if_access_expired` before chat persist/completion, and a scheduled job (`GET /api/cron/pause-expired-projects`, Vercel Cron in `vercel.json`) when `CRON_SECRET` is set
+- ✅ **Project access window**: Optional end date (`access_until`, inclusive London calendar day). Live projects auto-pause after that day via row triggers, `pause_project_if_access_expired` before chat persist/completion, and a scheduled job (`GET /api/cron/pause-expired-projects`, Vercel Cron in `vercel.json`) when `CRON_SECRET` is set
 
 ## Current Progress Snapshot
 
@@ -215,7 +215,7 @@ Recommended PR flow:
 
 ## Environment
 
-Create `.env.local` with:
+Create `.env.local` from [`.env.example`](.env.example) with:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
@@ -229,7 +229,7 @@ N8N_WEBHOOK_URL=https://your-n8n-instance/webhook/...
 N8N_WEBHOOK_SECRET=your_shared_webhook_secret
 ```
 
-The proxy adds `x-webhook-secret` when forwarding to n8n. For local migration only, the server also accepts `NEXT_PUBLIC_N8N_URL` / `NEXT_PUBLIC_N8N_WEBHOOK_URL` as the upstream URL if `N8N_WEBHOOK_URL` is unset — do not rely on those in new deployments.
+The proxy adds `x-webhook-secret` when forwarding to n8n. Set **`N8N_WEBHOOK_URL`** (server-only) — do not use `NEXT_PUBLIC_N8N_*` variables; those embed the webhook URL in the browser bundle.
 
 **Server-only** (admin provisioning, service role, long-running chat completion, cron):
 
@@ -283,7 +283,7 @@ EMAIL_RESEND_SANDBOX=true
 - Uses the same `EMAIL_PROVIDER_API_KEY` / Resend setup as demo access.
 - `DEMO_NOTIFICATION_EMAIL` overrides the support inbox for all internal notification emails during testing.
 - Scheduled jobs (require `CRON_SECRET`):
-  - `GET /api/cron/support-notifications` — daily 02:30 UTC — 28d / 14d access expiry reminders
+  - `GET /api/cron/support-notifications` — daily 02:30 UTC (after London midnight) — 28d / 14d access expiry reminders (London calendar)
   - `GET /api/cron/support-notifications-outbox` — every 15 minutes — pending low-credit emails queued by the DB trigger
 - Manual cron test:
 
@@ -297,13 +297,19 @@ Important notes:
 - `NEXT_PUBLIC_*` variables are required for browser auth flows (sign in, forgot password, password update).
 - `SUPABASE_SERVICE_ROLE_KEY` is required for `POST /api/admin/users` (admin user provisioning).
 - **Demo magic-link expiry** is configured in Supabase Auth (email OTP / magic link expiry), not per-request in app code. Set it to `86400` seconds (24 hours) to match demo email copy.
-- **Row-level security on `public.users`:** enable a policy so each signed-in user can **read their own profile row** (for example `USING (auth.uid() = id)` on `SELECT`). If `SELECT` is denied, the app falls back to JWT metadata or mock email matching, and **routing may not match the row you see in the Table Editor**.
+- **Row-level security on `public.users`:** enable a policy so each signed-in user can **read their own profile row** (for example `USING (auth.uid() = id)` on `SELECT`). If `SELECT` is denied, the app **signs the user out** rather than inferring role from JWT metadata.
 - Apply project migrations in `supabase/migrations/` so admin RLS, project lifecycle (status, credits, `access_until`), and related helpers are enforced consistently.
 - In Supabase Auth settings, allow these redirect URLs:
   - `http://localhost:3000/auth/reset-password`
   - `https://<your-production-domain>/auth/reset-password`
   - `http://localhost:3000/auth/callback`
   - `https://<your-production-domain>/auth/callback`
+
+## Security notes
+
+- **Session cookies:** Mutating API routes rely on Supabase session cookies without separate CSRF tokens. SameSite cookie defaults mitigate cross-site POST; keep production on HTTPS.
+- **Integration secrets:** Rotate `CHAT_N8N_CALLBACK_SECRET`, `CRON_SECRET`, and `DEMO_APPROVAL_SECRET` if exposure is suspected. The n8n callback can write chat results for any validated user when the secret is valid — treat it like a service credential.
+- **Security audit:** See [`agent-os/specs/2026-06-10-1200-full-app-security-audit/report/`](agent-os/specs/2026-06-10-1200-full-app-security-audit/report/) for the latest assessment.
 
 ## License
 

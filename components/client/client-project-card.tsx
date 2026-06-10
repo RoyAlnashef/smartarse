@@ -1,26 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import { parseISO } from "date-fns"
+import { formatCalendarDateLocal, formatLocalDate } from "@/lib/datetime"
 import type { Project } from "@/lib/types"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
-
-function formatDdMmYyyy(d: Date) {
-  const dd = String(d.getDate()).padStart(2, "0")
-  const mm = String(d.getMonth() + 1).padStart(2, "0")
-  const yyyy = d.getFullYear()
-  return `${dd}/${mm}/${yyyy}`
-}
-
-/** `displayDate` is `YYYY-MM-DD`; anchor at noon to avoid TZ boundary issues. */
-function formatDisplayCalendarDate(ymd: string) {
-  return formatDdMmYyyy(parseISO(`${ymd}T12:00:00`))
-}
-
-function formatCreatedAtCardDate(iso: string) {
-  return formatDdMmYyyy(new Date(iso))
-}
 
 function sourceLine(project: Project) {
   const n = project.uploadedFileIds.length
@@ -45,8 +29,8 @@ export function ClientProjectCard({ project }: { project: Project }) {
     >
       <div className="bg-arse-pink px-4 py-2 text-center font-arse-title text-xs font-bold uppercase tracking-wider text-white">
         {project.displayDate
-          ? formatDisplayCalendarDate(project.displayDate)
-          : formatCreatedAtCardDate(project.createdAt)}
+          ? formatCalendarDateLocal(project.displayDate)
+          : formatLocalDate(project.createdAt)}
       </div>
       <div className="flex flex-1 flex-col items-center text-center bg-arse-cyan px-8 pt-8 pb-16 text-arse-black">
         <h2 className="font-arse-title text-md font-normal uppercase leading-snug tracking-wide">

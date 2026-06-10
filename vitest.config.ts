@@ -19,6 +19,10 @@ export default defineConfig({
       "lib/demo-access/config.test.ts",
       "lib/support-notifications/evaluate.test.ts",
       "lib/api/authorize-cron-request.test.ts",
+      "lib/api/compare-secrets.test.ts",
+      "lib/auth/roles.test.ts",
+      "lib/n8n-webhook-body-schema.test.ts",
+      "lib/datetime.test.ts",
     ],
   },
 })

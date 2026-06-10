@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { toast } from "sonner"
 import { format, parseISO } from "date-fns"
+import { formatCalendarDateLocal } from "@/lib/datetime"
 import {
   ArrowLeft,
   ArrowUpDown,
@@ -61,7 +62,7 @@ import {
 import {
   projectStatusBadgeClassName,
   projectStatusLabel,
-  utcCalendarDateString,
+  londonCalendarDateString,
 } from "@/lib/project-status"
 import {
   addProjectCredits,
@@ -1405,7 +1406,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
         settingsStatus === "live" &&
         settingsAccessUntil != null &&
         settingsAccessUntil !== "" &&
-        settingsAccessUntil < utcCalendarDateString()
+        settingsAccessUntil < londonCalendarDateString()
       ) {
         toast.error(
           "Access end date is in the past. Choose a future date, clear it, or set status to Paused."
@@ -2116,7 +2117,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                                   side="top"
                                   className="max-w-xs text-left text-xs leading-snug"
                                 >
-                                  Optional. Access ends after this calendar day (UTC).
+                                  Optional. Access ends after this calendar day (London time).
                                   Expired live projects pause automatically.
                                 </TooltipContent>
                               </Tooltip>
@@ -2142,12 +2143,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                                       <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
                                       <span className="truncate">
                                         {settingsAccessUntil
-                                          ? format(
-                                              parseISO(
-                                                `${settingsAccessUntil}T12:00:00`
-                                              ),
-                                              "PPP"
-                                            )
+                                          ? formatCalendarDateLocal(settingsAccessUntil)
                                           : "No end date"}
                                       </span>
                                     </Button>
@@ -2192,10 +2188,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                           ) : (
                             <p className="mt-1.5 text-sm text-muted-foreground">
                               {project.accessUntil
-                                ? format(
-                                    parseISO(`${project.accessUntil}T12:00:00`),
-                                    "PPP"
-                                  )
+                                ? formatCalendarDateLocal(project.accessUntil)
                                 : "No end date"}
                             </p>
                           )}
@@ -2248,10 +2241,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                                       <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
                                       <span className="truncate">
                                         {settingsDisplayDate
-                                          ? format(
-                                              parseISO(`${settingsDisplayDate}T12:00:00`),
-                                              "PPP"
-                                            )
+                                          ? formatCalendarDateLocal(settingsDisplayDate)
                                           : "Use creation date"}
                                       </span>
                                     </Button>
@@ -2291,10 +2281,7 @@ export default function ProjectPage({ params }: { params: Promise<{ id: string }
                           ) : (
                             <p className="mt-1.5 text-sm text-muted-foreground">
                               {project.displayDate
-                                ? format(
-                                    parseISO(`${project.displayDate}T12:00:00`),
-                                    "PPP"
-                                  )
+                                ? formatCalendarDateLocal(project.displayDate)
                                 : "Uses creation date"}
                             </p>
                           )}

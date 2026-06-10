@@ -3,6 +3,7 @@
 import { useAuth } from "@/lib/auth-context"
 import { queryLogs, queryChartData, queriesByProject } from "@/lib/mock-data"
 import { BarChart3, Users, TrendingUp, Award } from "lucide-react"
+import { formatLocalDate } from "@/lib/datetime"
 import {
   LineChart,
   Line,
@@ -23,7 +24,7 @@ const stats = [
 ]
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-GB", {
+  return formatLocalDate(iso, {
     day: "numeric",
     month: "short",
     hour: "2-digit",

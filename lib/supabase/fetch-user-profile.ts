@@ -6,6 +6,7 @@ export interface PublicUserRow {
   email: string | null
   role: string | null
   organization_id: string | null
+  status: string | null
   created_at: string | null
 }
 
@@ -19,7 +20,7 @@ export async function fetchPublicUserRow(
 ): Promise<PublicUserRow | null> {
   const { data, error } = await supabase
     .from("users")
-    .select("id,email,role,organization_id,created_at")
+    .select("id,email,role,organization_id,status,created_at")
     .eq("id", authUserId)
     .maybeSingle()
 

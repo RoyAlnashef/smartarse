@@ -25,6 +25,7 @@ import {
   citeColorDotFillStyle,
   isCiteColorDotFillToken,
 } from "@/lib/theme/cite-color-tokens"
+import { formatLocalDate } from "@/lib/datetime"
 import { cn } from "@/lib/utils"
 
 function ChatSidebarEmptySkeleton() {
@@ -57,13 +58,6 @@ function ChatSidebarEmptySkeleton() {
       </div>
     </div>
   )
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-  })
 }
 
 export type ChatSidebarConversationMeta = {
@@ -289,7 +283,7 @@ export function ChatSidebar({
                             <span>{"/"}</span>
                           </>
                         )}
-                        <span>{formatDate(conv.lastMessageAt)}</span>
+                        <span>{formatLocalDate(conv.lastMessageAt, { day: "numeric", month: "short" })}</span>
                       </div>
                     </button>
                   </TooltipTrigger>
@@ -407,7 +401,7 @@ export function ChatSidebar({
                           <span>{"/"}</span>
                         </>
                       )}
-                      <span>{formatDate(conv.lastMessageAt)}</span>
+                      <span>{formatLocalDate(conv.lastMessageAt, { day: "numeric", month: "short" })}</span>
                     </div>
                   </button>
                 </TooltipTrigger>

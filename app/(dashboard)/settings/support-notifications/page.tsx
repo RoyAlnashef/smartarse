@@ -207,7 +207,7 @@ export default function SupportNotificationsSettingsPage() {
                 <div className="min-w-0">
                   <p className="text-sm font-medium">Access expires in 4 weeks</p>
                   <p className="text-xs text-muted-foreground">
-                    Live projects with an access end date exactly 28 UTC calendar days away.
+                    Live projects with an access end date exactly 28 London calendar days away.
                   </p>
                 </div>
                 <Switch
@@ -226,7 +226,7 @@ export default function SupportNotificationsSettingsPage() {
                 <div className="min-w-0">
                   <p className="text-sm font-medium">Access expires in 2 weeks</p>
                   <p className="text-xs text-muted-foreground">
-                    Live projects with an access end date exactly 14 UTC calendar days away.
+                    Live projects with an access end date exactly 14 London calendar days away.
                   </p>
                 </div>
                 <Switch

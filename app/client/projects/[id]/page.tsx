@@ -12,7 +12,7 @@ import Link from "next/link"
 import { Coins, Plus } from "lucide-react"
 import { useParams, useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { format, parseISO } from "date-fns"
+import { formatCalendarDateLocal } from "@/lib/datetime"
 import type { ChatResultForClient } from "@/lib/api/chat-payload"
 import { useAuth } from "@/lib/auth-context"
 import { useDemoSession } from "@/hooks/useDemoSession"
@@ -1724,10 +1724,7 @@ export default function ClientProjectDetailPage() {
                     <span className="flex flex-col items-center gap-1">
                       <span className="font-bold">
                         Access until{" "}
-                        {format(
-                          parseISO(`${project.accessUntil}T12:00:00`),
-                          "MMM d, yyyy"
-                        )}
+                        {formatCalendarDateLocal(project.accessUntil)}
                       </span>
                       <span className="h-px w-full max-w-[18rem] bg-border/80" />
                       <span>Talk to your Disrupt team to extend access</span>

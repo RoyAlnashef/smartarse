@@ -33,14 +33,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { formatLocalTime } from "@/lib/datetime"
 import { cn } from "@/lib/utils"
-
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-  })
-}
 
 function citationIndexFromText(value: string): number | null {
   const match = value.trim().match(/^\[(\d+)\]$/)
@@ -260,7 +254,7 @@ export function MessageBubble({
         <p
           className={`text-xs text-muted-foreground ${isUser ? "text-right" : "text-left"}`}
         >
-          {formatTime(message.timestamp)}
+          {formatLocalTime(message.timestamp)}
         </p>
       </div>
 

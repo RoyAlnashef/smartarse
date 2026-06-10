@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { createClient, type User as AuthUser } from "@supabase/supabase-js"
 import type { SupabaseClient } from "@supabase/supabase-js"
+import { isDashboardAdminRole } from "@/lib/auth/roles"
 import { getSupabaseAdminClient } from "@/lib/supabase/admin"
 import { getSupabaseServerClient } from "@/lib/supabase/server"
 
@@ -86,7 +87,7 @@ export async function requireDashboardAdmin(
     .eq("id", actingUser.id)
     .maybeSingle()
 
-  if (adminLookupError || adminRow?.role !== "admin") {
+  if (adminLookupError || !isDashboardAdminRole(adminRow?.role)) {
     return forbidden()
   }
 

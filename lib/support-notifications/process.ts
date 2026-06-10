@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
-import { utcCalendarDaysUntil } from "@/lib/project-status"
+import { londonCalendarDaysUntil } from "@/lib/project-status"
 import {
   eventKeyForExpiryDays,
   notificationTypeForExpiryDays,
@@ -222,7 +222,7 @@ export async function processAccessExpirySupportNotifications(
   for (const project of (projects ?? []) as ProjectRow[]) {
     if (!project.access_until) continue
 
-    const daysUntil = utcCalendarDaysUntil(project.access_until)
+    const daysUntil = londonCalendarDaysUntil(project.access_until)
     if (!shouldSendExpiryReminder(daysUntil)) continue
 
     const notificationType = notificationTypeForExpiryDays(daysUntil)

@@ -50,6 +50,11 @@ import {
   citeSourceIndexBadgeStyle,
   isCiteColorDotFillToken,
 } from "@/lib/theme/cite-color-tokens"
+import {
+  formatLocalDate,
+  formatLocalTime,
+  isLocalToday,
+} from "@/lib/datetime"
 import { cn } from "@/lib/utils"
 import { ChatCitationSourcesFooter } from "@/components/chat/chat-citation-sources-footer"
 import {
@@ -319,16 +324,10 @@ function MessageBubble({
 }
 
 function formatEventTimestamp(iso: string): string {
-  const d = new Date(iso)
-  const now = new Date()
-  const isToday =
-    d.getDate() === now.getDate() &&
-    d.getMonth() === now.getMonth() &&
-    d.getFullYear() === now.getFullYear()
-  if (isToday) {
-    return d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })
+  if (isLocalToday(iso)) {
+    return formatLocalTime(iso)
   }
-  return d.toLocaleDateString(undefined, {
+  return formatLocalDate(iso, {
     month: "short",
     day: "numeric",
     hour: "numeric",

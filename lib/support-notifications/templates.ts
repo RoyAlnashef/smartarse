@@ -1,4 +1,5 @@
 import { getAppBaseUrl } from "@/lib/demo-access/config"
+import { formatLondonCalendarDate } from "@/lib/datetime"
 import {
   escapeHtml,
   renderEmailLayout,
@@ -7,13 +8,6 @@ import type { SupportNotificationProjectContext } from "@/lib/support-notificati
 
 function projectSettingsUrl(projectId: string): string {
   return `${getAppBaseUrl()}/projects/${projectId}?tab=settings&section=credits`
-}
-
-function formatAccessUntil(ymd: string): string {
-  return new Date(`${ymd}T12:00:00.000Z`).toLocaleDateString("en-GB", {
-    dateStyle: "long",
-    timeZone: "UTC",
-  })
 }
 
 export function renderCreditBalanceLowEmail(context: SupportNotificationProjectContext): {
@@ -65,7 +59,7 @@ export function renderAccessExpiresEmail(
   const bodyHtml = `<p style="margin:0 0 14px;">
 <strong>Project:</strong> ${escapeHtml(context.projectName)}<br />
 <strong>Organization:</strong> ${escapeHtml(context.organizationName)}<br />
-<strong>Access until (UTC):</strong> ${escapeHtml(formatAccessUntil(accessUntil))}<br />
+<strong>Access until (London):</strong> ${escapeHtml(formatLondonCalendarDate(accessUntil))}<br />
 <strong>Days remaining:</strong> ${daysUntil}
 </p>
 <p style="margin:0;"><a href="${escapeHtml(projectUrl)}" style="color:#171717;font-weight:700;">Open project settings</a></p>`
@@ -73,7 +67,7 @@ export function renderAccessExpiresEmail(
   const subject = `Access ends in ${windowLabel}: ${context.projectName}`
   const text = `Project "${context.projectName}" (${context.organizationName}) access ends in ${windowLabel}.
 
-Access until (UTC calendar date): ${formatAccessUntil(accessUntil)}
+Access until (London calendar date): ${formatLondonCalendarDate(accessUntil)}
 Days remaining: ${daysUntil}
 
 Open project: ${projectUrl}`
@@ -82,9 +76,9 @@ Open project: ${projectUrl}`
     subject,
     html: renderEmailLayout({
       title: `Project access ends in ${windowLabel}`,
-      intro: `A live project is within ${windowLabel} of its access end date (UTC calendar).`,
+      intro: `A live project is within ${windowLabel} of its access end date (London calendar).`,
       bodyHtml,
-      footer: "Dates use UTC calendar days, matching the platform access_until field.",
+      footer: "Dates use London calendar days, matching the platform access_until field.",
     }),
     text,
   }

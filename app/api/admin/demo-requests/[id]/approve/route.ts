@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server"
+import { z } from "zod"
 import {
   approveDemoAccessRequest,
   approveResultMessage,
@@ -7,6 +8,8 @@ import {
   requireDashboardAdmin,
   type ApiError,
 } from "@/lib/api/require-dashboard-admin"
+
+const uuidSchema = z.string().uuid()
 
 export async function POST(
   request: Request,
@@ -19,7 +22,15 @@ export async function POST(
   const { adminClient } = authResult
   const { id } = await context.params
 
-  const result = await approveDemoAccessRequest(adminClient, id)
+  const idResult = uuidSchema.safeParse(id)
+  if (!idResult.success) {
+    return NextResponse.json<ApiError>(
+      { error: "Invalid demo request id." },
+      { status: 400 }
+    )
+  }
+
+  const result = await approveDemoAccessRequest(adminClient, idResult.data)
   const { title, message, isError } = approveResultMessage(result)
 
   if (!result.ok || isError) {

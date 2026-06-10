@@ -8,6 +8,7 @@ import {
 } from "@/components/upload/upload-config"
 import { isCiteColorToken } from "@/lib/theme/cite-color-tokens"
 import { isSourceFileIconKey } from "@/lib/theme/source-file-icons"
+import { sanitizeStorageFileName } from "@/lib/upload/sanitize-storage-filename"
 
 export const PROJECT_DOCUMENTS_BUCKET = "project-documents"
 
@@ -61,11 +62,6 @@ export function isUuidString(value: string): boolean {
 function fileExtension(name: string): string {
   const dot = name.lastIndexOf(".")
   return dot >= 0 ? name.slice(dot + 1).toLowerCase() : ""
-}
-
-function sanitizeStorageFileName(name: string): string {
-  const base = name.replace(/[/\\]/g, "-").replace(/^\.+/, "").trim()
-  return base.slice(0, 200) || "file"
 }
 
 function rowToUploadedFile(row: ProjectDocumentRow): UploadedFile {

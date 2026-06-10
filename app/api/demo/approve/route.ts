@@ -7,6 +7,7 @@ import { demoHtmlError, demoHtmlSuccess } from "@/lib/demo-access/html-pages"
 import { verifyDemoApprovalToken } from "@/lib/demo-access/tokens"
 import { getSupabaseAdminClient } from "@/lib/supabase/admin"
 
+/** HMAC-protected email link — GET is intentional so links work from mail clients. */
 export async function GET(request: Request) {
   const token = new URL(request.url).searchParams.get("token")?.trim()
   if (!token) {

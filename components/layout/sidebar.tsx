@@ -116,27 +116,29 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Role Switcher (demo) */}
-      <div className="border-t border-white/10 px-3 py-3">
-        <p className="px-3 pb-2 text-xs font-medium uppercase tracking-wider text-dark-400">
-          Demo Role
-        </p>
-        <div className="flex gap-1">
-          {ACTIVE_USER_ROLES.map((role) => (
-            <button
-              key={role}
-              onClick={() => switchRole(role)}
-              className={`flex-1 rounded-md px-2 py-1.5 text-xs font-medium capitalize transition-colors ${
-                user.role === role
-                  ? "bg-arse-cyan text-arse-black"
-                  : "text-dark-300 hover:bg-white/10 hover:text-white"
-              }`}
-            >
-              {role}
-            </button>
-          ))}
+      {/* Role switcher — local development only (mock users) */}
+      {process.env.NODE_ENV !== "production" ? (
+        <div className="border-t border-white/10 px-3 py-3">
+          <p className="px-3 pb-2 text-xs font-medium uppercase tracking-wider text-dark-400">
+            Demo Role
+          </p>
+          <div className="flex gap-1">
+            {ACTIVE_USER_ROLES.map((role) => (
+              <button
+                key={role}
+                onClick={() => switchRole(role)}
+                className={`flex-1 rounded-md px-2 py-1.5 text-xs font-medium capitalize transition-colors ${
+                  user.role === role
+                    ? "bg-arse-cyan text-arse-black"
+                    : "text-dark-300 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                {role}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
+      ) : null}
 
       {/* User profile — opens account menu (Settings / Sign out) */}
       <div ref={profileMenuRef} className="relative border-t border-white/10 p-3">

@@ -12,6 +12,7 @@ import type { User, UserRole } from "./types"
 import { users, clients, projects } from "./mock-data"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { fetchPublicUserRow, type PublicUserRow } from "@/lib/supabase/fetch-user-profile"
+import { toSupportedRole } from "@/lib/auth/roles"
 
 interface AuthContextValue {
   user: User | null
@@ -32,15 +33,6 @@ const roleDefaults: Record<UserRole, string> = {
   user: "u5",
 }
 
-function toSupportedRole(role: unknown): UserRole {
-  if (typeof role !== "string") return "client"
-  const normalized = role.trim().toLowerCase()
-  if (normalized === "admin" || normalized === "client" || normalized === "user") {
-    return normalized
-  }
-  return "client"
-}
-
 function getMockUserByEmail(email: string) {
   return users.find((u) => u.email.toLowerCase() === email.trim().toLowerCase()) ?? null
 }
@@ -49,53 +41,47 @@ type SessionUserShape = {
   id: string
   email?: string
   user_metadata?: Record<string, unknown>
-  app_metadata?: Record<string, unknown>
 }
 
-function buildUserFromSession(sessionUser: SessionUserShape, dbRow: PublicUserRow | null): User {
-  const email = sessionUser.email ?? dbRow?.email ?? ""
-  const matchedMock = getMockUserByEmail(email)
-
-  const role = dbRow
-    ? toSupportedRole(dbRow.role)
-    : toSupportedRole(
-        sessionUser.app_metadata?.role ??
-          sessionUser.user_metadata?.role ??
-          matchedMock?.role
-      )
-
-  const clientId =
-    dbRow?.organization_id ??
-    (typeof sessionUser.user_metadata?.clientId === "string"
-      ? (sessionUser.user_metadata.clientId as string)
-      : undefined) ??
-    matchedMock?.clientId
+function buildUserFromProfileRow(
+  sessionUser: SessionUserShape,
+  dbRow: PublicUserRow
+): User {
+  const email = sessionUser.email ?? dbRow.email ?? ""
+  const role = toSupportedRole(dbRow.role)
+  const clientId = dbRow.organization_id ?? undefined
 
   return {
-    // Prefer the auth user id when we have a real profile row; mock id only when using mock login fallback.
-    id: dbRow ? sessionUser.id : (matchedMock?.id ?? sessionUser.id),
+    id: sessionUser.id,
     name:
-      matchedMock?.name ??
       (sessionUser.user_metadata?.full_name as string) ??
       email.split("@")[0] ??
       "User",
     email,
     role,
     clientId,
-    avatarUrl: matchedMock?.avatarUrl,
-    status: matchedMock?.status ?? "active",
+    avatarUrl: undefined,
+    status: (dbRow.status as User["status"]) ?? "active",
     lastLogin: new Date().toISOString(),
-    createdAt: dbRow?.created_at ?? matchedMock?.createdAt ?? new Date().toISOString(),
-    creditsSpentLifetime: matchedMock?.creditsSpentLifetime ?? 0,
+    createdAt: dbRow.created_at ?? new Date().toISOString(),
+    creditsSpentLifetime: 0,
   }
 }
 
+/**
+ * Loads the canonical profile from public.users. Fail-closed: signs out when the
+ * row is missing (misconfigured RLS or incomplete provisioning).
+ */
 async function resolveUser(
   supabase: NonNullable<ReturnType<typeof getSupabaseBrowserClient>>,
   sessionUser: SessionUserShape
-): Promise<User> {
+): Promise<User | null> {
   const dbRow = await fetchPublicUserRow(supabase, sessionUser.id)
-  return buildUserFromSession(sessionUser, dbRow)
+  if (!dbRow) {
+    await supabase.auth.signOut()
+    return null
+  }
+  return buildUserFromProfileRow(sessionUser, dbRow)
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -114,8 +100,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      // Defer async work: awaiting inside this callback can deadlock Supabase Auth's
-      // internal lock (session never settles, isLoading stays true forever).
       queueMicrotask(() => {
         void (async () => {
           if (!isMounted) return
@@ -127,8 +111,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const user = await resolveUser(supabase, session.user)
             if (isMounted) setCurrentUser(user)
           } catch {
-            if (isMounted && session?.user) {
-              setCurrentUser(buildUserFromSession(session.user, null))
+            if (isMounted) {
+              await supabase.auth.signOut()
+              setCurrentUser(null)
             }
           } finally {
             if (isMounted) setIsLoading(false)
@@ -149,11 +134,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password })
       if (error || !data.user) return null
       const mapped = await resolveUser(supabase, data.user)
+      if (!mapped) return null
       setCurrentUser(mapped)
       return mapped
     }
 
-    // Compatibility fallback while env keys or auth setup are incomplete.
+    if (process.env.NODE_ENV === "production") {
+      return null
+    }
+
     const found = getMockUserByEmail(email)
     if (!found) return null
     setCurrentUser(found)
@@ -169,6 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const switchRole = useCallback((role: UserRole) => {
+    if (process.env.NODE_ENV === "production") return
     const userId = roleDefaults[role]
     const found = users.find((u) => u.id === userId)
     if (found) {

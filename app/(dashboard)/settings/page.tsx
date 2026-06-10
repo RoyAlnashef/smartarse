@@ -4,6 +4,7 @@ import { useMemo, useState } from "react"
 import { Bell, User } from "lucide-react"
 import { ChangePasswordForm, type ChangePasswordValues } from "@/components/settings/change-password-form"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
+import { formatLocalTime } from "@/lib/datetime"
 import { useAuth } from "@/lib/auth-context"
 
 export default function SettingsPage() {
@@ -122,7 +123,7 @@ export default function SettingsPage() {
       </div>
       {lastSavedAt ? (
         <p className="text-center text-xs text-muted-foreground">
-          Password updated at {new Date(lastSavedAt).toLocaleTimeString()}
+          Password updated at {formatLocalTime(lastSavedAt)}
         </p>
       ) : null}
     </div>

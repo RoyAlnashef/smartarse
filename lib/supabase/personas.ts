@@ -7,6 +7,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { isUuidString } from "@/lib/supabase/documents"
 import { isCanonicalSegmentId } from "@/lib/personas/canonical-segments"
 import { isCiteColorToken } from "@/lib/theme/cite-color-tokens"
+import { sanitizeStorageFileName } from "@/lib/upload/sanitize-storage-filename"
 
 export const PROJECT_PERSONAS_BUCKET = "project-personas"
 
@@ -65,11 +66,6 @@ const personaSelect =
 function fileExtension(name: string): string {
   const dot = name.lastIndexOf(".")
   return dot >= 0 ? name.slice(dot + 1).toLowerCase() : ""
-}
-
-function sanitizeStorageFileName(name: string): string {
-  const base = name.replace(/[/\\]/g, "-").replace(/^\.+/, "").trim()
-  return base.slice(0, 200) || "file"
 }
 
 function rowToUploadedFile(row: ProjectPersonaRow): UploadedFile {

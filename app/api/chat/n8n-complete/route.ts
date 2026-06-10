@@ -1,7 +1,7 @@
-import { createHash, timingSafeEqual } from "crypto"
 import { NextResponse } from "next/server"
 import { z } from "zod"
 import type { ApiError } from "@/lib/api/require-dashboard-admin"
+import { secretsMatch } from "@/lib/api/compare-secrets"
 import {
   attachMergeMeta,
   extractMergeMeta,
@@ -88,11 +88,8 @@ type N8nChatResultExistingRow = {
   show_in_chat_history?: boolean
 }
 
-function secretsMatch(provided: string, expected: string): boolean {
-  if (!provided || !expected) return false
-  const a = createHash("sha256").update(provided, "utf8").digest()
-  const b = createHash("sha256").update(expected, "utf8").digest()
-  return timingSafeEqual(a, b)
+function callbackSecretsMatch(provided: string, expected: string): boolean {
+  return secretsMatch(provided, expected)
 }
 
 function callbackSecret(): string {
@@ -119,7 +116,7 @@ export async function POST(request: Request) {
     request.headers.get("x-chat-n8n-secret")?.trim() ?? ""
   const token = bearer || headerSecret
 
-  if (!secretsMatch(token, expectedSecret)) {
+  if (!callbackSecretsMatch(token, expectedSecret)) {
     return NextResponse.json<ApiError>({ error: "Unauthorized." }, { status: 401 })
   }
 

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import type { ApiError } from "@/lib/api/require-dashboard-admin"
+import { secretsMatch } from "@/lib/api/compare-secrets"
 
 export function authorizeCronRequest(
   request: Request,
@@ -16,7 +17,7 @@ export function authorizeCronRequest(
   const token = auth?.startsWith("Bearer ")
     ? auth.slice("Bearer ".length).trim()
     : ""
-  if (!token || token !== expected) {
+  if (!secretsMatch(token, expected)) {
     return NextResponse.json<ApiError>({ error: "Unauthorized." }, { status: 401 })
   }
 
