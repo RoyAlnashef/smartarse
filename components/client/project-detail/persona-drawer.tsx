@@ -1624,7 +1624,7 @@ export function PersonaPanel({
                   {savedAudiences.map((audience) => (
                     <div
                       key={audience.id}
-                      className="flex items-stretch gap-1 rounded-xl border border-arse-black/10 bg-white transition hover:border-arse-black/25"
+                      className="flex items-stretch gap-1 overflow-hidden rounded-xl border border-arse-black/10 bg-white transition hover:border-arse-black/25"
                     >
                       <span
                         title="Apply"
