@@ -19,7 +19,7 @@ Status legend: ✅ built, 🟡 partial/in progress, ⚪ planned/not built yet
 - ✅ **RLS-backed admin workflows**: Policies and constraints enforce role checks and org-safe data relationships
 - ✅ **Forgot password flow**: Send reset email from sign-in, recover session from email link, and land on settings to update password
 - ✅ **Demo access flow**: Public `/demo` signup, manual approve/reject via email links, Supabase magic-link provisioning into the admin-designated **demo project**, direct entry to that project (no project list), admin **Demo requests** dashboard, stale-request cron
-- 🟡 **Project chat + n8n**: Client chat POSTs to an n8n webhook (`NEXT_PUBLIC_N8N_URL` or `NEXT_PUBLIC_N8N_WEBHOOK_URL`), then `POST /api/chat/persist` and polling via `GET /api/chat/poll` until `chat_results` completes. Long-running workflows can call `POST /api/chat/n8n-complete` when `CHAT_N8N_CALLBACK_SECRET` is set (see `agent-os/specs/2026-03-26-1400-project-chat-n8n-integration/`).
+- 🟡 **Project chat + n8n**: Client chat POSTs to **`POST /api/n8n`** (server proxy — n8n URL and secret stay server-only), then `POST /api/chat/persist` and polling via `GET /api/chat/poll` until `chat_results` completes. Long-running workflows can call `POST /api/chat/n8n-complete` when `CHAT_N8N_CALLBACK_SECRET` is set (see `agent-os/specs/2026-03-26-1400-project-chat-n8n-integration/`).
 - 🟡 **Tabbed project sidebar (client)**: Right column uses **Chat History** and **Personas** tabs (line-style tabs); **Studio** is scaffolded but hidden until ready. Mobile uses the same tabbed shell inside the overlay drawer.
 - 🟡 **Chat history (past questions)**: `GET /api/chat/history` backed by `chat_results`; client page uses `useChatHistory` and merges API rows with in-session items (falls back to mock data when Supabase is off or the list is empty). Spec-level pagination/re-run polish may still evolve.
 - 🟡 **Document-based queries**: Upload and selection UX exists; production document-grounded query backend is still evolving
@@ -222,13 +222,14 @@ NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-**Client project chat (n8n)** — required for real webhook calls from the browser (either variable is accepted):
+**Client project chat (n8n)** — required for the `/api/n8n` proxy (server-only; never expose the webhook URL in the browser):
 
 ```env
-NEXT_PUBLIC_N8N_URL=https://your-n8n-instance/webhook/...
-# or
-NEXT_PUBLIC_N8N_WEBHOOK_URL=https://your-n8n-instance/webhook/...
+N8N_WEBHOOK_URL=https://your-n8n-instance/webhook/...
+N8N_WEBHOOK_SECRET=your_shared_webhook_secret
 ```
+
+The proxy adds `x-webhook-secret` when forwarding to n8n. For local migration only, the server also accepts `NEXT_PUBLIC_N8N_URL` / `NEXT_PUBLIC_N8N_WEBHOOK_URL` as the upstream URL if `N8N_WEBHOOK_URL` is unset — do not rely on those in new deployments.
 
 **Server-only** (admin provisioning, service role, long-running chat completion, cron):
 

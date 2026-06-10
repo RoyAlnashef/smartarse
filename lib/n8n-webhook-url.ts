@@ -1,11 +1,27 @@
 /**
- * Public webhook URL for browser-side chat POSTs.
- * Prefer `NEXT_PUBLIC_N8N_URL` (chat-history-spec); `NEXT_PUBLIC_N8N_WEBHOOK_URL` matches README/server naming when exposed to the client.
+ * Same-origin proxy for browser chat POSTs. The browser calls `/api/n8n`; the route
+ * forwards to n8n with server-only URL + secret.
  */
-export function getN8nWebhookUrl(): string {
-  return (
+export const N8N_WEBHOOK_PROXY_PATH = "/api/n8n"
+
+export type N8nWebhookServerConfig = {
+  url: string
+  secret: string
+}
+
+/**
+ * Server-only n8n webhook config. Prefer `N8N_WEBHOOK_URL` + `N8N_WEBHOOK_SECRET`.
+ * Falls back to public env names when set (migration only — do not rely on them in new deploys).
+ */
+export function getN8nWebhookServerConfig(): N8nWebhookServerConfig | null {
+  const url =
+    process.env.N8N_WEBHOOK_URL?.trim() ||
     process.env.NEXT_PUBLIC_N8N_URL?.trim() ||
     process.env.NEXT_PUBLIC_N8N_WEBHOOK_URL?.trim() ||
     ""
-  )
+  const secret = process.env.N8N_WEBHOOK_SECRET?.trim() || ""
+  if (!url || !secret) {
+    return null
+  }
+  return { url, secret }
 }

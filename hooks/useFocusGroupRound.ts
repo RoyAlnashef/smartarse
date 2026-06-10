@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useRef, useState } from "react"
-import { getN8nWebhookUrl } from "@/lib/n8n-webhook-url"
+import { N8N_WEBHOOK_PROXY_PATH } from "@/lib/n8n-webhook-url"
 import { buildFocusGroupParticipantBrief } from "@/lib/persona-webhook-brief"
 import {
   isProjectLiveForChat,
@@ -26,7 +26,6 @@ const PLACEHOLDER_FALLBACK = "I wasn't able to respond to this round."
 export type FocusGroupRoundError =
   | { kind: "insufficient_credits"; message: string; balance: number | null }
   | { kind: "project_not_live"; message: string }
-  | { kind: "webhook_url_missing"; message: string }
   | { kind: "not_signed_in"; message: string }
   | { kind: "session_invalid"; message: string }
   | { kind: "round_failed"; message: string }
@@ -227,17 +226,6 @@ export function useFocusGroupRound({
         throw new FocusGroupRoundException(detail)
       }
 
-      const n8nUrl = getN8nWebhookUrl()
-      if (!n8nUrl) {
-        const detail: FocusGroupRoundError = {
-          kind: "webhook_url_missing",
-          message:
-            "Chat webhook URL is not configured (set NEXT_PUBLIC_N8N_URL).",
-        }
-        setError(detail)
-        throw new FocusGroupRoundException(detail)
-      }
-
       if (session.participants.length < 2 || session.participants.length > 4) {
         const detail: FocusGroupRoundError = {
           kind: "session_invalid",
@@ -358,14 +346,19 @@ export function useFocusGroupRound({
               PARTICIPANT_TIMEOUT_MS
             )
             try {
-              const webhookRes = await fetch(n8nUrl, {
+              const webhookRes = await fetch(N8N_WEBHOOK_PROXY_PATH, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
                 signal: controller.signal,
               })
               clearTimeout(timeoutId)
-              if (webhookRes.ok) {
+              if (webhookRes.status === 202) {
+                answerText = await pollForParticipantAnswer(requestId)
+                if (answerText) {
+                  rawResultForPersist = { answer: answerText }
+                }
+              } else if (webhookRes.ok) {
                 const data: unknown = await webhookRes.json()
                 answerText = extractAnswerText(data)
                 if (

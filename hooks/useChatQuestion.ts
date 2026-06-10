@@ -7,7 +7,7 @@ import {
   isProjectLiveForChat,
   PROJECT_NOT_LIVE_CHAT_MESSAGE,
 } from "@/lib/project-status"
-import { getN8nWebhookUrl } from "@/lib/n8n-webhook-url"
+import { N8N_WEBHOOK_PROXY_PATH } from "@/lib/n8n-webhook-url"
 import { sanitiseQuery } from "@/lib/sanitise"
 import type { Project } from "@/lib/types"
 import { segmentColorTokenForDatabase } from "@/lib/theme/cite-color-tokens"
@@ -258,14 +258,6 @@ export function useChatQuestion({
         return
       }
 
-      const n8nUrl = getN8nWebhookUrl()
-      if (!n8nUrl) {
-        setError(
-          "Chat webhook URL is not configured (set NEXT_PUBLIC_N8N_URL)."
-        )
-        return
-      }
-
       const requestId = crypto.randomUUID()
       const userSentIso = new Date().toISOString()
       userCancelledRef.current = false
@@ -397,7 +389,7 @@ export function useChatQuestion({
         const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
         try {
-          const res = await fetch(n8nUrl, {
+          const res = await fetch(N8N_WEBHOOK_PROXY_PATH, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
@@ -405,16 +397,24 @@ export function useChatQuestion({
           })
           clearTimeout(timeoutId)
 
-          if (!res.ok) {
+          if (res.status === 202) {
+            const polled = await pollForResult(requestId)
+            result = polled.result
+            rawForPersist =
+              Object.keys(polled.raw).length > 0
+                ? polled.raw
+                : (polled.result as unknown as Record<string, unknown>)
+            persistStatus = polled.status
+          } else if (!res.ok) {
             const text = await res.text().catch(() => "")
             throw new Error(text || `Webhook request failed (${res.status})`)
+          } else {
+            const data: unknown = await res.json()
+            const raw = unknownToResultRecord(data)
+            persistStatus = persistPayloadStatus(raw) ?? "complete"
+            result = resultPayloadToClientShape(data)
+            rawForPersist = raw
           }
-
-          const data: unknown = await res.json()
-          const raw = unknownToResultRecord(data)
-          persistStatus = persistPayloadStatus(raw) ?? "complete"
-          result = resultPayloadToClientShape(data)
-          rawForPersist = raw
         } catch (err) {
           clearTimeout(timeoutId)
           if ((err as Error).name === "AbortError") {
