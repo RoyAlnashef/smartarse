@@ -9,7 +9,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { ArseLogoGroup } from "@/components/arse-logo-group"
 import { LoginFlowBackground } from "@/components/login-flow-background"
 import { cn } from "@/lib/utils"
-import { SUPPORT_CONTACT_NEW_TAB_HREF } from "@/lib/support-contact"
+import { LegalFooterNav } from "@/components/legal/legal-footer-nav"
 import type { UserRole } from "@/lib/types"
 
 function postLoginPath(role: UserRole) {
@@ -230,26 +230,8 @@ export function LoginPage() {
         </div>
       </main>
 
-      <footer className="relative z-10 mt-auto flex flex-col items-center justify-between gap-3 px-4 py-6 text-[10px] font-medium uppercase tracking-wider text-arse-black sm:flex-row sm:px-8 sm:text-xs">
-        <nav className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
-          <span className="text-arse-black/40">|</span>
-          <Link href="/help/faq" className="hover:text-arse-pink">
-            FAQ
-          </Link>
-          <span className="text-arse-black/40">|</span>
-          <Link href="/help/privacy" className="hover:text-arse-pink">
-            Privacy policy
-          </Link>
-          <span className="text-arse-black/40">|</span>
-          <a
-            href={SUPPORT_CONTACT_NEW_TAB_HREF}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-arse-pink"
-          >
-            Contact the team
-          </a>
-        </nav>
+      <footer className="relative z-10 mt-auto flex flex-col items-center justify-between gap-3 px-4 py-6 font-arse-body text-[10px] font-medium uppercase tracking-wider text-arse-black sm:flex-row sm:px-8 sm:text-xs">
+        <LegalFooterNav />
         <p className="text-arse-black/70">© Disrupt Insight {new Date().getFullYear()}</p>
       </footer>
     </div>

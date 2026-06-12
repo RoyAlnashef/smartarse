@@ -1,38 +1,29 @@
 /**
- * Demo-flow consent copy and version IDs.
- * Replace strings when legal delivers final wording (see client-legal-briefing.md §9).
+ * Demo-flow consent copy and version IDs (v2.0 — 12 June 2026).
  */
 
 export const DEMO_CONSENT_VERSIONS = {
-  privacy: "privacy-demo-2026-06-04",
-  marketing: "marketing-demo-2026-06-04",
-  cookie: "cookie-policy-2026-06-04",
+  privacy: "privacy-v2-2026-06-12",
+  marketing: "marketing-v2-2026-06-12",
+  cookie: "cookie-policy-v2-2026-06-12",
 } as const
+
+export const DEFAULT_COOKIE_POLICY_HREF = "/help/cookies"
 
 export type DemoConsentVersionKey = keyof typeof DEMO_CONSENT_VERSIONS
 
-/** Engineering placeholder copy — legal may replace before production go-live. */
 export const DEMO_SIGNUP_CONSENT_COPY = {
-  privacyCheckbox:
-    "I agree that Disrupt Insight may process my personal data to review and respond to my demo access request.",
+  privacyCheckbox: "I agree to the",
   marketingCheckbox:
     "I would like to receive marketing communications about Disrupt Insight and smartA.R.S.E. (optional).",
   privacyLinkLabel: "Privacy policy",
   cookieLinkLabel: "Cookie policy",
+  termsLinkLabel: "Terms and conditions",
 } as const
 
 export const DEMO_COOKIE_BANNER_COPY = {
-  title: "Cookies on this demo experience",
-  introLead: "We use ",
-  essentialTerm: "essential cookies",
-  introMiddle:
-    " so you can sign in and submit a demo request. You can choose whether to allow ",
-  optionalTerm: "optional cookies",
-  introTail: " used for analytics and similar features.",
-  essentialDescription:
-    "Required for authentication and security (for example Supabase session cookies). These always stay on for this page to work.",
-  nonEssentialDescription:
-    "Analytics or similar tools that are not required for the demo signup flow. We do not load optional tools on this page until you accept.",
+  title: "Cookies",
+  body: "We use essential cookies to run this demo. See our",
   acceptLabel: "Accept optional cookies",
   rejectLabel: "Essential only",
 } as const
@@ -104,9 +95,9 @@ export function writeDemoCookieConsent(nonEssential: boolean): DemoCookiePrefere
   return prefs
 }
 
-export function getDemoCookiePolicyHref(): string | null {
-  const url = process.env.NEXT_PUBLIC_DEMO_COOKIE_POLICY_URL?.trim()
-  return url || null
+export function getDemoCookiePolicyHref(): string {
+  const override = process.env.NEXT_PUBLIC_DEMO_COOKIE_POLICY_URL?.trim()
+  return override || DEFAULT_COOKIE_POLICY_HREF
 }
 
 export function isValidPrivacyConsentVersion(version: string): boolean {

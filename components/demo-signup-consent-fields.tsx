@@ -2,12 +2,43 @@
 
 import Link from "next/link"
 import { Checkbox } from "@/components/ui/checkbox"
-import { DEMO_CONSENT_VERSIONS, DEMO_SIGNUP_CONSENT_COPY, getDemoCookiePolicyHref } from "@/lib/demo-access/consent"
+import {
+  DEMO_CONSENT_VERSIONS,
+  DEMO_SIGNUP_CONSENT_COPY,
+  getDemoCookiePolicyHref,
+} from "@/lib/demo-access/consent"
 import { cn } from "@/lib/utils"
 
 export type DemoSignupConsentState = {
   privacyAccepted: boolean
   marketingAccepted: boolean
+}
+
+function PolicyLink({
+  href,
+  label,
+  external,
+}: {
+  href: string
+  label: string
+  external?: boolean
+}) {
+  const className =
+    "font-medium text-arse-black underline decoration-arse-pink underline-offset-2 hover:text-arse-pink"
+
+  if (external) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+        {label}
+      </a>
+    )
+  }
+
+  return (
+    <Link href={href} className={className}>
+      {label}
+    </Link>
+  )
 }
 
 export function DemoSignupConsentFields({
@@ -20,6 +51,7 @@ export function DemoSignupConsentFields({
   className?: string
 }) {
   const cookiePolicyHref = getDemoCookiePolicyHref()
+  const cookiePolicyExternal = cookiePolicyHref.startsWith("http")
 
   return (
     <fieldset className={cn("space-y-3 border-0 p-0", className)}>
@@ -39,27 +71,15 @@ export function DemoSignupConsentFields({
         />
         <span className="text-xs leading-relaxed text-arse-black/85">
           {DEMO_SIGNUP_CONSENT_COPY.privacyCheckbox}{" "}
-          <Link
-            href="/help/privacy"
-            className="font-medium text-arse-black underline decoration-arse-pink underline-offset-2 hover:text-arse-pink"
-          >
-            {DEMO_SIGNUP_CONSENT_COPY.privacyLinkLabel}
-          </Link>
-          {cookiePolicyHref ? (
-            <>
-              {" "}
-              and{" "}
-              <a
-                href={cookiePolicyHref}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-medium text-arse-black underline decoration-arse-pink underline-offset-2 hover:text-arse-pink"
-              >
-                {DEMO_SIGNUP_CONSENT_COPY.cookieLinkLabel}
-              </a>
-            </>
-          ) : null}
-          .
+          <PolicyLink href="/help/privacy" label={DEMO_SIGNUP_CONSENT_COPY.privacyLinkLabel} />
+          ,{" "}
+          <PolicyLink
+            href={cookiePolicyHref}
+            label={DEMO_SIGNUP_CONSENT_COPY.cookieLinkLabel}
+            external={cookiePolicyExternal}
+          />{" "}
+          and{" "}
+          <PolicyLink href="/help/terms" label={DEMO_SIGNUP_CONSENT_COPY.termsLinkLabel} />.
         </span>
       </label>
 
@@ -78,7 +98,6 @@ export function DemoSignupConsentFields({
           {DEMO_SIGNUP_CONSENT_COPY.marketingCheckbox}
         </span>
       </label>
-
     </fieldset>
   )
 }

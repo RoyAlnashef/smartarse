@@ -13,6 +13,8 @@ import {
   Bell,
   HelpCircle,
   Shield,
+  FileText,
+  Cookie,
   Settings,
   ChevronDown,
   LogOut,
@@ -40,9 +42,30 @@ const profileMenuLinks: {
   href: string
   icon: typeof HelpCircle
   roles: UserRole[]
+  openInNewTab?: boolean
 }[] = [
   { name: "FAQ", href: "/faq", icon: HelpCircle, roles: ["admin", "client"] },
-  { name: "Privacy", href: "/privacy", icon: Shield, roles: ["admin", "client"] },
+  {
+    name: "Privacy",
+    href: "/help/privacy",
+    icon: Shield,
+    roles: ["admin", "client"],
+    openInNewTab: true,
+  },
+  {
+    name: "Terms",
+    href: "/help/terms",
+    icon: FileText,
+    roles: ["admin", "client"],
+    openInNewTab: true,
+  },
+  {
+    name: "Cookie policy",
+    href: "/help/cookies",
+    icon: Cookie,
+    roles: ["admin", "client"],
+    openInNewTab: true,
+  },
 ]
 
 const roleBadgeColors: Record<UserRole, string> = {
@@ -186,7 +209,11 @@ export function Sidebar() {
                 role="menuitem"
                 onClick={() => {
                   setProfileMenuOpen(false)
-                  router.push(item.href)
+                  if (item.openInNewTab) {
+                    window.open(item.href, "_blank", "noopener,noreferrer")
+                  } else {
+                    router.push(item.href)
+                  }
                 }}
                 className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-foreground hover:bg-muted"
               >
