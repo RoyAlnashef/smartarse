@@ -2,7 +2,8 @@
 
 import Link from "next/link"
 
-import { SUPPORT_CONTACT_NEW_TAB_HREF } from "@/lib/support-contact"
+import { supportContactNewTabHref } from "@/lib/support-contact"
+import { useSupportContactEmail } from "@/lib/support-contact-context"
 
 const HELP_LINKS = [
   { href: "/help/faq", label: "FAQ" },
@@ -16,6 +17,7 @@ export function LegalFooterNav({
 }: {
   linkTarget?: "_blank" | "_self"
 }) {
+  const supportEmail = useSupportContactEmail()
   const openInNewTab = linkTarget === "_blank"
 
   return (
@@ -36,7 +38,7 @@ export function LegalFooterNav({
         </span>
       ))}
       <a
-        href={SUPPORT_CONTACT_NEW_TAB_HREF}
+        href={supportContactNewTabHref(supportEmail)}
         target="_blank"
         rel="noopener noreferrer"
         className="hover:text-arse-pink"

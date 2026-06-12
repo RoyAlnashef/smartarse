@@ -6,8 +6,14 @@ import {
 } from "@/lib/datetime"
 
 /** Plain copy for toasts, API errors, and non-HTML contexts. */
-export const PROJECT_NOT_LIVE_CHAT_MESSAGE =
-  `This project is currently paused. Contact the team at ${SUPPORT_EMAIL}.`
+export function projectNotLiveChatMessage(
+  supportEmail: string = SUPPORT_EMAIL,
+): string {
+  return `This project is currently paused. Contact the team at ${supportEmail}.`
+}
+
+/** @deprecated Use `projectNotLiveChatMessage()` with a resolved email instead. */
+export const PROJECT_NOT_LIVE_CHAT_MESSAGE = projectNotLiveChatMessage(SUPPORT_EMAIL)
 
 export function projectStatusLabel(status: Project["status"]): string {
   switch (status) {

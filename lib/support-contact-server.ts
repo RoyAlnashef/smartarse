@@ -1,9 +1,11 @@
+import { cache } from "react"
+import { unstable_noStore as noStore } from "next/cache"
 import { SUPPORT_EMAIL } from "@/lib/support-contact"
 import { loadPlatformSettings } from "@/lib/support-notifications/platform-settings"
 import { getSupabaseAdminClient } from "@/lib/supabase/admin"
 
-/** Support inbox shown to dashboard users (from platform settings, with constant fallback). */
-export async function getClientSupportContactEmail(): Promise<string> {
+async function resolveClientSupportContactEmail(): Promise<string> {
+  noStore()
   try {
     const admin = getSupabaseAdminClient()
     const settings = await loadPlatformSettings(admin)
@@ -15,3 +17,6 @@ export async function getClientSupportContactEmail(): Promise<string> {
 
   return SUPPORT_EMAIL
 }
+
+/** Support inbox shown to client users (from platform settings, with constant fallback). */
+export const getClientSupportContactEmail = cache(resolveClientSupportContactEmail)

@@ -5,8 +5,9 @@ import { N8N_WEBHOOK_PROXY_PATH } from "@/lib/n8n-webhook-url"
 import { buildFocusGroupParticipantBrief } from "@/lib/persona-webhook-brief"
 import {
   isProjectLiveForChat,
-  PROJECT_NOT_LIVE_CHAT_MESSAGE,
+  projectNotLiveChatMessage,
 } from "@/lib/project-status"
+import { useSupportContactEmail } from "@/lib/support-contact-context"
 import { sanitiseQuery } from "@/lib/sanitise"
 import { resultPayloadToClientShape } from "@/lib/api/chat-payload"
 import type { PersonaMock } from "@/lib/personas/segment-mocks"
@@ -190,6 +191,7 @@ export function useFocusGroupRound({
     data_source_mode: string
   }
 }) {
+  const supportEmail = useSupportContactEmail()
   const [loading, setLoading] = useState(false)
   const [activeParticipantIndex, setActiveParticipantIndex] = useState<
     number | null
@@ -220,7 +222,7 @@ export function useFocusGroupRound({
       if (!isProjectLiveForChat(projectStatus)) {
         const detail: FocusGroupRoundError = {
           kind: "project_not_live",
-          message: PROJECT_NOT_LIVE_CHAT_MESSAGE,
+          message: projectNotLiveChatMessage(supportEmail),
         }
         setError(detail)
         throw new FocusGroupRoundException(detail)
@@ -439,7 +441,7 @@ export function useFocusGroupRound({
         setLoading(false)
       }
     },
-    [orgId, userId, projectId, projectStatus, orgSettings.weighted, orgSettings.data_source_mode]
+    [orgId, userId, projectId, projectStatus, orgSettings.weighted, orgSettings.data_source_mode, supportEmail]
   )
 
   return {

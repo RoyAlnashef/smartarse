@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next"
 import localFont from "next/font/local"
 import { DM_Sans, DM_Serif_Display, Inter, Raleway } from "next/font/google"
 import { AppProviders } from "@/components/app-providers"
+import { getClientSupportContactEmail } from "@/lib/support-contact-server"
 import "./globals.css"
 
 const inter = Inter({
@@ -51,11 +52,13 @@ export const viewport: Viewport = {
   initialScale: 1,
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const supportEmail = await getClientSupportContactEmail()
+
   return (
     <html
       lang="en"
@@ -63,7 +66,7 @@ export default function RootLayout({
       className={`${inter.variable} ${dmSerif.variable} ${vintageGoods.variable} ${raleway.variable} ${dmSans.variable}`}
     >
       <body className="font-sans antialiased">
-        <AppProviders>{children}</AppProviders>
+        <AppProviders supportEmail={supportEmail}>{children}</AppProviders>
       </body>
     </html>
   )

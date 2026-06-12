@@ -1,6 +1,9 @@
-import { SUPPORT_CONTACT_NEW_TAB_HREF } from "@/lib/support-contact"
+import { getClientSupportContactEmail } from "@/lib/support-contact-server"
+import { supportContactNewTabHref } from "@/lib/support-contact"
 
-export default function PublicFaqPage() {
+export default async function PublicFaqPage() {
+  const supportEmail = await getClientSupportContactEmail()
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-16 font-sans text-foreground">
       <h1 className="text-2xl font-semibold">FAQ</h1>
@@ -8,7 +11,7 @@ export default function PublicFaqPage() {
         Quick answers about smartA.R.S.E., and how to use it to best use the chat. If you can’t find what you’re
         looking for?{" "}
         <a
-          href={SUPPORT_CONTACT_NEW_TAB_HREF}
+          href={supportContactNewTabHref(supportEmail)}
           target="_blank"
           rel="noopener noreferrer"
           className="font-semibold text-arse-pink hover:underline"

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { ChevronDown } from "lucide-react"
 import {
-  SUPPORT_CONTACT_NEW_TAB_HREF,
+  supportContactNewTabHref,
   supportMailtoHref,
 } from "@/lib/support-contact"
 import { cn } from "@/lib/utils"
@@ -171,7 +171,7 @@ export function FaqPageClient({ supportEmail }: { supportEmail: string }) {
           For quick answers about smartA.R.S.E., and how best chat to your project. If you
           can't find what you're looking for?{" "}
           <a
-            href={SUPPORT_CONTACT_NEW_TAB_HREF}
+            href={supportContactNewTabHref(supportEmail)}
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold text-arse-pink hover:underline"

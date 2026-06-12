@@ -12,7 +12,8 @@ import {
   type ChatContextModeForThread,
   type ContextActivationDenorm,
 } from "@/lib/chat-thread"
-import { PROJECT_NOT_LIVE_CHAT_MESSAGE } from "@/lib/project-status"
+import { projectNotLiveChatMessage } from "@/lib/project-status"
+import { getClientSupportContactEmail } from "@/lib/support-contact-server"
 import { getSupabaseAdminClient } from "@/lib/supabase/admin"
 import { segmentColorTokenForDatabase } from "@/lib/theme/cite-color-tokens"
 
@@ -189,8 +190,9 @@ export async function POST(request: Request) {
     }
 
     if ((project as { status: string }).status !== "live") {
+      const supportEmail = await getClientSupportContactEmail()
       return NextResponse.json<ApiError>(
-        { error: PROJECT_NOT_LIVE_CHAT_MESSAGE },
+        { error: projectNotLiveChatMessage(supportEmail) },
         { status: 403 }
       )
     }

@@ -5,8 +5,9 @@ import { uuidOrNullForPersist } from "@/lib/uuid-or-null-for-persist"
 import { resultPayloadToClientShape, type ChatResultForClient } from "@/lib/api/chat-payload"
 import {
   isProjectLiveForChat,
-  PROJECT_NOT_LIVE_CHAT_MESSAGE,
+  projectNotLiveChatMessage,
 } from "@/lib/project-status"
+import { useSupportContactEmail } from "@/lib/support-contact-context"
 import { N8N_WEBHOOK_PROXY_PATH } from "@/lib/n8n-webhook-url"
 import { sanitiseQuery } from "@/lib/sanitise"
 import type { Project } from "@/lib/types"
@@ -210,6 +211,7 @@ export function useChatQuestion({
   ) => void
   onHistoryRefresh?: () => void
 }) {
+  const supportEmail = useSupportContactEmail()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const activeControllerRef = useRef<AbortController | null>(null)
@@ -254,7 +256,7 @@ export function useChatQuestion({
       }
 
       if (!isProjectLiveForChat(projectStatus)) {
-        setError(PROJECT_NOT_LIVE_CHAT_MESSAGE)
+        setError(projectNotLiveChatMessage(supportEmail))
         return
       }
 
@@ -500,6 +502,7 @@ export function useChatQuestion({
       sessionId,
       orgSettings.weighted,
       orgSettings.data_source_mode,
+      supportEmail,
       onResult,
       onHistoryRefresh,
     ]
