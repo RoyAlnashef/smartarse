@@ -730,9 +730,8 @@ export function ProjectChat({
   userName?: string | null
   segmentPersonas?: PersonaMock[]
 }) {
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const scrollViewportRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [value, setValue] = useState("")
   const [loadingActionIndex, setLoadingActionIndex] = useState(0)
 
@@ -757,16 +756,6 @@ export function ProjectChat({
     items.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
     return items
   }, [messages, timelineEvents, orderedTimelineItems])
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [
-    timelineItems,
-    isLoading,
-    loadingActionIndex,
-    focusGroupRounds,
-    liveFocusGroupRound,
-  ])
 
   useEffect(() => {
     if (!isLoading) {
@@ -1038,7 +1027,6 @@ export function ProjectChat({
                 ) : null}
               </div>
             )}
-            <div ref={bottomRef} />
           </div>
         </div>
 

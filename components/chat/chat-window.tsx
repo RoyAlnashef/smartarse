@@ -1,6 +1,5 @@
 "use client"
 
-import { useRef, useEffect } from "react"
 import { Bot, Loader2, MessageSquare } from "lucide-react"
 import Image from "next/image"
 import robotAvatar from "@/public/robot-avatar.png"
@@ -70,12 +69,6 @@ export function ChatWindow({
    */
   focusGroupSession?: AdminFocusGroupSessionPayload | null
 }) {
-  const bottomRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages, isTyping, focusGroupSession])
-
   if (isLoading) {
     return <ChatWindowLoadingState />
   }
@@ -103,7 +96,6 @@ export function ChatWindow({
             userName={userName}
           />
         ))}
-        <div ref={bottomRef} />
       </div>
     )
   }
@@ -159,7 +151,6 @@ export function ChatWindow({
         </div>
       )}
 
-      <div ref={bottomRef} />
     </div>
   )
 }
