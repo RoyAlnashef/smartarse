@@ -52,7 +52,7 @@ const tabContentClass =
 
 /** Match panel shell `border-4`; inactive keeps transparent border-b-4 so layout does not shift. */
 const tabTriggerClass =
-  "shrink-0 border-b-4 border-transparent font-arse-title text-[10px] font-bold tracking-wide text-arse-black/50 data-[state=active]:border-arse-pink data-[state=active]:text-arse-black"
+  "min-w-0 shrink whitespace-normal border-b-4 border-transparent px-1 py-2 text-center font-arse-title text-[10px] font-bold leading-tight tracking-wide text-arse-black/50 data-[state=active]:border-arse-pink data-[state=active]:text-arse-black"
 
 export function ProjectSidebarTabs({
   appliedPersona,
@@ -103,7 +103,7 @@ export function ProjectSidebarTabs({
       <div className="shrink-0 px-4">
         <TabsList
           variant="line"
-          className="!flex min-h-12 h-auto w-full items-end justify-center gap-6 rounded-none border-b-0 bg-transparent p-0"
+          className="!flex min-h-12 h-auto w-full items-end justify-center gap-3 rounded-none border-b-0 bg-transparent p-0 sm:gap-6"
           aria-label="Sidebar sections"
         >
           <TabsTrigger value="personas" className={tabTriggerClass}>

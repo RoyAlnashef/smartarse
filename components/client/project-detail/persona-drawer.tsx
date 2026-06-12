@@ -875,6 +875,12 @@ function PersonaDetailCard({
   )
 }
 
+const personaSubTabListClass =
+  "grid h-auto w-full shrink-0 grid-cols-3 items-stretch gap-0.5 rounded-xl bg-arse-black/[0.04] p-0.5"
+
+const personaSubTabTriggerClass =
+  "min-w-0 h-auto whitespace-normal rounded-lg px-1 py-2 text-center font-arse-title text-[10px] font-bold uppercase leading-tight text-arse-black/55 data-[state=active]:border-2 data-[state=active]:border-arse-black/15 data-[state=active]:bg-white data-[state=active]:text-arse-black data-[state=active]:shadow-sm"
+
 export function PersonaPanel({
   appliedPersona,
   appliedCustomAudience,
@@ -1417,14 +1423,13 @@ export function PersonaPanel({
         onValueChange={handlePersonaTabChange}
         className="flex min-h-0 flex-1 flex-col overflow-hidden py-2"
       >
-        <TabsList className="grid h-auto w-full shrink-0 grid-cols-3 gap-0 rounded-xl bg-arse-black/[0.04]">
+        <TabsList className={personaSubTabListClass}>
           <TabsTrigger
             value="segments"
             className={cn(
-              "rounded-lg px-1.5 py-2 font-arse-title text-[10px] font-bold uppercase leading-tight text-arse-black/55",
+              personaSubTabTriggerClass,
               (customAudienceContextActive || focusGroupContextActive) &&
-                "cursor-not-allowed text-arse-black/35 data-[state=active]:border-transparent",
-              "data-[state=active]:border-2 data-[state=active]:border-arse-black/15 data-[state=active]:bg-white data-[state=active]:text-arse-black data-[state=active]:shadow-sm"
+                "cursor-not-allowed text-arse-black/35 data-[state=active]:border-transparent"
             )}
             disabled={customAudienceContextActive || focusGroupContextActive}
             aria-disabled={customAudienceContextActive || focusGroupContextActive}
@@ -1434,10 +1439,9 @@ export function PersonaPanel({
           <TabsTrigger
             value="audience"
             className={cn(
-              "rounded-lg px-1.5 py-2 font-arse-title text-[10px] font-bold uppercase leading-tight text-arse-black/55",
+              personaSubTabTriggerClass,
               (personaLocked || focusGroupContextActive) &&
-                "cursor-not-allowed text-arse-black/35 data-[state=active]:border-transparent",
-              "data-[state=active]:border-2 data-[state=active]:border-arse-black/15 data-[state=active]:bg-white data-[state=active]:text-arse-black data-[state=active]:shadow-sm"
+                "cursor-not-allowed text-arse-black/35 data-[state=active]:border-transparent"
             )}
             disabled={personaLocked || focusGroupContextActive}
             aria-disabled={personaLocked || focusGroupContextActive}
@@ -1447,11 +1451,10 @@ export function PersonaPanel({
           <TabsTrigger
             value="focus"
             className={cn(
-              "rounded-lg px-1.5 py-2 font-arse-title text-[10px] font-bold uppercase leading-tight text-arse-black/55",
+              personaSubTabTriggerClass,
               personaContextActive || customAudienceContextActive
                 ? "cursor-not-allowed text-arse-black/35 data-[state=active]:border-transparent"
-                : null,
-              "data-[state=active]:border-2 data-[state=active]:border-arse-black/15 data-[state=active]:bg-white data-[state=active]:text-arse-black data-[state=active]:shadow-sm"
+                : null
             )}
             disabled={personaContextActive || customAudienceContextActive}
             aria-disabled={personaContextActive || customAudienceContextActive}
