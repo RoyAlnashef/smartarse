@@ -1,8 +1,8 @@
-**smartA.R.S.E Platform**
+**smartA.R.S.E. Platform**
 
 # **Full Cookie Policy**
 
-This Cookie Policy explains how Disrupt Insight Ltd uses cookies and similar technologies in connection with the smartA.R.S.E Platform.
+This Cookie Policy explains how Disrupt Insight Ltd uses cookies and similar technologies in connection with the smartA.R.S.E. Platform.
 
 This Policy should be read alongside the Privacy Policy. In the event of any inconsistency, the Privacy Policy shall take precedence.
 

@@ -72,7 +72,7 @@ export default async function PublicFaqPage() {
             smartA.R.S.E. isn’t just any old AI. We’ve built an analysis heuristic grounded in our favourite BeSci and
             behavioural change frameworks; meaning all responses are shaped through the lens of the bespoke Disrupt
             reports created for your project. Human written headings, summaries and recommendations all feed into the
-            answers smartA.R.S.E gives you.
+            answers smartA.R.S.E. gives you.
           </p>
         </section>
 

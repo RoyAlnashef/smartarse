@@ -15,7 +15,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 
 function getSettingsStorageKey(userId: string) {
   // Mock-only persistence for the current browser session.
-  return `smartA.RASE.clientSettings:${userId}`
+  return `smartA.R.S.E.clientSettings:${userId}`
 }
 
 export default function ClientSettingsPage() {

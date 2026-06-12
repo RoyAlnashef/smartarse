@@ -1,4 +1,4 @@
-**smartA.R.S.E Platform**
+**smartA.R.S.E. Platform**
 
 **Privacy Summary \- Disrupt Insight Ltd**
 
@@ -6,7 +6,7 @@ This is a summary of how Disrupt Insight Ltd handles personal data. It should be
 
 # **Who we are**
 
-Disrupt Insight Ltd provides the smartA.R.S.E Platform and is responsible for how your personal data is handled when you use our services. 
+Disrupt Insight Ltd provides the smartA.R.S.E. Platform and is responsible for how your personal data is handled when you use our services. 
 
 # **Our role**
 

@@ -49,7 +49,7 @@ const faqEntries: FaqEntry[] = [
     id: "how-it-works",
     question: "How does smartA.R.S.E. work?",
     paragraphs: [
-      "smartA.R.S.E. isn't just any old AI. We've built an analysis heuristic grounded in our favourite BeSci and behavioural change frameworks; meaning all responses are shaped through the lens of the bespoke Disrupt reports created for your project. Human written headings, summaries and recommendations all feed into the answers smartA.R.S.E gives you.",
+      "smartA.R.S.E. isn't just any old AI. We've built an analysis heuristic grounded in our favourite BeSci and behavioural change frameworks; meaning all responses are shaped through the lens of the bespoke Disrupt reports created for your project. Human written headings, summaries and recommendations all feed into the answers smartA.R.S.E. gives you.",
     ],
   },
   {
@@ -107,14 +107,14 @@ const faqEntries: FaqEntry[] = [
   },
   {
     id: "ai-model",
-    question: "What AI model does smartA.R.S.E use?",
+    question: "What AI model does smartA.R.S.E. use?",
     paragraphs: [
       "SmartA.R.S.E. is built on the very latest Anthropic models and kept up to date with the latest AI developments.",
     ],
   },
   {
     id: "crossbreaks",
-    question: "Can smartA.R.S.E be used to make crossbreaks/ data tables?",
+    question: "Can smartA.R.S.E. be used to make crossbreaks/ data tables?",
     paragraphs: [
       "Yes and no. smartA.R.S.E. can make small summary tables and you can add key subgroups as cross breaks. It is not meant to be a full crosstab tool and does not replicate the functionality of tailored crosstab programmes. If you need to slice and dice your data in this way reach out to your Disrupt project team.",
     ],

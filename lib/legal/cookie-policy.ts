@@ -4,7 +4,7 @@ import type { LegalDocument } from "@/lib/legal/types"
 export const cookiePolicyDocument: LegalDocument = {
   title: "Full Cookie Policy",
   intro: [
-    "This Cookie Policy explains how Disrupt Insight Ltd uses cookies and similar technologies in connection with the smartA.R.S.E Platform.",
+    "This Cookie Policy explains how Disrupt Insight Ltd uses cookies and similar technologies in connection with the smartA.R.S.E. Platform.",
     "This Policy should be read alongside the Privacy Policy. In the event of any inconsistency, the Privacy Policy shall take precedence.",
   ],
   sections: [

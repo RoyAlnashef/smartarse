@@ -11,7 +11,7 @@ export const privacySummaryDocument: LegalDocument = {
     {
       title: "Who we are",
       paragraphs: [
-        "Disrupt Insight Ltd provides the smartA.R.S.E Platform and is responsible for how your personal data is handled when you use our services.",
+        "Disrupt Insight Ltd provides the smartA.R.S.E. Platform and is responsible for how your personal data is handled when you use our services.",
       ],
     },
     {

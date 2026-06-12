@@ -560,7 +560,7 @@ export default function ClientProjectDetailPage() {
   const isResponseLoading = useRealChat ? chatLoading : false
   const controlsLocked = isResponseLoading
   const navigationBlockMessage =
-    "smartARSE is still generating a response. Please wait before leaving this page."
+    "smartA.R.S.E. is still generating a response. Please wait before leaving this page."
 
   const notifyNavigationBlocked = useCallback(() => {
     toast.error(navigationBlockMessage)
