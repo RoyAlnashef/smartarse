@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { ChevronDown } from "lucide-react"
 import { faqItems } from "@/lib/mock-data"
+import { cn } from "@/lib/utils"
 
 export default function FAQPage() {
   const [openId, setOpenId] = useState<string | null>(null)
@@ -10,7 +11,7 @@ export default function FAQPage() {
   const categories = Array.from(new Set(faqItems.map((f) => f.category)))
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
+    <div className="mx-auto w-full max-w-3xl space-y-8">
       <div>
         <h1 className="text-2xl font-semibold text-foreground">
           Frequently Asked Questions
@@ -21,18 +22,22 @@ export default function FAQPage() {
       </div>
 
       {categories.map((category) => (
-        <section key={category}>
+        <section key={category} className="w-full">
           <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             {category}
           </h2>
-          <div className="divide-y divide-border rounded-xl border border-border bg-card">
+          <div className="flex w-full flex-col gap-2">
             {faqItems
               .filter((f) => f.category === category)
               .map((faq) => {
                 const isOpen = openId === faq.id
                 return (
-                  <div key={faq.id}>
+                  <div
+                    key={faq.id}
+                    className="w-full rounded-xl border border-border bg-card"
+                  >
                     <button
+                      type="button"
                       onClick={() => setOpenId(isOpen ? null : faq.id)}
                       className="flex w-full items-center justify-between px-6 py-4 text-left"
                     >
@@ -40,13 +45,14 @@ export default function FAQPage() {
                         {faq.question}
                       </span>
                       <ChevronDown
-                        className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
-                          isOpen ? "rotate-180" : ""
-                        }`}
+                        className={cn(
+                          "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
+                          isOpen && "rotate-180",
+                        )}
                       />
                     </button>
                     {isOpen && (
-                      <div className="px-6 pb-4">
+                      <div className="border-t border-border px-6 pb-4 pt-4">
                         <p className="text-sm leading-relaxed text-muted-foreground">
                           {faq.answer}
                         </p>
