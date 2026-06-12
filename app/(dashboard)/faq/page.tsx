@@ -1,69 +1,8 @@
-"use client"
+import { FaqPageClient } from "@/app/(dashboard)/faq/faq-page-client"
+import { getClientSupportContactEmail } from "@/lib/support-contact-server"
 
-import { useState } from "react"
-import { ChevronDown } from "lucide-react"
-import { faqItems } from "@/lib/mock-data"
-import { cn } from "@/lib/utils"
+export default async function FAQPage() {
+  const supportEmail = await getClientSupportContactEmail()
 
-export default function FAQPage() {
-  const [openId, setOpenId] = useState<string | null>(null)
-
-  const categories = Array.from(new Set(faqItems.map((f) => f.category)))
-
-  return (
-    <div className="mx-auto w-full max-w-3xl space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold text-foreground">
-          Frequently Asked Questions
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Find answers to common questions about using the platform
-        </p>
-      </div>
-
-      {categories.map((category) => (
-        <section key={category} className="w-full">
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-            {category}
-          </h2>
-          <div className="flex w-full flex-col gap-2">
-            {faqItems
-              .filter((f) => f.category === category)
-              .map((faq) => {
-                const isOpen = openId === faq.id
-                return (
-                  <div
-                    key={faq.id}
-                    className="w-full rounded-xl border border-border bg-card"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => setOpenId(isOpen ? null : faq.id)}
-                      className="flex w-full items-center justify-between px-6 py-4 text-left"
-                    >
-                      <span className="text-sm font-medium text-foreground">
-                        {faq.question}
-                      </span>
-                      <ChevronDown
-                        className={cn(
-                          "h-4 w-4 shrink-0 text-muted-foreground transition-transform",
-                          isOpen && "rotate-180",
-                        )}
-                      />
-                    </button>
-                    {isOpen && (
-                      <div className="border-t border-border px-6 pb-4 pt-4">
-                        <p className="text-sm leading-relaxed text-muted-foreground">
-                          {faq.answer}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-          </div>
-        </section>
-      ))}
-    </div>
-  )
+  return <FaqPageClient supportEmail={supportEmail} />
 }

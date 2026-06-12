@@ -7,7 +7,6 @@ import type {
   Conversation,
   ChatMessage,
   QueryLog,
-  FAQItem,
 } from "./types"
 
 // ── Users ──────────────────────────────────────────────
@@ -462,18 +461,6 @@ export const queryLogs: QueryLog[] = [
   { id: "q8", userId: "u6", userName: "Priya Sharma", projectId: "p2", projectName: "Consumer Sentiment Tracker", query: "Social media sentiment trends Q1", timestamp: "2026-02-08T09:45:00Z", creditsUsed: 1 },
   { id: "q9", userId: "u8", userName: "Lisa Wong", projectId: "p6", projectName: "SaaS Market Landscape 2026", query: "Pricing model comparison across competitors", timestamp: "2026-02-11T10:15:00Z", creditsUsed: 1 },
   { id: "q10", userId: "u4", userName: "Elena Rodriguez", projectId: "p5", projectName: "Sustainability Perceptions Study", query: "Willingness to pay for eco packaging", timestamp: "2026-02-08T09:15:00Z", creditsUsed: 1 },
-]
-
-// ── FAQ ────────────────────────────────────────────────
-export const faqItems: FAQItem[] = [
-  { id: "faq1", question: "How do I start a new conversation with my research data?", answer: "Navigate to your project from the dashboard, then click on the Chat tab. You can select which documents you want to query using the document selector on the left, then type your question in the chat input at the bottom of the screen.", category: "Getting Started" },
-  { id: "faq2", question: "What file formats can I upload?", answer: "We currently support PDF documents, CSV files, and Excel spreadsheets (.xlsx). Files are processed and indexed automatically once uploaded. Processing typically takes 1-5 minutes depending on file size.", category: "Uploads" },
-  { id: "faq3", question: "How do query credits work?", answer: "Each AI query costs 1 credit. Credits are allocated per client account and shared across all projects. Your remaining credits are displayed in the header bar and on each project card. Contact your Disrupt account manager to purchase additional credits.", category: "Credits" },
-  { id: "faq4", question: "Can I export or download my conversations?", answer: "Yes! In the chat interface, you can download individual conversations as text files. Simply click the download icon in the conversation header. You can also start fresh with a new conversation thread at any time.", category: "Chat" },
-  { id: "faq5", question: "How is my data protected?", answer: "All data is encrypted at rest and in transit. Each client's data is completely isolated in separate secure environments. We comply with GDPR and UK data protection regulations. See our full Data Protection Policy for details.", category: "Security" },
-  { id: "faq6", question: "What happens when I select multiple documents for a query?", answer: "When you select multiple documents, the AI will cross-reference information across all selected files to provide a more comprehensive answer. This is particularly useful when you want to combine findings from different data sources.", category: "Chat" },
-  { id: "faq7", question: "Can I add new users to my account?", answer: "Client account holders can request new user accounts by contacting their Disrupt account manager. Admin users can create and manage user accounts directly from the User Management page.", category: "Account" },
-  { id: "faq8", question: "Is there an API available?", answer: "API access is planned for a future release. If you have specific integration needs, please speak with your Disrupt account manager to discuss early access options.", category: "Technical" },
 ]
 
 // ── Analytics helpers ──────────────────────────────────

@@ -1,6 +1,11 @@
 /** Support inbox for client-facing “Contact the team” links. */
 export const SUPPORT_EMAIL = "smart-arse@disrupt-insight.com"
 
+/** mailto: href for inline contact links (no target="_blank"). */
+export function supportMailtoHref(email: string = SUPPORT_EMAIL): string {
+  return `mailto:${email}`
+}
+
 /**
  * Gmail compose URL — safe to use with target="_blank" (tab shows compose UI).
  * Avoid mailto: + target="_blank"; browsers open an empty tab because there is no document to render.
