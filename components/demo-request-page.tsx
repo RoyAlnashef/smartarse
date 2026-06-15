@@ -1,8 +1,9 @@
 "use client"
 
-import { useState } from "react"
-import Link from "next/link"
+import { useEffect, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Building2, Mail, User } from "lucide-react"
+import { AuthLoginForm } from "@/components/auth-login-form"
 import { ArseLogoGroup } from "@/components/arse-logo-group"
 import { DemoFlowCookieBanner } from "@/components/demo-flow-cookie-banner"
 import {
@@ -11,25 +12,22 @@ import {
   type DemoSignupConsentState,
 } from "@/components/demo-signup-consent-fields"
 import { LoginFlowBackground } from "@/components/login-flow-background"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { pillInputClass, submitButtonClass } from "@/lib/auth-form-styles"
 import { readDemoCookieConsent } from "@/lib/demo-access/consent"
 import { DEMO_FEATURES, DEMO_INTRO_PARAGRAPH } from "@/lib/demo-access/demo-marketing"
 import { cn } from "@/lib/utils"
 
-const pillInputClass = cn(
-  "min-h-12 w-full rounded-full border-2 border-arse-pink bg-arse-white/90 px-5 py-3 text-sm text-arse-black",
-  "placeholder:text-arse-black/40",
-  "focus:border-arse-black focus:outline-none focus:ring-2 focus:ring-arse-black/15"
-)
-
-const submitButtonClass = cn(
-  "inline-flex w-full items-center justify-center rounded-full border-2 border-arse-black bg-arse-pink px-4 py-3.5 text-arse-black",
-  "font-arse-title text-xs font-bold uppercase tracking-wide",
-  "shadow-[4px_4px_0_0_var(--arse-cyan)] transition hover:translate-x-px hover:translate-y-px hover:shadow-[3px_3px_0_0_var(--arse-cyan)]",
-  "disabled:cursor-not-allowed disabled:opacity-60"
-)
-
 /** Matches `ClientShellHeader` disrupt wordmark sizing. */
 const DISRUPT_LOGO_CLASS = "mr-auto block h-[64px] w-auto sm:h-[64px]"
+
+const tabTriggerClass =
+  "min-w-0 shrink border-b-4 border-transparent px-2 py-2 text-center font-arse-title text-xs font-bold uppercase tracking-wide text-arse-black/50 data-[state=active]:border-arse-pink data-[state=active]:text-arse-black"
+
+const tabContentClass =
+  "mt-0 focus-visible:outline-none focus-visible:ring-0 data-[state=inactive]:hidden"
+
+type EntryTab = "request" | "login"
 
 function MarketingPanel() {
   return (
@@ -64,23 +62,23 @@ function MarketingPanel() {
         </p>
 
         <ul className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
-        {DEMO_FEATURES.map((feature) => (
-          <li key={feature.iconSrc} className="flex items-center gap-3 text-sm text-arse-black/90">
-            <img
-              src={feature.iconSrc}
-              alt=""
-              width={36}
-              height={36}
-              className="h-9 w-9 shrink-0"
-              draggable={false}
-            />
-            <span className="leading-snug">
-              {feature.prefix}
-              <strong className="font-semibold text-arse-black">{feature.emphasis}</strong>
-              {feature.suffix}
-            </span>
-          </li>
-        ))}
+          {DEMO_FEATURES.map((feature) => (
+            <li key={feature.iconSrc} className="flex items-center gap-3 text-sm text-arse-black/90">
+              <img
+                src={feature.iconSrc}
+                alt=""
+                width={36}
+                height={36}
+                className="h-9 w-9 shrink-0"
+                draggable={false}
+              />
+              <span className="leading-snug">
+                {feature.prefix}
+                <strong className="font-semibold text-arse-black">{feature.emphasis}</strong>
+                {feature.suffix}
+              </span>
+            </li>
+          ))}
         </ul>
       </div>
     </div>
@@ -88,6 +86,11 @@ function MarketingPanel() {
 }
 
 export function DemoRequestPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const [activeTab, setActiveTab] = useState<EntryTab>(() =>
+    searchParams.get("tab") === "login" ? "login" : "request"
+  )
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
@@ -100,6 +103,31 @@ export function DemoRequestPage() {
   })
 
   const canSubmit = consents.privacyAccepted && !isSubmitting
+
+  useEffect(() => {
+    const tab = searchParams.get("tab") === "login" ? "login" : "request"
+    setActiveTab(tab)
+    if (tab === "login") setSubmitted(false)
+  }, [searchParams])
+
+  function goToSignIn() {
+    setSubmitted(false)
+    setActiveTab("login")
+    router.replace("/?tab=login", { scroll: false })
+  }
+
+  function handleTabChange(nextTab: string) {
+    const tab = nextTab as EntryTab
+    setActiveTab(tab)
+    const params = new URLSearchParams(searchParams.toString())
+    if (tab === "login") {
+      params.set("tab", "login")
+    } else {
+      params.delete("tab")
+    }
+    const qs = params.toString()
+    router.replace(qs ? `/?${qs}` : "/", { scroll: false })
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -172,106 +200,125 @@ export function DemoRequestPage() {
                   <p className="text-sm text-arse-black/80">
                     We&apos;ll be in touch via email if you&apos;re approved. Please make sure to check your spam folder.
                   </p>
-                  <Link
-                    href="/"
+                  <button
+                    type="button"
+                    onClick={goToSignIn}
                     className="mt-4 inline-block font-arse-title text-xs font-semibold uppercase tracking-[0.2em] text-arse-black/75 underline decoration-arse-pink decoration-2 underline-offset-4 hover:text-arse-pink"
                   >
                     Back to sign in
-                  </Link>
+                  </button>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-4 text-left">
-                  <p className="font-arse-title text-center text-sm font-bold uppercase tracking-[0.35em] text-arse-pink">
-                    Request demo access
-                  </p>
-                  <p className="text-center text-xs text-arse-black/70">
-                    Our team will review your request for demo access and get back to you as soon as possible.
-                  </p>
+                <Tabs value={activeTab} onValueChange={handleTabChange}>
+                  <TabsList
+                    variant="line"
+                    className="!flex mb-6 min-h-12 h-auto w-full items-end justify-center gap-4 rounded-none border-b-0 bg-transparent p-0 sm:gap-6"
+                    aria-label="Sign up or sign in"
+                  >
+                    <TabsTrigger value="request" className={tabTriggerClass}>
+                      Request demo access
+                    </TabsTrigger>
+                    <TabsTrigger value="login" className={tabTriggerClass}>
+                      Login
+                    </TabsTrigger>
+                  </TabsList>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="flex items-center gap-2 sm:col-span-1">
-                      <User
-                        className="h-5 w-5 shrink-0 text-arse-pink"
-                        strokeWidth={1.75}
-                        aria-hidden
-                      />
-                      <input
-                        id="demo-first-name"
-                        type="text"
-                        autoComplete="given-name"
-                        required
-                        maxLength={80}
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="First name"
-                        className={pillInputClass}
-                      />
-                    </div>
-                    <div className="sm:col-span-1">
-                      <input
-                        id="demo-last-name"
-                        type="text"
-                        autoComplete="family-name"
-                        required
-                        maxLength={80}
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        placeholder="Last name"
-                        className={pillInputClass}
-                      />
-                    </div>
-                  </div>
+                  <TabsContent value="request" className={tabContentClass}>
+                    <form onSubmit={handleSubmit} className="space-y-4 text-left">
+                      <p className="text-center text-xs text-arse-black/70">
+                        Our team will review your request for demo access and get back to you as soon as possible.
+                      </p>
 
-                  <div className="flex items-center gap-2">
-                    <Mail
-                      className="h-5 w-5 shrink-0 text-arse-pink"
-                      strokeWidth={1.75}
-                      aria-hidden
-                    />
-                    <input
-                      id="demo-email"
-                      type="email"
-                      autoComplete="email"
-                      required
-                      maxLength={254}
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Business email address"
-                      className={pillInputClass}
-                    />
-                  </div>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="flex items-center gap-2 sm:col-span-1">
+                          <User
+                            className="h-5 w-5 shrink-0 text-arse-pink"
+                            strokeWidth={1.75}
+                            aria-hidden
+                          />
+                          <input
+                            id="demo-first-name"
+                            type="text"
+                            autoComplete="given-name"
+                            required
+                            maxLength={80}
+                            value={firstName}
+                            onChange={(e) => setFirstName(e.target.value)}
+                            placeholder="First name"
+                            className={pillInputClass}
+                          />
+                        </div>
+                        <div className="sm:col-span-1">
+                          <input
+                            id="demo-last-name"
+                            type="text"
+                            autoComplete="family-name"
+                            required
+                            maxLength={80}
+                            value={lastName}
+                            onChange={(e) => setLastName(e.target.value)}
+                            placeholder="Last name"
+                            className={pillInputClass}
+                          />
+                        </div>
+                      </div>
 
-                  <div className="flex items-center gap-2">
-                    <Building2
-                      className="h-5 w-5 shrink-0 text-arse-pink"
-                      strokeWidth={1.75}
-                      aria-hidden
-                    />
-                    <input
-                      id="demo-organization"
-                      type="text"
-                      autoComplete="organization"
-                      required
-                      maxLength={160}
-                      value={organizationName}
-                      onChange={(e) => setOrganizationName(e.target.value)}
-                      placeholder="Organization name"
-                      className={pillInputClass}
-                    />
-                  </div>
+                      <div className="flex items-center gap-2">
+                        <Mail
+                          className="h-5 w-5 shrink-0 text-arse-pink"
+                          strokeWidth={1.75}
+                          aria-hidden
+                        />
+                        <input
+                          id="demo-email"
+                          type="email"
+                          autoComplete="email"
+                          required
+                          maxLength={254}
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="Business email address"
+                          className={pillInputClass}
+                        />
+                      </div>
 
-                  <DemoSignupConsentFields value={consents} onChange={setConsents} />
+                      <div className="flex items-center gap-2">
+                        <Building2
+                          className="h-5 w-5 shrink-0 text-arse-pink"
+                          strokeWidth={1.75}
+                          aria-hidden
+                        />
+                        <input
+                          id="demo-organization"
+                          type="text"
+                          autoComplete="organization"
+                          required
+                          maxLength={160}
+                          value={organizationName}
+                          onChange={(e) => setOrganizationName(e.target.value)}
+                          placeholder="Organization name"
+                          className={pillInputClass}
+                        />
+                      </div>
 
-                  <div className="pt-2">
-                    <button
-                      type="submit"
-                      disabled={!canSubmit}
-                      className={submitButtonClass}
-                    >
-                      {isSubmitting ? "Submitting…" : "Request access"}
-                    </button>
-                  </div>
-                </form>
+                      <DemoSignupConsentFields value={consents} onChange={setConsents} />
+
+                      <div className="pt-2">
+                        <button
+                          type="submit"
+                          disabled={!canSubmit}
+                          className={submitButtonClass}
+                        >
+                          {isSubmitting ? "Submitting…" : "Request access"}
+                        </button>
+                      </div>
+                    </form>
+                  </TabsContent>
+
+                  <TabsContent value="login" className={tabContentClass}>
+                    <AuthLoginForm hideHeadings />
+                  </TabsContent>
+                </Tabs>
               )}
             </div>
           </div>

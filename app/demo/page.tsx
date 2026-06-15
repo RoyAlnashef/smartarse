@@ -1,9 +1,10 @@
-import { DemoRequestPage } from "@/components/demo-request-page"
+import { redirect } from "next/navigation"
 
-export const metadata = {
-  title: "Request demo access — smartA.R.S.E.",
+type DemoPageProps = {
+  searchParams: Promise<{ tab?: string }>
 }
 
-export default function DemoPage() {
-  return <DemoRequestPage />
+export default async function DemoPage({ searchParams }: DemoPageProps) {
+  const { tab } = await searchParams
+  redirect(tab === "login" ? "/?tab=login" : "/")
 }

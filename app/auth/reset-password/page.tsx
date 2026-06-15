@@ -75,7 +75,7 @@ export default function ResetPasswordPage() {
             {establishError ?? "Request a new password reset email from sign in."}
           </p>
           <Link
-            href="/"
+            href="/?tab=login"
             className="mt-5 inline-flex rounded-full border-2 border-arse-black bg-arse-pink px-4 py-2 text-xs font-bold uppercase tracking-wide text-arse-black"
           >
             Back to sign in

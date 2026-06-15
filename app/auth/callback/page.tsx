@@ -101,13 +101,13 @@ export default function AuthCallbackPage() {
         </p>
         <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:justify-center">
           <Link
-            href="/demo"
+            href="/"
             className="inline-flex rounded-full border-2 border-arse-black bg-arse-pink px-4 py-2 text-xs font-bold uppercase tracking-wide text-arse-black"
           >
             Request demo
           </Link>
           <Link
-            href="/"
+            href="/?tab=login"
             className="inline-flex rounded-full border-2 border-arse-black bg-white px-4 py-2 text-xs font-bold uppercase tracking-wide text-arse-black"
           >
             Sign in

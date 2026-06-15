@@ -5,9 +5,9 @@ export function demoHtmlSuccess(title: string, message: string): string {
     title,
     message,
     tone: "success",
-    primaryHref: "/",
+    primaryHref: "/?tab=login",
     primaryLabel: "Back to sign in",
-    secondaryHref: "/demo",
+    secondaryHref: "/",
     secondaryLabel: "Request demo",
   })
 }
@@ -17,9 +17,9 @@ export function demoHtmlError(message: string): string {
     title: "Something went wrong",
     message,
     tone: "error",
-    primaryHref: "/",
+    primaryHref: "/?tab=login",
     primaryLabel: "Back to sign in",
-    secondaryHref: "/demo",
+    secondaryHref: "/",
     secondaryLabel: "Request demo",
   })
 }

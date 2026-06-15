@@ -48,6 +48,7 @@ export async function middleware(request: NextRequest) {
     const loginUrl = request.nextUrl.clone()
     loginUrl.pathname = "/"
     loginUrl.search = ""
+    loginUrl.searchParams.set("tab", "login")
     return NextResponse.redirect(loginUrl)
   }
 
