@@ -146,7 +146,7 @@ export function DemoRequestPage() {
                     Request received
                   </p>
                   <p className="text-sm text-arse-black/80">
-                    We&apos;ll be in touch if approved.
+                    We&apos;ll be in touch via email if you&apos;re approved. Please make sure to check your spam folder.
                   </p>
                   <Link
                     href="/"
