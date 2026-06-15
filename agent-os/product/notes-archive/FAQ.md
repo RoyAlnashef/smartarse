@@ -1,6 +1,6 @@
 **FAQ**
 
-For quick answers about smartA.R.S.E., and how best chat to your project. If you can’t find what you’re looking for? **Contact the Disrupt team**. (bold is link to email)
+For quick answers about smartA.R.S.E., and how best chat to your project. If you can’t find what you’re looking for? **Contact the Disrupt team**. 
 
 **What is smartA.R.S.E.?**
 
@@ -8,7 +8,7 @@ SmartA.R.S.E. is a project-centric AI agent for interrogating and summarising th
 
 **What can I ask SmartA.R.S.E.?**
 
-You can ask SmartA.R.S.E. anything to do with your project, be that creating summaries, finding specific subgroup stats or pulling quotes on a topic. Be creative\! SmartA.R.S.E. has been trained to only answer questions pertinent to your project. If you ask something not relevant to your project, it will tell you it can’t answer it. If it cannot find an answer, it will not make one up. 
+You can ask SmartA.R.S.E. anything to do with your project, be that creating summaries, finding specific subgroup stats or pulling quotes on a topic. Be creative\! Smart.A.R.S.E. has been trained to only answer questions pertinent to your project. If you ask something not relevant to your project, it will tell you it can’t answer it. If it cannot find an answer, it will not make one up. 
 
 **What are smartA.R.S.E. answers based on?** 
 
@@ -22,13 +22,13 @@ The exact inputs will be confirmed with the Disrupt team and can be any combinat
 
 **How does smartA.R.S.E. work?**
 
-smartA.R.S.E. isn’t just any old AI. We’ve built an analysis heuristic grounded in our favourite BeSci and behavioural change frameworks; meaning all responses are shaped through the lens of the bespoke Disrupt reports created for your project. Human written headings, summaries and recommendations all feed into the answers smartA.R.S.E. gives you.
+smartA.R.S.E. isn’t just any old AI. We’ve built an analysis heuristic grounded in our favourite BeSci and behavioural change frameworks; meaning all responses are shaped through the lens of the bespoke Disrupt reports created for your project. Human written headings, summaries and recommendations all feed into the answers smartA.R.S.E gives you.
 
 **How accurate is smartA.R.S.E.?**
 
 smartA.R.S.E. is 100% accurate. It is not making predictions nor is it an AI persona representation of your audience. It is synthesising and summarising the data and insights from your project and presenting these facts back.
 
-**Will smartA.R.S.E. hallucinate?**
+**Will smart.A.R.S.E. hallucinate?**
 
 No\! Our AI has been created with detailed guardrails to prevent hallucinations. If you ask something it cannot answer from the seed data, it will tell you it cannot answer it. It will not make anything up.
 
@@ -56,11 +56,11 @@ Yes, please ask the Disrupt team to extend access if required.
 
 All past conversations are saved in the chat history which can be accessed via the main project window. Each session is saved as a single conversation, if you are looking for a specific question you will need to open that specific session. You can start new chats to have conversations saved into different histories. 
 
-**What AI model does smartA.R.S.E. use?**
+**What AI model does smartA.R.S.E use?**
 
 SmartA.R.S.E. is built on the very latest Anthropic models and kept up to date with the latest AI developments.
 
- **Can smartA.R.S.E. be used to make crossbreaks/ data tables?**
+ **Can smartA.R.S.E be used to make crossbreaks/ data tables?**
 
 Yes and no. smartA.R.S.E. can make small summary tables and you can add key subgroups as cross breaks. It is not meant to be a full crosstab tool and does not replicate the functionality of tailored crosstab programmes. If you need to slice and dice your data in this way reach out to your Disrupt project team.
 
