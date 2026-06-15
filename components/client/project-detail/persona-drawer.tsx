@@ -1492,7 +1492,7 @@ export function PersonaPanel({
           ) : (
             <>
               <p className="font-arse-body text-xs leading-relaxed text-arse-black/70">
-                Explore a segment's collective perspective from the 2025 Study. Select a segment to begin.
+                Explore a segment's collective perspective from the study. Select a segment or build your own to begin.
               </p>
               <div className="flex flex-col gap-3">
                 {segmentPersonas.map((p) => (
