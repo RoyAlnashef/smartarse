@@ -16,6 +16,8 @@ export function FaqAnswer({
         Yes,{" "}
         <a
           href={supportMailtoHref(supportEmail)}
+          target="_blank"
+          rel="noopener noreferrer"
           className="font-semibold text-arse-pink hover:underline"
         >
           contact the Disrupt team

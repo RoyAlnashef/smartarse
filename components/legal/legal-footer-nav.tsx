@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 
-import { supportContactNewTabHref } from "@/lib/support-contact"
+import { supportMailtoHref } from "@/lib/support-contact"
 import { useSupportContactEmail } from "@/lib/support-contact-context"
 
 const HELP_LINKS = [
@@ -38,7 +38,7 @@ export function LegalFooterNav({
         </span>
       ))}
       <a
-        href={supportContactNewTabHref(supportEmail)}
+        href={supportMailtoHref(supportEmail)}
         target="_blank"
         rel="noopener noreferrer"
         className="hover:text-arse-pink"

@@ -4,7 +4,7 @@ import { useState } from "react"
 import { ChevronDown } from "lucide-react"
 import { FaqAnswer } from "@/components/help/faq-answer"
 import { faqEntries, faqIntroLead } from "@/lib/faq-content"
-import { supportContactNewTabHref } from "@/lib/support-contact"
+import { supportMailtoHref } from "@/lib/support-contact"
 import { cn } from "@/lib/utils"
 
 export function FaqPageClient({ supportEmail }: { supportEmail: string }) {
@@ -17,7 +17,7 @@ export function FaqPageClient({ supportEmail }: { supportEmail: string }) {
         <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
           {faqIntroLead}{" "}
           <a
-            href={supportContactNewTabHref(supportEmail)}
+            href={supportMailtoHref(supportEmail)}
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold text-arse-pink hover:underline"

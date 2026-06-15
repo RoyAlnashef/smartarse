@@ -1,7 +1,7 @@
 import { FaqAnswer } from "@/components/help/faq-answer"
 import { faqEntries, faqIntroLead } from "@/lib/faq-content"
 import { getClientSupportContactEmail } from "@/lib/support-contact-server"
-import { supportContactNewTabHref } from "@/lib/support-contact"
+import { supportMailtoHref } from "@/lib/support-contact"
 
 export default async function PublicFaqPage() {
   const supportEmail = await getClientSupportContactEmail()
@@ -12,7 +12,7 @@ export default async function PublicFaqPage() {
       <p className="mt-4 text-muted-foreground leading-relaxed">
         {faqIntroLead}{" "}
         <a
-          href={supportContactNewTabHref(supportEmail)}
+          href={supportMailtoHref(supportEmail)}
           target="_blank"
           rel="noopener noreferrer"
           className="font-semibold text-arse-pink hover:underline"
