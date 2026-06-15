@@ -42,7 +42,22 @@ function MarketingPanel() {
       />
 
       <div className="mt-8 flex flex-col gap-6 lg:my-auto lg:gap-8">
-        <ArseLogoGroup className="flex w-max max-w-full flex-col items-stretch gap-0" />
+        <div className="flex flex-row items-center gap-6 lg:gap-8">
+          <ArseLogoGroup className="flex w-max max-w-full flex-col items-stretch gap-0" />
+          <div
+            className="flex shrink-0 items-center justify-center"
+            aria-hidden
+            title="Robot illustration"
+          >
+            <img
+              src="/robot.png"
+              alt=""
+              aria-hidden
+              draggable={false}
+              className="h-[100px] w-auto translate-y-[-2px] sm:h-[132px]"
+            />
+          </div>
+        </div>
 
         <p className="text-sm leading-relaxed text-arse-black/85 sm:text-[15px]">
           {DEMO_INTRO_PARAGRAPH}
@@ -133,7 +148,16 @@ export function DemoRequestPage() {
           )}
         >
           <div className="flex w-full max-w-md flex-col items-center gap-8 sm:gap-10">
-            <ArseLogoGroup className="flex w-max max-w-full flex-col items-center gap-0 lg:hidden" />
+            <div className="flex flex-col items-center gap-3 lg:hidden">
+              <img
+                src="/robot.png"
+                alt=""
+                aria-hidden
+                draggable={false}
+                className="h-[72px] w-auto shrink-0 translate-y-[-2px] sm:h-[88px]"
+              />
+              <ArseLogoGroup className="flex w-max max-w-full flex-col items-center gap-0" />
+            </div>
 
             <div
               className={cn(
