@@ -50,13 +50,13 @@ function MarketingPanel() {
 
         <ul className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
         {DEMO_FEATURES.map((feature) => (
-          <li key={feature.iconSrc} className="flex gap-3 text-sm text-arse-black/90">
+          <li key={feature.iconSrc} className="flex items-center gap-3 text-sm text-arse-black/90">
             <img
               src={feature.iconSrc}
               alt=""
               width={36}
               height={36}
-              className="mt-0.5 h-9 w-9 shrink-0"
+              className="h-9 w-9 shrink-0"
               draggable={false}
             />
             <span className="leading-snug">
