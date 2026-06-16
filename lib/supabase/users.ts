@@ -11,6 +11,9 @@ type UserRow = {
   status: string | null
   created_at: string | null
   name: string | null
+  marketing_opt_in: boolean | null
+  marketing_consent_at: string | null
+  marketing_consent_version: string | null
 }
 
 function mapRole(value: string | null): UserRole {
@@ -40,6 +43,9 @@ function rowToUser(row: UserRow): User {
     lastLogin: created,
     createdAt: created,
     creditsSpentLifetime: 0,
+    marketingOptIn: row.marketing_opt_in === true,
+    marketingConsentAt: row.marketing_consent_at,
+    marketingConsentVersion: row.marketing_consent_version,
   }
 }
 
@@ -71,7 +77,9 @@ export async function listUsersForDashboard(): Promise<User[]> {
 
   const { data, error } = await supabase
     .from("users")
-    .select("id,email,role,organization_id,status,created_at,name")
+    .select(
+      "id,email,role,organization_id,status,created_at,name,marketing_opt_in,marketing_consent_at,marketing_consent_version"
+    )
     .order("created_at", { ascending: false })
 
   if (error) throw new Error(error.message)

@@ -65,9 +65,9 @@ function buildUserFromProfileRow(
     lastLogin: new Date().toISOString(),
     createdAt: dbRow.created_at ?? new Date().toISOString(),
     creditsSpentLifetime: 0,
+    marketingOptIn: false,
   }
 }
-
 /**
  * Loads the canonical profile from public.users. Fail-closed: signs out when the
  * row is missing (misconfigured RLS or incomplete provisioning).

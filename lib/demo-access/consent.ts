@@ -201,3 +201,55 @@ export function mergeDemoRequestMetadata(
       signupMetadata.cookiePreferences ?? base.cookiePreferences,
   }
 }
+
+function parseDemoConsentRecord(value: unknown): DemoConsentRecord | null {
+  if (!value || typeof value !== "object") return null
+  const record = value as Record<string, unknown>
+  const acceptedAt =
+    typeof record.acceptedAt === "string" ? record.acceptedAt.trim() : ""
+  const version = typeof record.version === "string" ? record.version.trim() : ""
+  if (!acceptedAt || !version) return null
+  return { acceptedAt, version }
+}
+
+export function marketingConsentFromRequestMetadata(
+  metadata: Record<string, unknown> | null | undefined
+): {
+  marketingOptIn: boolean
+  marketingConsentAt: string | null
+  marketingConsentVersion: string | null
+} {
+  if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) {
+    return {
+      marketingOptIn: false,
+      marketingConsentAt: null,
+      marketingConsentVersion: null,
+    }
+  }
+
+  const consents = metadata.consents
+  if (!consents || typeof consents !== "object" || Array.isArray(consents)) {
+    return {
+      marketingOptIn: false,
+      marketingConsentAt: null,
+      marketingConsentVersion: null,
+    }
+  }
+
+  const marketing = parseDemoConsentRecord(
+    (consents as Record<string, unknown>).marketing
+  )
+  if (!marketing) {
+    return {
+      marketingOptIn: false,
+      marketingConsentAt: null,
+      marketingConsentVersion: null,
+    }
+  }
+
+  return {
+    marketingOptIn: true,
+    marketingConsentAt: marketing.acceptedAt,
+    marketingConsentVersion: marketing.version,
+  }
+}

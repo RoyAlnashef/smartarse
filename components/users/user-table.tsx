@@ -28,6 +28,11 @@ const statusColors: Record<string, string> = {
   inactive: "bg-dark-100 text-dark-500",
 }
 
+const marketingColors = {
+  yes: "bg-mint-100 text-mint-700",
+  no: "bg-dark-100 text-dark-500",
+} as const
+
 function formatDate(iso: string) {
   return formatLocalDate(iso)
 }
@@ -45,6 +50,9 @@ export function UserTableSkeleton() {
               <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground sm:table-cell">Role</th>
               <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground md:table-cell">
                 Organization
+              </th>
+              <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground md:table-cell">
+                Marketing
               </th>
               <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground lg:table-cell">
                 Last Login
@@ -75,6 +83,9 @@ export function UserTableSkeleton() {
                 </td>
                 <td className="hidden px-4 py-3 md:table-cell">
                   <Skeleton className="h-4 w-24" />
+                </td>
+                <td className="hidden px-4 py-3 md:table-cell">
+                  <Skeleton className="h-5 w-10 rounded-full" />
                 </td>
                 <td className="hidden px-4 py-3 lg:table-cell">
                   <Skeleton className="h-4 w-24" />
@@ -126,6 +137,7 @@ export function UserTable({
                 <th className="px-4 py-3 text-left font-medium text-muted-foreground">User</th>
                 <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground sm:table-cell">Role</th>
                 <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground md:table-cell">Organization</th>
+                <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground md:table-cell">Marketing</th>
                 <th className="hidden px-4 py-3 text-left font-medium text-muted-foreground lg:table-cell">Last Login</th>
                 <th
                   className="hidden px-4 py-3 text-left font-medium text-muted-foreground lg:table-cell"
@@ -173,7 +185,7 @@ export function UserTable({
               {users.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-4 py-10 text-center text-sm text-muted-foreground"
                   >
                     No users match your filters.
@@ -225,6 +237,15 @@ export function UserTable({
                     </td>
                     <td className="hidden px-4 py-3 text-muted-foreground md:table-cell">
                       {org ? org.name : "---"}
+                    </td>
+                    <td className="hidden px-4 py-3 md:table-cell">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                          user.marketingOptIn ? marketingColors.yes : marketingColors.no
+                        }`}
+                      >
+                        {user.marketingOptIn ? "Yes" : "No"}
+                      </span>
                     </td>
                     <td className="hidden px-4 py-3 text-muted-foreground lg:table-cell">
                       {formatDate(user.lastLogin)}

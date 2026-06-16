@@ -33,6 +33,12 @@ export interface User {
   creditsSpentLifetime: number
   /** True when provisioned via the demo access flow (request email/id or demo project assignment). */
   isDemoUser?: boolean
+  /** Maps to Supabase `users.marketing_opt_in`. */
+  marketingOptIn: boolean
+  /** Maps to Supabase `users.marketing_consent_at`. */
+  marketingConsentAt?: string | null
+  /** Maps to Supabase `users.marketing_consent_version`. */
+  marketingConsentVersion?: string | null
 }
 
 export interface Client {

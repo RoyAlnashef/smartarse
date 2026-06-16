@@ -6,6 +6,7 @@ import {
 } from "@/lib/demo-access/demo-project"
 import { sendDemoMagicLinkEmail } from "@/lib/demo-access/email"
 import { displayNameFromDemoRequest } from "@/lib/demo-access/password-setup"
+import { marketingConsentFromRequestMetadata } from "@/lib/demo-access/consent"
 import { getDemoAccessRequestById } from "@/lib/demo-access/request-service"
 
 export type ApproveDemoRequestResult =
@@ -41,7 +42,12 @@ async function ensureDemoUser(
   adminClient: SupabaseClient,
   email: string,
   organizationId: string,
-  displayName: string
+  displayName: string,
+  marketingConsent: {
+    marketingOptIn: boolean
+    marketingConsentAt: string | null
+    marketingConsentVersion: string | null
+  }
 ): Promise<string> {
   const demoAppMetadata = {
     admin_provisioned: true,
@@ -86,6 +92,9 @@ async function ensureDemoUser(
       role: "user",
       organization_id: organizationId,
       status: "active",
+      marketing_opt_in: marketingConsent.marketingOptIn,
+      marketing_consent_at: marketingConsent.marketingConsentAt,
+      marketing_consent_version: marketingConsent.marketingConsentVersion,
     },
     { onConflict: "id" }
   )
@@ -144,6 +153,7 @@ export async function approveDemoAccessRequest(
   }
 
   const displayName = displayNameFromDemoRequest(row)
+  const marketingConsent = marketingConsentFromRequestMetadata(row.metadata)
 
   let userId: string
   try {
@@ -151,7 +161,8 @@ export async function approveDemoAccessRequest(
       adminClient,
       row.email,
       demoProject.organizationId,
-      displayName
+      displayName,
+      marketingConsent
     )
     await ensureProjectUserAssignment(adminClient, demoProject.id, userId)
 
