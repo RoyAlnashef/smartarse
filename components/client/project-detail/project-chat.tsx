@@ -70,6 +70,7 @@ import {
   externalMarkdownLinkClass,
   textFromReactChildren,
 } from "@/components/chat/chat-markdown-prose"
+import { CitationSourceTooltip } from "@/components/chat/citation-source-tooltip"
 import {
   Tooltip,
   TooltipContent,
@@ -207,8 +208,8 @@ function MessageBubble({
             )
           }
           return (
-            <Tooltip>
-              <TooltipTrigger asChild>
+            <CitationSourceTooltip
+              trigger={
                 <button
                   type="button"
                   className={cn(
@@ -220,20 +221,17 @@ function MessageBubble({
                 >
                   {citationIndex}
                 </button>
-              </TooltipTrigger>
-              <TooltipContent
-                side="top"
-                className={citationTooltipContentClass("default", source.citeColorToken, source)}
-                style={citationTooltipContentStyle(source.citeColorToken)}
-              >
-                <CitationTooltipBody
-                  source={source}
-                  primaryLabel={primaryLabel}
-                  inlineCitation={inlineCitation}
-                  segmentPersonas={segmentPersonas}
-                />
-              </TooltipContent>
-            </Tooltip>
+              }
+              className={citationTooltipContentClass("default", source.citeColorToken, source)}
+              style={citationTooltipContentStyle(source.citeColorToken)}
+            >
+              <CitationTooltipBody
+                source={source}
+                primaryLabel={primaryLabel}
+                inlineCitation={inlineCitation}
+                segmentPersonas={segmentPersonas}
+              />
+            </CitationSourceTooltip>
           )
         }
       }

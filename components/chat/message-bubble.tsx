@@ -40,12 +40,8 @@ import {
   rewriteInlineCitationMarkers,
 } from "@/lib/chat/inline-citations"
 import { citeSourceIndexBadgeCn, citeSourceIndexBadgeStyle } from "@/lib/theme/cite-color-tokens"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
+import { CitationSourceTooltip } from "@/components/chat/citation-source-tooltip"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import { formatLocalTime } from "@/lib/datetime"
 import { cn } from "@/lib/utils"
 
@@ -161,8 +157,8 @@ export function MessageBubble({
             )
           }
           return (
-            <Tooltip>
-              <TooltipTrigger asChild>
+            <CitationSourceTooltip
+              trigger={
                 <button
                   type="button"
                   className={cn(
@@ -174,21 +170,18 @@ export function MessageBubble({
                 >
                   {citationIndex}
                 </button>
-              </TooltipTrigger>
-              <TooltipContent
-                side="top"
-                className={citationTooltipContentClass("compact", source.citeColorToken, source)}
-                style={citationTooltipContentStyle(source.citeColorToken)}
-              >
-                <CitationTooltipBody
-                  source={source}
-                  primaryLabel={primaryLabel}
-                  variant="compact"
-                  inlineCitation={inlineCitation}
-                  segmentPersonas={segmentPersonas}
-                />
-              </TooltipContent>
-            </Tooltip>
+              }
+              className={citationTooltipContentClass("compact", source.citeColorToken, source)}
+              style={citationTooltipContentStyle(source.citeColorToken)}
+            >
+              <CitationTooltipBody
+                source={source}
+                primaryLabel={primaryLabel}
+                variant="compact"
+                inlineCitation={inlineCitation}
+                segmentPersonas={segmentPersonas}
+              />
+            </CitationSourceTooltip>
           )
         }
       }

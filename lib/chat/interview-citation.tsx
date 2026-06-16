@@ -41,11 +41,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
+import { CitationSourceTooltip } from "@/components/chat/citation-source-tooltip"
 import { findChunkByContext } from "@/lib/citation-utils"
 import {
   MOCK_SEGMENT_PERSONAS,
@@ -307,37 +303,34 @@ export function InlineInterviewCitation({
       const demographicsMarginClass = isCompact ? "mt-2" : "mt-3"
 
       return (
-        <Tooltip>
-          <TooltipTrigger asChild>{button}</TooltipTrigger>
-          <TooltipContent
-            side="top"
-            className={citationTooltipContentClass(
-              variant,
-              source.citeColorToken,
-              source
-            )}
-            style={citationTooltipContentStyle(source.citeColorToken)}
-          >
-            <div className="flex items-center gap-2 text-sm font-semibold leading-none">
-              <HeaderIcon
-                className={cn(
-                  "shrink-0 text-arse-black/60",
-                  isCompact ? "h-3.5 w-3.5" : "h-4 w-4"
-                )}
-              />
-              <p className="leading-none">
-                {hasModeratorQuestion ? "Moderator Question" : "Interview Quote"}
-              </p>
-            </div>
-            <p className={bodyClass}>{body}</p>
-            <div className={demographicsMarginClass}>
-              <ChunkDemographicsRow
-                chunk={matched}
-                segmentColorToken={segmentColorToken}
-              />
-            </div>
-          </TooltipContent>
-        </Tooltip>
+        <CitationSourceTooltip
+          trigger={button}
+          className={citationTooltipContentClass(
+            variant,
+            source.citeColorToken,
+            source
+          )}
+          style={citationTooltipContentStyle(source.citeColorToken)}
+        >
+          <div className="flex items-center gap-2 text-sm font-semibold leading-none">
+            <HeaderIcon
+              className={cn(
+                "shrink-0 text-arse-black/60",
+                isCompact ? "h-3.5 w-3.5" : "h-4 w-4"
+              )}
+            />
+            <p className="leading-none">
+              {hasModeratorQuestion ? "Moderator Question" : "Interview Quote"}
+            </p>
+          </div>
+          <p className={bodyClass}>{body}</p>
+          <div className={demographicsMarginClass}>
+            <ChunkDemographicsRow
+              chunk={matched}
+              segmentColorToken={segmentColorToken}
+            />
+          </div>
+        </CitationSourceTooltip>
       )
     }
   }

@@ -24,11 +24,7 @@ import {
   citeSourceIndexBadgeStyle,
 } from "@/lib/theme/cite-color-tokens"
 import { cn } from "@/lib/utils"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
+import { CitationSourceTooltip } from "@/components/chat/citation-source-tooltip"
 
 export function ChatCitationSourcesFooter({
   sources,
@@ -118,26 +114,24 @@ export function ChatCitationSourcesFooter({
             }
 
             return (
-              <Tooltip key={source.index}>
-                <TooltipTrigger asChild>{chipButton}</TooltipTrigger>
-                <TooltipContent
-                  side="top"
-                  className={citationTooltipContentClass(
-                    tooltipVariant,
-                    source.citeColorToken,
-                    source
-                  )}
-                  style={citationTooltipContentStyle(source.citeColorToken)}
-                >
-                  <CitationTooltipBody
-                    source={source}
-                    primaryLabel={primaryLabel}
-                    variant={tooltipVariant}
-                    inlineCitation={footerSurveyInlineByIndex.get(source.index)}
-                    segmentPersonas={segmentPersonas}
-                  />
-                </TooltipContent>
-              </Tooltip>
+              <CitationSourceTooltip
+                key={source.index}
+                trigger={chipButton}
+                className={citationTooltipContentClass(
+                  tooltipVariant,
+                  source.citeColorToken,
+                  source
+                )}
+                style={citationTooltipContentStyle(source.citeColorToken)}
+              >
+                <CitationTooltipBody
+                  source={source}
+                  primaryLabel={primaryLabel}
+                  variant={tooltipVariant}
+                  inlineCitation={footerSurveyInlineByIndex.get(source.index)}
+                  segmentPersonas={segmentPersonas}
+                />
+              </CitationSourceTooltip>
             )
           })}
         </div>
