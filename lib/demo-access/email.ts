@@ -3,6 +3,7 @@ import { resolveSupportNotificationEmail } from "@/lib/support-notifications/get
 import {
   formatDemoTimestamp,
   renderEmailButton,
+  renderEmailButtonRow,
   renderEmailLayout,
   escapeHtml,
 } from "@/lib/demo-access/templates/shared"
@@ -48,10 +49,10 @@ export async function sendDemoRequestNotificationEmail(
     title: "New demo request",
     intro: "A new demo access request was submitted.",
     bodyHtml: `<p style="margin:0 0 14px;"><strong>Name:</strong> ${escapeHtml(name)}<br /><strong>Email:</strong> ${escapeHtml(options.requesterEmail)}<br /><strong>Organization:</strong> ${escapeHtml(organization)}<br /><strong>Requested:</strong> ${escapeHtml(requestedLabel)}</p>
-<p style="margin:0;display:flex;gap:10px;flex-wrap:wrap;">
-  ${renderEmailButton(options.approveUrl, "Approve", "primary")}
-  ${renderEmailButton(options.rejectUrl, "Reject", "secondary")}
-</p>`,
+<p style="margin:0;">${renderEmailButtonRow([
+      { href: options.approveUrl, label: "Approve", variant: "primary" },
+      { href: options.rejectUrl, label: "Reject", variant: "secondary" },
+    ])}</p>`,
     footer: "Links expire after the configured approval window.",
   })
 

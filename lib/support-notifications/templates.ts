@@ -2,8 +2,9 @@ import { getAppBaseUrl } from "@/lib/demo-access/config"
 import { formatLondonCalendarDate } from "@/lib/datetime"
 import {
   escapeHtml,
+  renderEmailButton,
   renderEmailLayout,
-} from "@/lib/demo-access/templates/shared"
+} from "@/lib/email"
 import type { SupportNotificationProjectContext } from "@/lib/support-notifications/types"
 
 function projectSettingsUrl(projectId: string): string {
@@ -25,7 +26,7 @@ export function renderCreditBalanceLowEmail(context: SupportNotificationProjectC
 <strong>Credit balance:</strong> ${balance.toLocaleString()}<br />
 <strong>Alert threshold:</strong> ${threshold.toLocaleString()}
 </p>
-<p style="margin:0;"><a href="${escapeHtml(projectUrl)}" style="color:#171717;font-weight:700;">Open project credits settings</a></p>`
+<p style="margin:0;">${renderEmailButton(projectUrl, "Open project credits settings", "primary")}</p>`
 
   const subject = `Low credits: ${context.projectName} (${balance.toLocaleString()} remaining)`
   const text = `Project "${context.projectName}" (${context.organizationName}) has dropped below the credit alert threshold.
@@ -62,7 +63,7 @@ export function renderAccessExpiresEmail(
 <strong>Access until (London):</strong> ${escapeHtml(formatLondonCalendarDate(accessUntil))}<br />
 <strong>Days remaining:</strong> ${daysUntil}
 </p>
-<p style="margin:0;"><a href="${escapeHtml(projectUrl)}" style="color:#171717;font-weight:700;">Open project settings</a></p>`
+<p style="margin:0;">${renderEmailButton(projectUrl, "Open project settings", "primary")}</p>`
 
   const subject = `Access ends in ${windowLabel}: ${context.projectName}`
   const text = `Project "${context.projectName}" (${context.organizationName}) access ends in ${windowLabel}.

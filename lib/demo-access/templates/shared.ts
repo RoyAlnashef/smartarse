@@ -1,83 +1,22 @@
-const colors = {
-  bg: "#e9faf9",
-  card: "#ffffff",
-  text: "#171717",
-  muted: "#545454",
-  border: "#1a1a1a",
-  cyan: "#00d4c8",
-  pink: "#ff4fb2",
-  neutral: "#f4f4f5",
-}
+import { emailColors } from "@/lib/email/tokens"
+import { escapeHtml } from "@/lib/email/escape"
 
-type EmailButtonVariant = "primary" | "secondary"
+export {
+  escapeHtml,
+  renderEmailLayout,
+  renderEmailButton,
+  renderEmailButtonRow,
+} from "@/lib/email"
+
+const colors = emailColors
+
 type PageTone = "success" | "neutral" | "error"
-
-function emailButtonStyle(variant: EmailButtonVariant): string {
-  const isPrimary = variant === "primary"
-  return [
-    "display:inline-block",
-    "padding:12px 24px",
-    "border-radius:999px",
-    `border:2px solid ${colors.border}`,
-    "font-size:13px",
-    "font-weight:800",
-    "text-decoration:none",
-    "text-transform:uppercase",
-    "letter-spacing:0.06em",
-    `background:${isPrimary ? colors.pink : colors.card}`,
-    `color:${colors.text}`,
-  ].join(";")
-}
-
-export function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;")
-}
 
 export function formatDemoTimestamp(value: string): string {
   return new Date(value).toLocaleString("en-GB", {
     dateStyle: "medium",
     timeStyle: "short",
   })
-}
-
-export function renderEmailLayout(options: {
-  title: string
-  intro: string
-  bodyHtml: string
-  footer: string
-}): string {
-  return `<!DOCTYPE html>
-<html lang="en">
-<body style="margin:0;padding:24px;background:${colors.bg};font-family:Inter,Segoe UI,Roboto,Arial,sans-serif;color:${colors.text};">
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:560px;margin:0 auto;background:${colors.card};border:2px solid ${colors.border};border-radius:16px;box-shadow:4px 4px 0 ${colors.cyan};">
-    <tr>
-      <td style="padding:28px 24px 14px 24px;font-size:24px;font-weight:800;line-height:1.2;">${escapeHtml(options.title)}</td>
-    </tr>
-    <tr>
-      <td style="padding:0 24px 8px 24px;font-size:16px;line-height:1.5;">${escapeHtml(options.intro)}</td>
-    </tr>
-    <tr>
-      <td style="padding:0 24px 10px 24px;font-size:15px;line-height:1.5;">${options.bodyHtml}</td>
-    </tr>
-    <tr>
-      <td style="padding:8px 24px 26px 24px;font-size:12px;line-height:1.5;color:${colors.muted};">${escapeHtml(options.footer)}</td>
-    </tr>
-  </table>
-</body>
-</html>`
-}
-
-export function renderEmailButton(
-  href: string,
-  label: string,
-  variant: EmailButtonVariant
-): string {
-  return `<a href="${escapeHtml(href)}" style="${emailButtonStyle(variant)}">${escapeHtml(label)}</a>`
 }
 
 export function renderLandingPage(options: {

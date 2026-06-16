@@ -19,7 +19,7 @@ Status legend: ✅ built, 🟡 partial/in progress, ⚪ planned/not built yet
 - ✅ **RLS-backed admin workflows**: Policies and constraints enforce role checks and org-safe data relationships
 - ✅ **Forgot password flow**: Send reset email from sign-in, recover session from email link, set a new password on `/auth/reset-password`, then enter the app by role
 - ✅ **Demo access flow**: Public `/demo` signup, manual approve/reject via email links, Supabase magic-link provisioning into the admin-designated **demo project**, direct entry to that project (no project list), admin **Demo requests** dashboard, stale-request cron
-- 🟡 **Project chat + n8n**: Client chat POSTs to **`POST /api/n8n`** (server proxy — n8n URL and secret stay server-only), then `POST /api/chat/persist` and polling via `GET /api/chat/poll` until `chat_results` completes. Long-running workflows can call `POST /api/chat/n8n-complete` when `CHAT_N8N_CALLBACK_SECRET` is set (see `agent-os/specs/2026-03-26-1400-project-chat-n8n-integration/`).
+- 🟡 **Project chat + n8n**: Client chat POSTs to **`POST /api/n8n`** (server proxy — n8n URL and secret stay server-only), then `POST /api/chat/persist` and polling via `GET /api/chat/poll` until `chat_results` completes. Long-running workflows can call `POST /api/chat/n8n-complete` when `CHAT_N8N_CALLBACK_SECRET` is set (see [`agent-os/specs/2026-03-26-1400-project-chat-n8n-integration/`](agent-os/specs/2026-03-26-1400-project-chat-n8n-integration/)).
 - 🟡 **Tabbed project sidebar (client)**: Right column uses **Chat History** and **Personas** tabs (line-style tabs); **Studio** is scaffolded but hidden until ready. Mobile uses the same tabbed shell inside the overlay drawer.
 - 🟡 **Chat history (past questions)**: `GET /api/chat/history` backed by `chat_results`; client page uses `useChatHistory` and merges API rows with in-session items (falls back to mock data when Supabase is off or the list is empty). Spec-level pagination/re-run polish may still evolve.
 - 🟡 **Document-based queries**: Upload and selection UX exists; production document-grounded query backend is still evolving
@@ -28,7 +28,7 @@ Status legend: ✅ built, 🟡 partial/in progress, ⚪ planned/not built yet
 
 ## Current Progress Snapshot
 
-_Last updated: April 2026._
+*Last updated: April 2026.*
 
 - **Implemented in app + Supabase**:
   - Auth/session routing with admin/client role-aware redirects
@@ -108,16 +108,34 @@ The sign-in form includes a `Forgot password?` flow:
 4. The link verifies via `/auth/confirm` (server-side session exchange), then lands on `/auth/reset-password`
 5. Enter and confirm your new password on the reset page
 6. You are redirected into the app:
-   - admin -> `/dashboard`
-   - client/user -> `/client/projects`
+  - admin -> `/dashboard`
+  - client/user -> `/client/projects`
 
-**Supabase email template (required for reliable reset links):** In the dashboard under **Authentication → Email Templates → Reset password**, replace `{{ .ConfirmationURL }}` in the reset link with:
+**Supabase Auth email templates (branded):** All auth emails should use the smartA.R.S.E. layout from `lib/email/supabase/`. In development, preview every template at **`http://localhost:3000/dev/emails`** — select a template in the sidebar, then copy the Supabase HTML from the code pane to paste into the dashboard.
+
+
+| Dashboard template | Subject                                |
+| ------------------ | -------------------------------------- |
+| Reset password     | Reset your smartA.R.S.E. password      |
+| Confirm signup     | Confirm your smartA.R.S.E. account     |
+| Magic link         | Your smartA.R.S.E. sign-in link        |
+| Invite user        | You have been invited to smartA.R.S.E. |
+| Change email       | Confirm your new smartA.R.S.E. email   |
+
+
+Full setup steps: [`lib/email/supabase/README.md`](lib/email/supabase/README.md). Set the sender display name to **smartA.R.S.E.** Emails load the logo from `{{ .SiteURL }}/client-header-logo.gif` — ensure `public/client-header-logo.gif` is deployed.
+
+**Reset password link (required):** In **Authentication → Email Templates → Reset password**, the action link must use `token_hash` verification (not `{{ .ConfirmationURL }}` alone):
 
 ```text
 {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/auth/reset-password
 ```
 
-This uses `token_hash` verification on the server so the link works even when opened from an email app in a different browser context (PKCE `code` exchange requires the same browser that requested the reset).
+This uses `token_hash` verification on the server so the link works even when opened from an email app in a different browser context (PKCE `code` exchange requires the same browser that requested the reset). The branded HTML for all auth templates is generated in code — use `/dev/emails` to copy it.
+
+### Email template preview (development)
+
+With `pnpm dev` running, open **`http://localhost:3000/dev/emails`** to preview all app and Supabase templates without sending mail. Edit layout code under `lib/email/` and refresh the page to iterate. The route returns 404 in production.
 
 ## Project Structure
 
@@ -216,12 +234,14 @@ Recommended PR flow:
 
 ## Scripts
 
+
 | Command      | Description                  |
 | ------------ | ---------------------------- |
 | `pnpm dev`   | Start dev server (Turbopack) |
 | `pnpm build` | Production build             |
 | `pnpm start` | Start production server      |
 | `pnpm lint`  | Run ESLint                   |
+
 
 ## Environment
 
@@ -283,11 +303,11 @@ NEXT_PUBLIC_APP_URL=https://your-production-domain
 EMAIL_RESEND_SANDBOX=true
 ```
 
-  This sends from `onboarding@resend.dev`. Resend may only deliver to the **email on your Resend account** until a domain is verified — set `DEMO_NOTIFICATION_EMAIL` to that address for approval notifications. Magic links to other prospect addresses also require a verified domain.
+This sends from `onboarding@resend.dev`. Resend may only deliver to the **email on your Resend account** until a domain is verified — set `DEMO_NOTIFICATION_EMAIL` to that address for approval notifications. Magic links to other prospect addresses also require a verified domain.
 
 - The public `/demo` form always shows success even if the notification email fails (anti-enumeration). Check the terminal running `pnpm dev` for `[demo/request] notification email failed:` or approve from **Demo requests** to see Resend errors in the UI.
 
-**Support notifications** (low credits + access expiry — see [`agent-os/specs/2026-06-02-1200-disrupt-support-email-notifications/plan.md`](agent-os/specs/2026-06-02-1200-disrupt-support-email-notifications/plan.md)):
+**Support notifications** (low credits + access expiry — see `[agent-os/specs/2026-06-02-1200-disrupt-support-email-notifications/plan.md](agent-os/specs/2026-06-02-1200-disrupt-support-email-notifications/plan.md)`):
 
 - Admin settings: `/settings/support-notifications` (support inbox + three toggles).
 - Per-project threshold: project **Settings → Credits → Email support when balance below**.
@@ -322,7 +342,7 @@ Important notes:
 
 - **Session cookies:** Mutating API routes rely on Supabase session cookies without separate CSRF tokens. SameSite cookie defaults mitigate cross-site POST; keep production on HTTPS.
 - **Integration secrets:** Rotate `CHAT_N8N_CALLBACK_SECRET`, `CRON_SECRET`, and `DEMO_APPROVAL_SECRET` if exposure is suspected. The n8n callback can write chat results for any validated user when the secret is valid — treat it like a service credential.
-- **Security audit:** See [`agent-os/specs/2026-06-10-1200-full-app-security-audit/report/`](agent-os/specs/2026-06-10-1200-full-app-security-audit/report/) for the latest assessment.
+- **Security audit:** See `[agent-os/specs/2026-06-10-1200-full-app-security-audit/report/](agent-os/specs/2026-06-10-1200-full-app-security-audit/report/)` for the latest assessment.
 
 ## License
 
