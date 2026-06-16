@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Eye, EyeOff, Lock } from "lucide-react"
 import { ArseLogoGroup } from "@/components/arse-logo-group"
 import { postLoginPath } from "@/components/auth-login-form"
@@ -10,16 +10,15 @@ import { LoginFlowBackground } from "@/components/login-flow-background"
 import { useAuth } from "@/lib/auth-context"
 import { pillPasswordInputClass, submitButtonClass } from "@/lib/auth-form-styles"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
-import { establishSessionFromUrl } from "@/lib/supabase/session-from-url"
 import { cn } from "@/lib/utils"
 
 type ResetPhase = "establishing" | "form" | "submitting" | "failed"
 
 export function ResetPasswordPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { user, isLoading } = useAuth()
   const [phase, setPhase] = useState<ResetPhase>("establishing")
-  const [sessionReady, setSessionReady] = useState(false)
   const [establishError, setEstablishError] = useState<string | null>(null)
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
@@ -28,55 +27,43 @@ export function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    let cancelled = false
-
-    void (async () => {
-      const supabase = getSupabaseBrowserClient()
-      if (!supabase) {
-        if (!cancelled) {
-          setEstablishError("Authentication is not configured.")
-          setPhase("failed")
-        }
-        return
-      }
-
-      const result = await establishSessionFromUrl(supabase)
-      if (cancelled) return
-
-      if (!result.ok) {
-        if (result.reason === "no_tokens") {
-          setPhase("failed")
-          return
-        }
-        setEstablishError(result.message ?? "Could not verify reset link.")
-        setPhase("failed")
-        return
-      }
-
-      setSessionReady(true)
-    })()
-
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!sessionReady || isLoading) return
-
-    if (!user) {
-      setEstablishError(
-        (current) =>
-          current ?? "Request a new password reset email from sign in.",
-      )
+    const authError = searchParams.get("error")
+    if (authError === "invalid_link") {
+      setEstablishError("Request a new password reset email from sign in.")
       setPhase("failed")
       return
     }
 
-    if (phase === "establishing") {
-      setPhase("form")
+    const code = searchParams.get("code")
+    const tokenHash = searchParams.get("token_hash")
+    if (code || tokenHash) {
+      const params = new URLSearchParams(searchParams.toString())
+      params.set("next", "/auth/reset-password")
+      router.replace(`/auth/confirm?${params.toString()}`)
+      return
     }
-  }, [sessionReady, isLoading, user, phase])
+  }, [router, searchParams])
+
+  useEffect(() => {
+    if (phase === "failed") return
+
+    if (searchParams.get("error") === "invalid_link") return
+
+    if (isLoading) return
+
+    if (user) {
+      setPhase((current) => (current === "submitting" ? current : "form"))
+      return
+    }
+
+    if (searchParams.get("code") || searchParams.get("token_hash")) return
+
+    setEstablishError(
+      (current) =>
+        current ?? "Request a new password reset email from sign in.",
+    )
+    setPhase("failed")
+  }, [isLoading, user, phase, searchParams])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

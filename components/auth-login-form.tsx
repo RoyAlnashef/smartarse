@@ -76,8 +76,9 @@ export function AuthLoginForm({
     }
 
     setIsResetting(true)
+    const resetNext = encodeURIComponent("/auth/reset-password")
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
+      redirectTo: `${window.location.origin}/auth/confirm?next=${resetNext}`,
     })
     setIsResetting(false)
 

@@ -105,11 +105,19 @@ The sign-in form includes a `Forgot password?` flow:
 1. Click `Forgot password?` to switch to reset mode
 2. Enter email and send reset link
 3. Open the Supabase reset email
-4. Follow the link to `/auth/reset-password`
+4. The link verifies via `/auth/confirm` (server-side session exchange), then lands on `/auth/reset-password`
 5. Enter and confirm your new password on the reset page
 6. You are redirected into the app:
    - admin -> `/dashboard`
    - client/user -> `/client/projects`
+
+**Supabase email template (required for reliable reset links):** In the dashboard under **Authentication → Email Templates → Reset password**, replace `{{ .ConfirmationURL }}` in the reset link with:
+
+```text
+{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/auth/reset-password
+```
+
+This uses `token_hash` verification on the server so the link works even when opened from an email app in a different browser context (PKCE `code` exchange requires the same browser that requested the reset).
 
 ## Project Structure
 
@@ -128,7 +136,8 @@ The sign-in form includes a `Forgot password?` flow:
 │   │   ├── projects/         # Project list + search
 │   │   └── projects/[id]/    # Client project detail (chat + tabbed sidebar)
 │   ├── auth/
-│   │   └── reset-password/   # Supabase recovery callback + password reset form
+│   │   ├── confirm/          # Server-side auth token/code exchange (email links)
+│   │   └── reset-password/   # Password reset form after session is established
 │   ├── api/
 │   │   ├── admin/users/      # Admin user creation
 │   │   ├── admin/users/[id]/ # Admin user DELETE
@@ -302,6 +311,8 @@ Important notes:
 - **Row-level security on `public.users`:** enable a policy so each signed-in user can **read their own profile row** (for example `USING (auth.uid() = id)` on `SELECT`). If `SELECT` is denied, the app **signs the user out** rather than inferring role from JWT metadata.
 - Apply project migrations in `supabase/migrations/` so admin RLS, project lifecycle (status, credits, `access_until`), and related helpers are enforced consistently.
 - In Supabase Auth settings, allow these redirect URLs:
+  - `http://localhost:3000/auth/confirm`
+  - `https://<your-production-domain>/auth/confirm`
   - `http://localhost:3000/auth/reset-password`
   - `https://<your-production-domain>/auth/reset-password`
   - `http://localhost:3000/auth/callback`
