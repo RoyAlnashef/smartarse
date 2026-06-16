@@ -769,14 +769,39 @@ export function ProjectChat({
     return () => window.clearInterval(intervalId)
   }, [isLoading])
 
+  const focusGroupActive = Boolean(focusGroupSession)
+  const inputPlaceholder = focusGroupActive
+    ? focusGroupRunning
+      ? "Waiting for the current round to finish…"
+      : "Ask a follow-up question to start the next round…"
+    : appliedPersona
+      ? `Ask about ${appliedPersona.title}…`
+      : appliedCustomAudience
+        ? `Ask about ${appliedCustomAudience.name}…`
+        : "Ask me anything about this project…"
+
   useEffect(() => {
     const textarea = textareaRef.current
     if (!textarea) return
-    textarea.style.height = "0px"
-    const nextHeight = Math.min(textarea.scrollHeight, 220)
-    textarea.style.height = `${nextHeight}px`
-    textarea.style.overflowY = textarea.scrollHeight > 220 ? "auto" : "hidden"
-  }, [value])
+
+    function syncTextareaHeight() {
+      const savedValue = textarea.value
+      const isEmpty = !savedValue.trim()
+      if (isEmpty && textarea.placeholder) {
+        textarea.value = textarea.placeholder
+      }
+      textarea.style.height = "0px"
+      const measuredHeight = textarea.scrollHeight
+      const nextHeight = Math.min(Math.max(measuredHeight, 44), 220)
+      textarea.style.height = `${nextHeight}px`
+      textarea.style.overflowY = measuredHeight > 220 ? "auto" : "hidden"
+      textarea.value = savedValue
+    }
+
+    syncTextareaHeight()
+    window.addEventListener("resize", syncTextareaHeight)
+    return () => window.removeEventListener("resize", syncTextareaHeight)
+  }, [value, inputPlaceholder])
 
   const contextResetKey = `${appliedPersonaId ?? ""}::${appliedCustomAudience?.id ?? ""}::${focusGroupSession?.id ?? ""}`
 
@@ -795,16 +820,6 @@ export function ProjectChat({
     setValue("")
   }
 
-  const focusGroupActive = Boolean(focusGroupSession)
-  const inputPlaceholder = focusGroupActive
-    ? focusGroupRunning
-      ? "Waiting for the current round to finish…"
-      : "Ask a follow-up question to start the next round…"
-    : appliedPersona
-      ? `Ask about ${appliedPersona.title}…`
-      : appliedCustomAudience
-        ? `Ask about ${appliedCustomAudience.name}…`
-        : "Ask me anything about this project…"
   const greetingName = getGreetingName(userName)
   const activeChatTone = appliedPersona
     ? personaChatToneFromCiteToken(appliedPersona.colorCiteToken)
@@ -813,7 +828,7 @@ export function ProjectChat({
       : DEFAULT_CHAT_TONE
 
   const textareaClassName = cn(
-    "block w-full resize-none rounded-xl border-4 border-arse-black bg-zinc-100 px-4 pb-4 pt-3 font-arse-body text-sm text-arse-black placeholder:text-arse-black/45",
+    "block min-w-0 flex-1 resize-none rounded-xl border-4 border-arse-black bg-zinc-100 px-4 pb-4 pt-3 font-arse-body text-sm leading-snug text-arse-black placeholder:text-arse-black/45",
     "focus:outline-none focus:ring-2 disabled:opacity-50",
     activeChatTone.inputFocusRing,
     disabled && disabledInputTooltip && "pointer-events-none"
@@ -1058,7 +1073,6 @@ export function ProjectChat({
                       disabled={disabled}
                       title={disabledInputTooltip}
                       className={textareaClassName}
-                      style={{ height: "44px" }}
                     />
                   </div>
                 </TooltipTrigger>
@@ -1087,7 +1101,6 @@ export function ProjectChat({
               placeholder={inputPlaceholder}
               disabled={disabled}
               className={textareaClassName}
-              style={{ height: "44px" }}
             />
           )}
           <button
