@@ -43,19 +43,19 @@ describe("demo access transactional email config", () => {
     )
   })
 
-  it("uses support inbox From for prospect recipients", () => {
+  it("uses noreply From for prospect recipients", () => {
     snapshotEnv()
     process.env.EMAIL_FROM_ADDRESS =
-      "Disrupt <smart-arse@disrupt-insight.com>"
+      "Disrupt <noreply@disrupt-insight.com>"
     expect(getFromAddressForRecipients("prospect@example.com")).toBe(
-      "Disrupt <smart-arse@disrupt-insight.com>",
+      "Disrupt <noreply@disrupt-insight.com>",
     )
   })
 
-  it("defaults prospect From to support inbox when EMAIL_FROM_ADDRESS is unset", () => {
+  it("defaults prospect From to noreply when EMAIL_FROM_ADDRESS is unset", () => {
     snapshotEnv()
     expect(getProspectFromAddress()).toBe(
-      "smartA.R.S.E. <smart-arse@disrupt-insight.com>",
+      "smartA.R.S.E. <noreply@disrupt-insight.com>",
     )
   })
 
@@ -74,7 +74,7 @@ describe("demo access transactional email config", () => {
       "smartA.R.S.E. <noreply@disrupt-insight.com>",
     )
     expect(getFromAddressForRecipients("prospect@example.com")).toBe(
-      "smartA.R.S.E. <smart-arse@disrupt-insight.com>",
+      "smartA.R.S.E. <noreply@disrupt-insight.com>",
     )
   })
 

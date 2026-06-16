@@ -60,10 +60,6 @@ function getDefaultNoreplyFrom(): string {
   return `${DEFAULT_FROM_DISPLAY_NAME} <noreply@${domain}>`
 }
 
-function getDefaultProspectFrom(): string {
-  return `${DEFAULT_FROM_DISPLAY_NAME} <${SUPPORT_EMAIL}>`
-}
-
 /** Reply-To for all demo transactional emails (support inbox). */
 export function getTransactionalReplyToAddress(): string {
   return SUPPORT_EMAIL
@@ -86,7 +82,7 @@ export function getInternalNotificationFromAddress(): string {
 
 /**
  * From for prospect-facing emails (magic link, rejection).
- * Uses the support inbox so messages appear to come from the team.
+ * Uses noreply@ for a consistent transactional sender; Reply-To is the support inbox.
  */
 export function getProspectFromAddress(): string {
   if (isResendSandboxMode()) {
@@ -94,17 +90,18 @@ export function getProspectFromAddress(): string {
   }
 
   const configured = process.env.EMAIL_FROM_ADDRESS?.trim()
+  const defaultNoreply = extractEmailAddress(getDefaultNoreplyFrom())
   if (
     configured &&
-    isSameMailbox(extractEmailAddress(configured), SUPPORT_EMAIL)
+    isSameMailbox(extractEmailAddress(configured), defaultNoreply)
   ) {
     return configured
   }
 
-  return getDefaultProspectFrom()
+  return getDefaultNoreplyFrom()
 }
 
-/** Pick internal (noreply) vs prospect (support) From based on recipients. */
+/** Pick From based on recipients (all transactional mail uses noreply@). */
 export function getFromAddressForRecipients(to: string | string[]): string {
   const recipients = Array.isArray(to) ? to : [to]
   if (recipients.some(isSupportNotificationRecipient)) {
