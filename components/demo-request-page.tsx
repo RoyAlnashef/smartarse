@@ -171,7 +171,7 @@ export function DemoRequestPage() {
 
         <section
           className={cn(
-            "flex min-h-screen w-full flex-1 flex-col items-center justify-center px-6 py-10 sm:px-10",
+            "flex min-h-screen w-full flex-1 flex-col items-center justify-start px-6 py-20 sm:px-10 lg:justify-center",
             "lg:min-h-screen lg:w-1/2 lg:px-12 lg:py-14 xl:px-16"
           )}
         >
