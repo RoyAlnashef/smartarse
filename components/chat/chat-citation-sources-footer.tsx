@@ -75,19 +75,17 @@ export function ChatCitationSourcesFooter({
 
   const sorted = [...filteredSources].sort((a, b) => a.index - b.index)
   return (
-    <div className={cn("mt-6 border-t border-arse-black/10 pt-4", className)}>
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <span className="shrink-0 text-xs font-semibold text-arse-black/55">
-          Sources
-        </span>
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+    <div className={cn("mt-6 min-w-0 overflow-hidden border-t border-arse-black/10 pt-4", className)}>
+      <div className="flex flex-col gap-2">
+        <span className="text-xs font-semibold text-arse-black/55">Sources</span>
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           {sorted.map((source) => {
             const primaryLabel = citationSourcePrimaryLabel(source)
             const chipButton = (
               <button
                 type="button"
                 className={cn(
-                  "flex max-w-[min(18rem,calc(100vw-5rem))] items-center gap-2 rounded-full border px-2 py-1.5 text-left font-arse-body text-xs font-semibold leading-snug text-arse-black shadow-sm transition-[filter] hover:brightness-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink focus-visible:ring-offset-2",
+                  "flex max-w-full items-center gap-2 rounded-full border px-2 py-1.5 text-left font-arse-body text-xs font-semibold leading-snug text-arse-black shadow-sm transition-[filter] hover:brightness-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink focus-visible:ring-offset-2",
                   citeColorSubtleOuterChipCn(source.citeColorToken)
                 )}
                 style={citeColorSubtleOuterChipStyle(source.citeColorToken)}

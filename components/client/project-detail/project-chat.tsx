@@ -58,6 +58,14 @@ import {
 import { cn } from "@/lib/utils"
 import { ChatCitationSourcesFooter } from "@/components/chat/chat-citation-sources-footer"
 import {
+  buildChatMarkdownComponents,
+  CHAT_BUBBLE_MAX_WIDTH_CLASS,
+  chatMarkdownProseClass,
+  citationIndexFromText,
+  externalMarkdownLinkClass,
+  textFromReactChildren,
+} from "@/components/chat/chat-markdown-prose"
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -119,27 +127,6 @@ function Avatar({ label, isLoading = false }: { label: string; isLoading?: boole
   )
 }
 
-function citationIndexFromText(value: string): number | null {
-  const match = value.trim().match(/^\[(\d+)\]$/)
-  if (!match) return null
-  const index = Number(match[1])
-  if (!Number.isInteger(index) || index < 1) return null
-  return index
-}
-
-function textFromReactChildren(children: React.ReactNode): string {
-  if (typeof children === "string") return children
-  if (typeof children === "number") return String(children)
-  if (Array.isArray(children)) {
-    return children.map((child) => textFromReactChildren(child)).join("")
-  }
-  if (children && typeof children === "object" && "props" in children) {
-    const node = children as { props?: { children?: React.ReactNode } }
-    return textFromReactChildren(node.props?.children)
-  }
-  return ""
-}
-
 function MessageBubble({
   message,
   citationLookup,
@@ -178,89 +165,90 @@ function MessageBubble({
   }, [citationSourcesByIndex, isUser, message.content])
 
   const markdownComponents = useMemo(() => {
-    return {
-      a: ({
-        node: _node,
-        href,
-        title,
-        children,
-        ...rest
-      }: AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown }) => {
-        const hrefParts = parseCitationHref(href)
-        const citationIndexFromLink = hrefParts?.index ?? null
-        const citationIndexFromLinkText = citationIndexFromText(
-          textFromReactChildren(children)
-        )
-        const citationIndex = citationIndexFromLink ?? citationIndexFromLinkText
-        if (citationIndex != null) {
-          const source = citationSourcesByIndex.get(citationIndex)
-          if (source) {
-            const primaryLabel = citationSourcePrimaryLabel(source)
-            const inlineCitation = resolveInlineCitation(
-              message.inlineCitations,
-              citationIndex,
-              hrefParts?.occurrence ?? 0
-            )
-            if (isInterviewCitationSource(source)) {
-              return (
-                <InlineInterviewCitation
-                  source={source}
-                  content={message.content}
-                  markerPosition={inlineCitation?.marker_position ?? 0}
-                  ariaLabel={`Citation ${citationIndex}: ${primaryLabel}`}
-                  segmentPersonas={segmentPersonas}
-                  variant="default"
-                />
-              )
-            }
+    const linkRenderer = ({
+      node: _node,
+      href,
+      title,
+      children,
+      ...rest
+    }: AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown }) => {
+      const hrefParts = parseCitationHref(href)
+      const citationIndexFromLink = hrefParts?.index ?? null
+      const citationIndexFromLinkText = citationIndexFromText(
+        textFromReactChildren(children)
+      )
+      const citationIndex = citationIndexFromLink ?? citationIndexFromLinkText
+      if (citationIndex != null) {
+        const source = citationSourcesByIndex.get(citationIndex)
+        if (source) {
+          const primaryLabel = citationSourcePrimaryLabel(source)
+          const inlineCitation = resolveInlineCitation(
+            message.inlineCitations,
+            citationIndex,
+            hrefParts?.occurrence ?? 0
+          )
+          if (isInterviewCitationSource(source)) {
             return (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                              <button
-                                type="button"
-                                className={cn(
-                                  citeSourceIndexBadgeCn(citationIndex, source.citeColorToken),
-                                  "mx-0.5 align-middle transition-[filter] hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink focus-visible:ring-offset-2"
-                                )}
-                                style={citeSourceIndexBadgeStyle(source.citeColorToken)}
-                                aria-label={`Citation ${citationIndex}: ${primaryLabel}`}
-                              >
-                    {citationIndex}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent
-                  side="top"
-                  className={citationTooltipContentClass("default", source.citeColorToken, source)}
-                  style={citationTooltipContentStyle(source.citeColorToken)}
-                >
-                  <CitationTooltipBody
-                    source={source}
-                    primaryLabel={primaryLabel}
-                    inlineCitation={inlineCitation}
-                    segmentPersonas={segmentPersonas}
-                  />
-                </TooltipContent>
-              </Tooltip>
+              <InlineInterviewCitation
+                source={source}
+                content={message.content}
+                markerPosition={inlineCitation?.marker_position ?? 0}
+                ariaLabel={`Citation ${citationIndex}: ${primaryLabel}`}
+                segmentPersonas={segmentPersonas}
+                variant="default"
+              />
             )
           }
+          return (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className={cn(
+                    citeSourceIndexBadgeCn(citationIndex, source.citeColorToken),
+                    "mx-0.5 align-middle transition-[filter] hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-arse-pink focus-visible:ring-offset-2"
+                  )}
+                  style={citeSourceIndexBadgeStyle(source.citeColorToken)}
+                  aria-label={`Citation ${citationIndex}: ${primaryLabel}`}
+                >
+                  {citationIndex}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="top"
+                className={citationTooltipContentClass("default", source.citeColorToken, source)}
+                style={citationTooltipContentStyle(source.citeColorToken)}
+              >
+                <CitationTooltipBody
+                  source={source}
+                  primaryLabel={primaryLabel}
+                  inlineCitation={inlineCitation}
+                  segmentPersonas={segmentPersonas}
+                />
+              </TooltipContent>
+            </Tooltip>
+          )
         }
-        const resolvedTitle =
-          citationLookup != null
-            ? resolveCitationLinkTitle(citationLookup, href, title)
-            : title
-        return (
-          <a
-            {...rest}
-            href={href}
-            title={resolvedTitle}
-            target="_blank"
-            rel="noreferrer noopener"
-          >
-            {children}
-          </a>
-        )
-      },
+      }
+      const resolvedTitle =
+        citationLookup != null
+          ? resolveCitationLinkTitle(citationLookup, href, title)
+          : title
+      return (
+        <a
+          {...rest}
+          href={href}
+          title={resolvedTitle}
+          target="_blank"
+          rel="noreferrer noopener"
+          className={externalMarkdownLinkClass("client")}
+        >
+          {children}
+        </a>
+      )
     }
+
+    return buildChatMarkdownComponents("client", linkRenderer)
   }, [
     citationLookup,
     citationSourcesByIndex,
@@ -269,36 +257,26 @@ function MessageBubble({
     segmentPersonas,
   ])
 
+  const markdownShell = chatMarkdownProseClass({ variant: "client" })
+
   return (
-    <div className={cn("flex gap-3", isUser ? "justify-end" : "justify-start")}>
+    <div
+      className={cn(
+        "flex w-full min-w-0 gap-3",
+        isUser ? "justify-end" : "justify-start"
+      )}
+    >
       {!isUser ? <Avatar label="AI" /> : null}
       <div
         className={cn(
-          "max-w-[min(42rem,90%)] rounded-2xl border-2 px-4 text-sm leading-[1.7]",
+          CHAT_BUBBLE_MAX_WIDTH_CLASS,
+          "rounded-2xl border-2 px-4 text-sm leading-[1.7]",
           isUser
             ? "border-zinc-800 bg-zinc-800 py-3 text-white"
             : cn(assistantTone.cardBorder, assistantTone.cardBg, "py-5 text-arse-black sm:py-6")
         )}
       >
-        <div
-          className={cn(
-            "min-w-0 text-sm leading-[1.7]",
-            "break-words [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
-            "[&_p]:my-5 [&_ul]:my-5 [&_ol]:my-5 [&_li]:my-2 [&_li]:leading-relaxed",
-            "[&_ul]:space-y-2 [&_ol]:space-y-2",
-            "[&_h1]:mb-3 [&_h1]:mt-8 [&_h1]:first:mt-0 [&_h1]:text-lg [&_h1]:font-semibold",
-            "[&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:first:mt-0 [&_h2]:text-base [&_h2]:font-semibold",
-            "[&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:first:mt-0 [&_h3]:text-sm [&_h3]:font-semibold",
-            "[&_blockquote]:my-4 [&_blockquote]:border-l-2 [&_blockquote]:border-arse-black/30 [&_blockquote]:py-2 [&_blockquote]:pl-4 [&_blockquote]:italic",
-            "[&_blockquote_p]:my-0 [&_blockquote_p+p]:mt-2",
-            "[&_a]:underline [&_a]:underline-offset-2 [&_a]:decoration-arse-pink/60 hover:[&_a]:decoration-arse-pink",
-            "[&_code]:rounded [&_code]:bg-arse-black/10 [&_code]:px-1 [&_code]:py-0.5 [&_code]:text-[0.9em]",
-            "[&_pre]:my-6 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-arse-black/90 [&_pre]:p-4 [&_pre]:text-arse-white",
-            "[&_pre_code]:bg-transparent [&_pre_code]:p-0",
-            "[&_table]:my-6 [&_table]:w-full [&_table]:border-collapse [&_th]:border [&_th]:border-arse-black/20 [&_th]:px-2 [&_th]:py-1.5 [&_th]:text-left [&_th]:font-semibold [&_td]:border [&_td]:border-arse-black/20 [&_td]:px-2 [&_td]:py-1.5",
-            "[&_hr]:my-8 [&_hr]:border-t [&_hr]:border-arse-black/15"
-          )}
-        >
+        <div className={markdownShell}>
           <TooltipProvider delayDuration={120}>
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
@@ -508,10 +486,10 @@ function FocusGroupRoundTopicBubble({
 }) {
   return (
     <div
-      className="flex gap-3 justify-end"
+      className="flex w-full min-w-0 gap-3 justify-end"
       aria-label={`Round ${roundNumber} topic`}
     >
-      <div className="flex max-w-[min(42rem,90%)] flex-col items-end">
+      <div className={cn(CHAT_BUBBLE_MAX_WIDTH_CLASS, "flex flex-col items-end")}>
         <div className="mb-1 flex items-center gap-2">
           <span className="font-arse-title text-[10px] font-bold uppercase tracking-[0.2em] text-arse-black/55">
             Round {roundNumber}
@@ -875,7 +853,10 @@ export function ProjectChat({
         </button>
 
         <div className="relative min-h-0 flex-1 overflow-hidden">
-          <div ref={scrollViewportRef} className="h-full overflow-y-auto p-4 sm:p-6">
+          <div
+            ref={scrollViewportRef}
+            className="h-full overflow-x-hidden overflow-y-auto p-4 pt-12 pr-1 sm:px-6 sm:pb-6 sm:pt-12 lg:p-6"
+          >
             {focusGroupActive && focusGroupSession ? (
               <div className="space-y-6">
                 {focusGroupRounds.length === 0 && !liveFocusGroupRound ? (
@@ -904,9 +885,9 @@ export function ProjectChat({
                 ) : null}
               </div>
             ) : timelineItems.length === 0 ? (
-              <div className="flex gap-3">
+              <div className="flex w-full min-w-0 gap-3">
                 <Avatar label="AI" />
-                <div className="max-w-[min(42rem,90%)]">
+                <div className={CHAT_BUBBLE_MAX_WIDTH_CLASS}>
                   <div
                     className={cn(
                       "block rounded-2xl rounded-bl-sm border-2 px-4 py-4 text-sm text-arse-black sm:px-5 sm:py-5",
@@ -1025,11 +1006,17 @@ export function ProjectChat({
                   )
                 })}
                 {isLoading ? (
-                  <div className="flex gap-3" role="status" aria-live="polite" aria-label="Assistant is preparing a response">
+                  <div
+                    className="flex w-full min-w-0 gap-3"
+                    role="status"
+                    aria-live="polite"
+                    aria-label="Assistant is preparing a response"
+                  >
                     <Avatar label="AI" isLoading />
                     <div
                       className={cn(
-                        "max-w-[min(42rem,90%)] rounded-2xl rounded-bl-sm border-2 px-4 py-3 text-sm text-arse-black",
+                        CHAT_BUBBLE_MAX_WIDTH_CLASS,
+                        "rounded-2xl rounded-bl-sm border-2 px-4 py-3 text-sm text-arse-black",
                         activeChatTone.cardBorder,
                         activeChatTone.cardBg
                       )}

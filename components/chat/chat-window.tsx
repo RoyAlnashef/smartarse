@@ -88,7 +88,7 @@ export function ChatWindow({
       )
     }
     return (
-      <div className="flex-1 space-y-6 overflow-y-auto bg-white p-4 lg:p-6">
+      <div className="flex-1 space-y-6 overflow-x-hidden overflow-y-auto bg-white p-4 lg:p-6">
         {rounds.map((round) => (
           <AdminFocusGroupTranscriptRound
             key={round.round_request_id}
@@ -118,7 +118,7 @@ export function ChatWindow({
   }
 
   return (
-    <div className="flex-1 space-y-6 overflow-y-auto bg-white p-4 lg:p-6">
+    <div className="flex-1 space-y-6 overflow-x-hidden overflow-y-auto bg-white p-4 lg:p-6">
       {messages.map((msg) => (
         <MessageBubble
           key={msg.id}
