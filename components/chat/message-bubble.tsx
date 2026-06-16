@@ -23,6 +23,11 @@ import {
   textFromReactChildren,
 } from "@/components/chat/chat-markdown-prose"
 import {
+  CHAT_AVATAR_SIZE_CLASS,
+  CHAT_AVATAR_TEXT_CLASS,
+  ChatMessageRow,
+} from "@/components/chat/chat-message-row"
+import {
   CitationTooltipBody,
   citationTooltipContentClass,
   citationTooltipContentStyle,
@@ -52,6 +57,39 @@ function initialsFromName(name?: string | null): string {
     return words[0].slice(0, 2).toUpperCase()
   }
   return `${words[0][0] ?? ""}${words[1][0] ?? ""}`.toUpperCase()
+}
+
+function DashboardAvatar({
+  role,
+  userInitials,
+}: {
+  role: "assistant" | "user"
+  userInitials: string
+}) {
+  if (role === "assistant") {
+    return (
+      <div className={cn("relative shrink-0 overflow-hidden", CHAT_AVATAR_SIZE_CLASS)}>
+        <Image
+          src={robotAvatar}
+          alt="ARSE avatar"
+          fill
+          sizes="(max-width: 640px) 24px, 32px"
+          className="object-cover"
+        />
+      </div>
+    )
+  }
+  return (
+    <div
+      className={cn(
+        "flex shrink-0 items-center justify-center rounded-full border border-arse-black bg-transparent font-arse-title font-bold uppercase text-arse-black sm:border-2",
+        CHAT_AVATAR_SIZE_CLASS,
+        CHAT_AVATAR_TEXT_CLASS
+      )}
+    >
+      {userInitials}
+    </div>
+  )
 }
 
 export function MessageBubble({
@@ -176,63 +214,58 @@ export function MessageBubble({
     isCancelledNotice,
   })
 
+  const chatRole = isUser ? "user" : "assistant"
+
   return (
     <div
       className={cn(
-        "flex w-full min-w-0 gap-3",
+        "flex w-full min-w-0",
         isUser ? "justify-end" : "justify-start"
       )}
     >
-      {!isUser && (
-        <div className="relative h-8 w-8 shrink-0 overflow-hidden">
-          <Image
-            src={robotAvatar}
-            alt="ARSE avatar"
-            fill
-            sizes="32px"
-            className="object-cover"
-          />
-        </div>
-      )}
-
       <div
         className={cn(
           CHAT_BUBBLE_MAX_WIDTH_CLASS,
           "space-y-1",
-          isUser ? "items-end" : "items-start"
+          isUser ? "flex flex-col items-end" : "flex flex-col items-start"
         )}
       >
-        <div
-          className={cn(
-            "rounded-2xl px-4 text-sm leading-[1.7]",
-            isUser
-              ? "rounded-br-md bg-dark-950 py-3 text-white"
-              : cn(
-                  "rounded-bl-md bg-background text-foreground",
-                  isCancelledNotice ? "py-2" : "py-5 sm:py-6"
-                )
-          )}
+        <ChatMessageRow
+          role={chatRole}
+          avatar={<DashboardAvatar role={chatRole} userInitials={userInitials} />}
         >
-          <div className={markdownShell}>
-            <TooltipProvider delayDuration={120}>
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                components={markdownComponents}
-              >
-                {renderedMarkdown}
-              </ReactMarkdown>
-              {!isUser && mergedCitations.length > 0 ? (
-                <ChatCitationSourcesFooter
-                  sources={mergedCitations}
-                  tooltipVariant="compact"
-                  messageContent={message.content}
-                  inlineCitations={message.inlineCitations}
-                  segmentPersonas={segmentPersonas}
-                />
-              ) : null}
-            </TooltipProvider>
+          <div
+            className={cn(
+              "rounded-2xl px-4 text-sm leading-[1.7]",
+              isUser
+                ? "ml-auto w-fit max-w-full rounded-br-md bg-dark-950 py-3 text-white sm:ml-0 sm:w-full"
+                : cn(
+                    "w-full rounded-bl-md bg-background text-foreground",
+                    isCancelledNotice ? "py-2" : "py-5 sm:py-6"
+                  )
+            )}
+          >
+            <div className={markdownShell}>
+              <TooltipProvider delayDuration={120}>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={markdownComponents}
+                >
+                  {renderedMarkdown}
+                </ReactMarkdown>
+                {!isUser && mergedCitations.length > 0 ? (
+                  <ChatCitationSourcesFooter
+                    sources={mergedCitations}
+                    tooltipVariant="compact"
+                    messageContent={message.content}
+                    inlineCitations={message.inlineCitations}
+                    segmentPersonas={segmentPersonas}
+                  />
+                ) : null}
+              </TooltipProvider>
+            </div>
           </div>
-        </div>
+        </ChatMessageRow>
         <p
           className={cn(
             "text-xs text-muted-foreground",
@@ -242,12 +275,6 @@ export function MessageBubble({
           {formatLocalTime(message.timestamp)}
         </p>
       </div>
-
-      {isUser && (
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 border-arse-black bg-transparent font-arse-title text-[10px] font-bold uppercase text-arse-black">
-          {userInitials}
-        </div>
-      )}
     </div>
   )
 }

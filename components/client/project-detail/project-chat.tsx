@@ -58,6 +58,11 @@ import {
 import { cn } from "@/lib/utils"
 import { ChatCitationSourcesFooter } from "@/components/chat/chat-citation-sources-footer"
 import {
+  CHAT_AVATAR_SIZE_CLASS,
+  CHAT_AVATAR_TEXT_CLASS,
+  ChatMessageRow,
+} from "@/components/chat/chat-message-row"
+import {
   buildChatMarkdownComponents,
   CHAT_BUBBLE_MAX_WIDTH_CLASS,
   chatMarkdownProseClass,
@@ -108,8 +113,10 @@ function Avatar({ label, isLoading = false }: { label: string; isLoading?: boole
   return (
     <div
       className={cn(
-        "relative flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden bg-transparent font-arse-title text-[10px] font-bold uppercase text-arse-black",
-        isAiAvatar ? "rounded-none" : "rounded-full border-2 border-arse-black"
+        "relative flex shrink-0 items-center justify-center overflow-hidden bg-transparent font-arse-title font-bold uppercase text-arse-black",
+        CHAT_AVATAR_SIZE_CLASS,
+        CHAT_AVATAR_TEXT_CLASS,
+        isAiAvatar ? "rounded-none" : "rounded-full border border-arse-black sm:border-2"
       )}
     >
       {isAiAvatar ? (
@@ -117,7 +124,7 @@ function Avatar({ label, isLoading = false }: { label: string; isLoading?: boole
           src={robotAvatar}
           alt="AI avatar"
           fill
-          sizes="32px"
+          sizes="(max-width: 640px) 24px, 32px"
           className={cn("object-cover", isLoading && "animate-spin")}
         />
       ) : (
@@ -260,20 +267,21 @@ function MessageBubble({
   const markdownShell = chatMarkdownProseClass({ variant: "client" })
 
   return (
-    <div
-      className={cn(
-        "flex w-full min-w-0 gap-3",
-        isUser ? "justify-end" : "justify-start"
-      )}
+    <ChatMessageRow
+      role={isUser ? "user" : "assistant"}
+      avatar={<Avatar label={isUser ? "ME" : "AI"} />}
     >
-      {!isUser ? <Avatar label="AI" /> : null}
       <div
         className={cn(
           CHAT_BUBBLE_MAX_WIDTH_CLASS,
           "rounded-2xl border-2 px-4 text-sm leading-[1.7]",
           isUser
-            ? "border-zinc-800 bg-zinc-800 py-3 text-white"
-            : cn(assistantTone.cardBorder, assistantTone.cardBg, "py-5 text-arse-black sm:py-6")
+            ? "ml-auto w-fit max-w-full border-zinc-800 bg-zinc-800 py-3 text-white sm:ml-0 sm:w-full"
+            : cn(
+                assistantTone.cardBorder,
+                assistantTone.cardBg,
+                "py-5 text-arse-black sm:py-6"
+              )
         )}
       >
         <div className={markdownShell}>
@@ -296,8 +304,7 @@ function MessageBubble({
           </TooltipProvider>
         </div>
       </div>
-      {isUser ? <Avatar label="ME" /> : null}
-    </div>
+    </ChatMessageRow>
   )
 }
 
@@ -485,11 +492,9 @@ function FocusGroupRoundTopicBubble({
   inProgress?: boolean
 }) {
   return (
-    <div
-      className="flex w-full min-w-0 gap-3 justify-end"
-      aria-label={`Round ${roundNumber} topic`}
-    >
-      <div className={cn(CHAT_BUBBLE_MAX_WIDTH_CLASS, "flex flex-col items-end")}>
+    <div aria-label={`Round ${roundNumber} topic`}>
+      <ChatMessageRow role="user" avatar={<Avatar label="ME" />}>
+      <div className={cn(CHAT_BUBBLE_MAX_WIDTH_CLASS, "ml-auto flex w-fit max-w-full flex-col items-end sm:ml-0 sm:w-full")}>
         <div className="mb-1 flex items-center gap-2">
           <span className="font-arse-title text-[10px] font-bold uppercase tracking-[0.2em] text-arse-black/55">
             Round {roundNumber}
@@ -509,7 +514,7 @@ function FocusGroupRoundTopicBubble({
           {topic}
         </div>
       </div>
-      <Avatar label="ME" />
+      </ChatMessageRow>
     </div>
   )
 }
@@ -885,8 +890,7 @@ export function ProjectChat({
                 ) : null}
               </div>
             ) : timelineItems.length === 0 ? (
-              <div className="flex w-full min-w-0 gap-3">
-                <Avatar label="AI" />
+              <ChatMessageRow role="assistant" avatar={<Avatar label="AI" />}>
                 <div className={CHAT_BUBBLE_MAX_WIDTH_CLASS}>
                   <div
                     className={cn(
@@ -945,7 +949,7 @@ export function ProjectChat({
                     </p>
                   </div>
                 </div>
-              </div>
+              </ChatMessageRow>
             ) : (
               <div className="space-y-4">
                 {timelineItems.map((item) => {
@@ -1007,12 +1011,14 @@ export function ProjectChat({
                 })}
                 {isLoading ? (
                   <div
-                    className="flex w-full min-w-0 gap-3"
                     role="status"
                     aria-live="polite"
                     aria-label="Assistant is preparing a response"
                   >
-                    <Avatar label="AI" isLoading />
+                    <ChatMessageRow
+                      role="assistant"
+                      avatar={<Avatar label="AI" isLoading />}
+                    >
                     <div
                       className={cn(
                         CHAT_BUBBLE_MAX_WIDTH_CLASS,
@@ -1025,6 +1031,7 @@ export function ProjectChat({
                         <p className="font-arse-body text-sm">{LOADING_ACTIONS[loadingActionIndex]}</p>
                       </div>
                     </div>
+                    </ChatMessageRow>
                   </div>
                 ) : null}
               </div>

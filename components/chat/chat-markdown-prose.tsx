@@ -6,9 +6,9 @@ import { cn } from "@/lib/utils"
 
 export type ChatMarkdownVariant = "client" | "dashboard"
 
-/** Bubble width accounting for one 32px avatar + 12px flex gap. */
+/** Full width on mobile (corner avatars); side-avatar calc from sm+. */
 export const CHAT_BUBBLE_MAX_WIDTH_CLASS =
-  "max-w-[min(42rem,calc(100%-2.75rem))] min-w-0 shrink"
+  "w-full max-w-full min-w-0 sm:max-w-[min(42rem,calc(100%-2.75rem))] sm:shrink"
 
 type ProseOptions = {
   variant: ChatMarkdownVariant

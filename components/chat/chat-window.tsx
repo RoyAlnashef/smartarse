@@ -9,6 +9,12 @@ import type { PersonaMock } from "@/lib/personas/segment-mocks"
 import { MessageBubble } from "./message-bubble"
 import { AdminFocusGroupTranscriptRound } from "./admin-focus-group-transcript"
 import type { AdminFocusGroupSessionPayload } from "@/lib/admin-project-focus-group-session"
+import { CHAT_BUBBLE_MAX_WIDTH_CLASS } from "@/components/chat/chat-markdown-prose"
+import {
+  CHAT_AVATAR_SIZE_CLASS,
+  ChatMessageRow,
+} from "@/components/chat/chat-message-row"
+import { cn } from "@/lib/utils"
 
 function ChatWindowAdminReadOnlyEmpty() {
   return (
@@ -131,24 +137,33 @@ export function ChatWindow({
 
       {/* Typing indicator */}
       {isTyping && (
-        <div className="flex gap-3">
-          <div className="relative h-8 w-8 shrink-0 overflow-hidden">
-            <Image
-              src={robotAvatar}
-              alt="ARSE avatar"
-              fill
-              sizes="32px"
-              className="object-cover"
-            />
-          </div>
-          <div className="rounded-2xl rounded-bl-md bg-background px-4 py-3">
+        <ChatMessageRow
+          role="assistant"
+          avatar={
+            <div className={cn("relative shrink-0 overflow-hidden", CHAT_AVATAR_SIZE_CLASS)}>
+              <Image
+                src={robotAvatar}
+                alt="ARSE avatar"
+                fill
+                sizes="(max-width: 640px) 24px, 32px"
+                className="object-cover"
+              />
+            </div>
+          }
+        >
+          <div
+            className={cn(
+              CHAT_BUBBLE_MAX_WIDTH_CLASS,
+              "rounded-2xl rounded-bl-md bg-background px-4 py-3"
+            )}
+          >
             <div className="flex gap-1">
               <span className="h-2 w-2 animate-bounce rounded-full bg-dark-300" style={{ animationDelay: "0ms" }} />
               <span className="h-2 w-2 animate-bounce rounded-full bg-dark-300" style={{ animationDelay: "150ms" }} />
               <span className="h-2 w-2 animate-bounce rounded-full bg-dark-300" style={{ animationDelay: "300ms" }} />
             </div>
           </div>
-        </div>
+        </ChatMessageRow>
       )}
 
     </div>
