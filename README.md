@@ -17,7 +17,7 @@ Status legend: ✅ built, 🟡 partial/in progress, ⚪ planned/not built yet
 - ✅ **Supabase organizations management**: Admin can create, update, and deactivate organizations from the dashboard
 - ✅ **Admin user provisioning API**: Admin can create users with temporary passwords via secure server route; user removal via `DELETE /api/admin/users/[id]`
 - ✅ **RLS-backed admin workflows**: Policies and constraints enforce role checks and org-safe data relationships
-- ✅ **Forgot password flow**: Send reset email from sign-in, recover session from email link, and land on settings to update password
+- ✅ **Forgot password flow**: Send reset email from sign-in, recover session from email link, set a new password on `/auth/reset-password`, then enter the app by role
 - ✅ **Demo access flow**: Public `/demo` signup, manual approve/reject via email links, Supabase magic-link provisioning into the admin-designated **demo project**, direct entry to that project (no project list), admin **Demo requests** dashboard, stale-request cron
 - 🟡 **Project chat + n8n**: Client chat POSTs to **`POST /api/n8n`** (server proxy — n8n URL and secret stay server-only), then `POST /api/chat/persist` and polling via `GET /api/chat/poll` until `chat_results` completes. Long-running workflows can call `POST /api/chat/n8n-complete` when `CHAT_N8N_CALLBACK_SECRET` is set (see `agent-os/specs/2026-03-26-1400-project-chat-n8n-integration/`).
 - 🟡 **Tabbed project sidebar (client)**: Right column uses **Chat History** and **Personas** tabs (line-style tabs); **Studio** is scaffolded but hidden until ready. Mobile uses the same tabbed shell inside the overlay drawer.
@@ -106,9 +106,10 @@ The sign-in form includes a `Forgot password?` flow:
 2. Enter email and send reset link
 3. Open the Supabase reset email
 4. Follow the link to `/auth/reset-password`
-5. You are redirected to settings to change password:
-   - admin -> `/settings`
-   - client -> `/client/settings`
+5. Enter and confirm your new password on the reset page
+6. You are redirected into the app:
+   - admin -> `/dashboard`
+   - client/user -> `/client/projects`
 
 ## Project Structure
 
@@ -127,7 +128,7 @@ The sign-in form includes a `Forgot password?` flow:
 │   │   ├── projects/         # Project list + search
 │   │   └── projects/[id]/    # Client project detail (chat + tabbed sidebar)
 │   ├── auth/
-│   │   └── reset-password/   # Supabase recovery callback + redirect to settings
+│   │   └── reset-password/   # Supabase recovery callback + password reset form
 │   ├── api/
 │   │   ├── admin/users/      # Admin user creation
 │   │   ├── admin/users/[id]/ # Admin user DELETE
