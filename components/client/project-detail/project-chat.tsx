@@ -1,6 +1,13 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState, type AnchorHTMLAttributes } from "react"
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type AnchorHTMLAttributes,
+} from "react"
 import { Send, SlidersHorizontal, Square } from "lucide-react"
 import Image from "next/image"
 import robotAvatar from "@/public/robot-avatar.png"
@@ -106,6 +113,19 @@ function getRandomLoadingActionIndex(excludeIndex?: number): number {
     next = Math.floor(Math.random() * LOADING_ACTIONS.length)
   }
   return next
+}
+
+function scrollElementToTopOfContainer(
+  container: HTMLElement,
+  element: HTMLElement
+) {
+  const delta =
+    element.getBoundingClientRect().top - container.getBoundingClientRect().top
+  container.scrollTop += delta
+}
+
+function isChatTimelineMessage(item: ChatTimelineItem): item is ChatMessage {
+  return "role" in item
 }
 
 function Avatar({ label, isLoading = false }: { label: string; isLoading?: boolean }) {
@@ -712,6 +732,9 @@ export function ProjectChat({
   segmentPersonas?: PersonaMock[]
 }) {
   const scrollViewportRef = useRef<HTMLDivElement>(null)
+  const chatShellRef = useRef<HTMLElement>(null)
+  const latestAssistantRef = useRef<HTMLDivElement>(null)
+  const wasLoadingRef = useRef(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [value, setValue] = useState("")
   const [loadingActionIndex, setLoadingActionIndex] = useState(0)
@@ -738,6 +761,40 @@ export function ProjectChat({
     return items
   }, [messages, timelineEvents, orderedTimelineItems])
 
+  const latestAssistantMessageId = useMemo(() => {
+    for (let i = timelineItems.length - 1; i >= 0; i--) {
+      const item = timelineItems[i]
+      if (isChatTimelineMessage(item) && item.role === "assistant") {
+        return item.id
+      }
+    }
+    return null
+  }, [timelineItems])
+
+  const focusGroupActive = Boolean(focusGroupSession)
+
+  useLayoutEffect(() => {
+    const justFinished = wasLoadingRef.current && !isLoading
+    wasLoadingRef.current = isLoading
+
+    if (!justFinished || focusGroupActive) return
+
+    const viewport = scrollViewportRef.current
+    const messageEl = latestAssistantRef.current
+    if (!viewport || !messageEl) return
+
+    const alignAnswerToTop = () => {
+      scrollElementToTopOfContainer(viewport, messageEl)
+    }
+
+    alignAnswerToTop()
+    requestAnimationFrame(alignAnswerToTop)
+
+    if (window.matchMedia("(max-width: 1023px)").matches) {
+      chatShellRef.current?.scrollIntoView({ block: "start", behavior: "smooth" })
+    }
+  }, [isLoading, latestAssistantMessageId, focusGroupActive])
+
   useEffect(() => {
     if (!isLoading) {
       setLoadingActionIndex(0)
@@ -750,7 +807,6 @@ export function ProjectChat({
     return () => window.clearInterval(intervalId)
   }, [isLoading])
 
-  const focusGroupActive = Boolean(focusGroupSession)
   const inputPlaceholder = focusGroupActive
     ? focusGroupRunning
       ? "Waiting for the current round to finish…"
@@ -817,8 +873,9 @@ export function ProjectChat({
 
   return (
     <section
+      ref={chatShellRef}
       className={cn(
-        "relative flex flex-col overflow-hidden rounded-3xl border-4 bg-zinc-50",
+        "relative flex scroll-mt-4 flex-col overflow-hidden rounded-3xl border-4 bg-zinc-50",
         activeChatTone.shellBorder,
         PERSONA_CHAT_SHELL_CLASS
       )}
@@ -990,21 +1047,30 @@ export function ProjectChat({
                     )
                   }
                   return (
-                    <MessageBubble
+                    <div
                       key={item.id}
-                      message={item}
-                      assistantTone={activeChatTone}
-                      citationLookup={
-                        item.role === "assistant" ? citationLookup : null
+                      ref={
+                        item.role === "assistant" &&
+                        item.id === latestAssistantMessageId
+                          ? latestAssistantRef
+                          : undefined
                       }
-                      citations={item.role === "assistant" ? item.citations : undefined}
-                      citationDocuments={
-                        item.role === "assistant" ? citationDocuments : undefined
-                      }
-                      segmentPersonas={
-                        item.role === "assistant" ? segmentPersonas : undefined
-                      }
-                    />
+                    >
+                      <MessageBubble
+                        message={item}
+                        assistantTone={activeChatTone}
+                        citationLookup={
+                          item.role === "assistant" ? citationLookup : null
+                        }
+                        citations={item.role === "assistant" ? item.citations : undefined}
+                        citationDocuments={
+                          item.role === "assistant" ? citationDocuments : undefined
+                        }
+                        segmentPersonas={
+                          item.role === "assistant" ? segmentPersonas : undefined
+                        }
+                      />
+                    </div>
                   )
                 })}
                 {isLoading ? (
