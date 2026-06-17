@@ -915,7 +915,7 @@ export function ProjectChat({
         <div className="relative min-h-0 flex-1 overflow-hidden">
           <div
             ref={scrollViewportRef}
-            className="h-full overflow-x-hidden overflow-y-auto p-4 pt-12 pr-1 sm:px-6 sm:pb-6 sm:pt-12 lg:p-6"
+            className="h-full overflow-x-hidden overflow-y-auto p-4 pt-12 sm:px-6 sm:pb-6 sm:pt-12 lg:p-6"
           >
             {focusGroupActive && focusGroupSession ? (
               <div className="space-y-6">
