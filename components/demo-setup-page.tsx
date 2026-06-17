@@ -8,16 +8,11 @@ import { ArseLogoGroup } from "@/components/arse-logo-group"
 import { LoginFlowBackground } from "@/components/login-flow-background"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { establishSessionFromUrl } from "@/lib/supabase/session-from-url"
+import { pillPasswordInputClass } from "@/lib/auth-form-styles"
 import { cn } from "@/lib/utils"
 import { LegalFooterNav } from "@/components/legal/legal-footer-nav"
 
 type SetupPhase = "establishing" | "form" | "submitting" | "failed"
-
-const pillInputClass = cn(
-  "min-h-12 w-full rounded-full border-2 border-arse-pink bg-arse-white/90 py-3 pl-5 pr-12 text-sm text-arse-black",
-  "placeholder:text-arse-black/40",
-  "focus:border-arse-black focus:outline-none focus:ring-2 focus:ring-arse-black/15"
-)
 
 export function DemoSetupPage() {
   const router = useRouter()
@@ -197,7 +192,7 @@ export function DemoSetupPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="New password"
-                  className={pillInputClass}
+                  className={pillPasswordInputClass}
                 />
                 <button
                   type="button"
@@ -225,7 +220,7 @@ export function DemoSetupPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm password"
-                  className={pillInputClass}
+                  className={pillPasswordInputClass}
                 />
                 <button
                   type="button"

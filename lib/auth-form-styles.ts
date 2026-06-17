@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils"
 
 export const pillInputClass = cn(
-  "min-h-12 w-full rounded-full border-2 border-arse-pink bg-arse-white/90 px-5 py-3 text-sm text-arse-black",
+  "min-h-12 w-full rounded-full border-2 border-arse-pink bg-arse-white/90 px-5 py-3 text-base text-arse-black md:text-sm",
   "placeholder:text-arse-black/40",
   "focus:border-arse-black focus:outline-none focus:ring-2 focus:ring-arse-black/15"
 )
@@ -9,7 +9,7 @@ export const pillInputClass = cn(
 export const pillInputWithIconClass = cn(pillInputClass, "flex-1")
 
 export const pillPasswordInputClass = cn(
-  "min-h-12 w-full rounded-full border-2 border-arse-pink bg-arse-white/90 py-3 pl-5 pr-12 text-sm text-arse-black",
+  "min-h-12 w-full rounded-full border-2 border-arse-pink bg-arse-white/90 py-3 pl-5 pr-12 text-base text-arse-black md:text-sm",
   "placeholder:text-arse-black/40",
   "focus:border-arse-black focus:outline-none focus:ring-2 focus:ring-arse-black/15"
 )
