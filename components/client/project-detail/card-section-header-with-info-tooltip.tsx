@@ -67,7 +67,8 @@ export function CardSectionHeaderWithInfoTooltip({
         <Popover>
           <PopoverTrigger asChild>{trigger}</PopoverTrigger>
           <PopoverContent
-            side="right"
+            side="top"
+            align="center"
             sideOffset={6}
             collisionPadding={16}
             className={INFO_CONTENT_CLASS}
@@ -79,7 +80,12 @@ export function CardSectionHeaderWithInfoTooltip({
         <TooltipProvider delayDuration={200}>
           <Tooltip>
             <TooltipTrigger asChild>{trigger}</TooltipTrigger>
-            <TooltipContent side="right" sideOffset={6} className={INFO_CONTENT_CLASS}>
+            <TooltipContent
+              side="top"
+              align="center"
+              sideOffset={6}
+              className={INFO_CONTENT_CLASS}
+            >
               {tooltipText}
             </TooltipContent>
           </Tooltip>
