@@ -14,6 +14,7 @@ export default defineConfig({
     environment: "node",
     include: [
       "lib/chat-thread.test.ts",
+      "lib/citation-utils.test.ts",
       "lib/supabase/session-from-url.test.ts",
       "lib/demo-access/tokens.test.ts",
       "lib/demo-access/config.test.ts",

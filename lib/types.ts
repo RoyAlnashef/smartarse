@@ -214,6 +214,28 @@ export interface ChatCitationSource {
    * When omitted, consumers should fall back to `interviewChunks.length`.
    */
   quoteCount?: number | null
+  /**
+   * Per-verbatim survey rows aggregated on the `[3]` source for inline-popover
+   * matching and structural demographic rendering. Maps to Disrupt
+   * `survey_chunks_data` (snake_case fields retained for parity with the
+   * ported `findVerbatimByContext` helper).
+   */
+  surveyChunks?: SurveyChunkData[] | null
+}
+
+/**
+ * Per-verbatim row aggregated onto the `[3]` survey citation source. Field
+ * names mirror the Disrupt n8n payload (`survey_chunks_data`) so the matching
+ * helpers ported from the citation-handoff bundle remain untouched.
+ */
+export interface SurveyChunkData {
+  verbatim: string | null
+  question_code: string | null
+  question_text: string | null
+  country: string | null
+  gender_label: string | null
+  age_band: string | null
+  segment_name: string | null
 }
 
 /**

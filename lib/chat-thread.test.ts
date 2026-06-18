@@ -11,6 +11,7 @@ import {
   type ThreadStoredMessage,
 } from "@/lib/chat-thread"
 import { buildSurveySamplePillText } from "@/lib/chat/citation-tooltip"
+import { parseCitationSource } from "@/lib/api/chat-payload"
 
 describe("chat-thread activation persistence", () => {
   it("isoOneMsBefore orders activation before same-ms user turn", () => {
@@ -53,6 +54,29 @@ describe("chat-thread activation persistence", () => {
     expect(assistant?.citations?.[0].sampleDescription).toBe("UK")
     expect(assistant?.citations?.[0].sourceType).toBe("survey")
     expect(buildSurveySamplePillText(assistant!.citations![0])).toBe("UK, n=504")
+  })
+
+  it("parseCitationSource coerces survey_chunks_data on survey sources", () => {
+    const source = parseCitationSource(
+      {
+        index: 3,
+        source_type: "survey",
+        survey_chunks_data: [
+          {
+            verbatim: "Environmentally friendly",
+            question_code: "Q1",
+            country: "UK",
+            gender_label: "Male",
+            age_band: "25-34",
+            segment_name: "Do Their Bit for Others",
+          },
+        ],
+      },
+      3
+    )
+    expect(source?.surveyChunks).toHaveLength(1)
+    expect(source?.surveyChunks?.[0].segment_name).toBe("Do Their Bit for Others")
+    expect(source?.surveyChunks?.[0].country).toBe("UK")
   })
 
   it("buildSurveySamplePillText falls back to 'All Respondents' when no sample metadata", () => {

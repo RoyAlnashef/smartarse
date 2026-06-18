@@ -33,6 +33,7 @@ import {
   buildCitationLabelLookup,
   citationSourcePrimaryLabel,
   isInterviewCitationSource,
+  isSurveyCitationSource,
   mergeCitationSourcesWithDocColors,
   mergeCitationSourcesWithDocIcons,
   resolveCitationLinkTitle,
@@ -45,6 +46,7 @@ import {
   citationTooltipContentStyle,
 } from "@/lib/chat/citation-tooltip"
 import { InlineInterviewCitation } from "@/lib/chat/interview-citation"
+import { InlineSurveyCitation } from "@/lib/chat/survey-citation"
 import {
   parseCitationHref,
   resolveInlineCitation,
@@ -228,6 +230,20 @@ function MessageBubble({
                 content={message.content}
                 markerPosition={inlineCitation?.marker_position ?? 0}
                 ariaLabel={`Citation ${citationIndex}: ${primaryLabel}`}
+                segmentPersonas={segmentPersonas}
+                variant="default"
+              />
+            )
+          }
+          if (isSurveyCitationSource(source)) {
+            return (
+              <InlineSurveyCitation
+                source={source}
+                content={message.content}
+                markerPosition={inlineCitation?.marker_position ?? 0}
+                ariaLabel={`Citation ${citationIndex}: ${primaryLabel}`}
+                primaryLabel={primaryLabel}
+                inlineCitation={inlineCitation}
                 segmentPersonas={segmentPersonas}
                 variant="default"
               />

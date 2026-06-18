@@ -15,15 +15,15 @@
  *
  * Only the helpers needed for the interview `[4]` flow are ported:
  * `findChunkByContext`, `filterCitedInterviewSources`, `extractLastQuote`,
- * `deepNormalize`. The survey verbatim equivalents (`findVerbatimByContext`)
- * and segment parsing (`parseInlineCitations`) live in the source bundle
- * for whoever needs them.
+ * `deepNormalize`. Survey verbatim matching (`findVerbatimByContext`) is
+ * ported for the inline `[3]` popover flow.
  */
 
 import type {
   ChatCitationSource,
   ChatInlineCitation,
   InterviewChunkData,
+  SurveyChunkData,
 } from "@/lib/types"
 
 /** Normalise text for chunk matching: strip markdown punctuation, collapse whitespace. */
@@ -188,6 +188,84 @@ export function findChunkByContext(
       }
       return withMod[0]
     }
+  }
+
+  return null
+}
+
+/**
+ * P271: locate the survey verbatim row whose `verbatim` text matches the AI's
+ * preceding quote text. Mirrors `findChunkByContext` but for `[3]` markers.
+ *
+ * Used by the chip popover to render structurally-correct demographics
+ * (Country + Gender + Age + Segment) sourced from the database, removing
+ * the AI-prose dependency.
+ *
+ * Match strategy: deep-normalise both sides, then forward-substring match
+ * (verbatim contains AI quote). Reverse direction with length sanity as
+ * fallback. A third anchor-phrase fuzzy pass catches grammar-corrected quotes.
+ */
+export function findVerbatimByContext(
+  verbatims: SurveyChunkData[],
+  precedingText: string
+): SurveyChunkData | null {
+  if (!verbatims.length || !precedingText) return null
+
+  const quoteText = extractLastQuote(precedingText) || precedingText
+  const qDeep = deepNormalize(quoteText)
+
+  if (qDeep.length >= 3) {
+    for (const v of verbatims) {
+      if (!v.verbatim) continue
+      const vDeep = deepNormalize(v.verbatim)
+      if (!vDeep) continue
+      if (vDeep === qDeep) return v
+      const englishIdx = (v.verbatim || "").indexOf("[English]:")
+      if (englishIdx >= 0) {
+        const vEng = deepNormalize(
+          v.verbatim.slice(englishIdx + "[English]:".length)
+        )
+        if (vEng && vEng === qDeep) return v
+      }
+    }
+  }
+
+  if (qDeep.length < 20) return null
+
+  for (const v of verbatims) {
+    if (!v.verbatim) continue
+    const vDeep = deepNormalize(v.verbatim)
+    if (!vDeep) continue
+    if (vDeep.includes(qDeep)) return v
+  }
+
+  for (const v of verbatims) {
+    if (!v.verbatim) continue
+    const vDeep = deepNormalize(v.verbatim)
+    if (!vDeep) continue
+    if (qDeep.includes(vDeep) && vDeep.length >= qDeep.length * 0.7) return v
+  }
+
+  const qWords = qDeep.split(/\s+/).filter((w) => w.length >= 3)
+  if (qWords.length >= 8) {
+    const phrases: string[] = []
+    for (let i = 0; i <= qWords.length - 4; i++) {
+      phrases.push(qWords.slice(i, i + 4).join(" "))
+    }
+    let best: { row: SurveyChunkData; hits: number } | null = null
+    for (const v of verbatims) {
+      if (!v.verbatim) continue
+      const vDeep = deepNormalize(v.verbatim)
+      if (!vDeep) continue
+      if (vDeep.length < qDeep.length * 0.5 || vDeep.length > qDeep.length * 2.0) {
+        continue
+      }
+      const hits = phrases.filter((p) => vDeep.includes(p)).length
+      if (hits >= 2 && (!best || hits > best.hits)) {
+        best = { row: v, hits }
+      }
+    }
+    if (best) return best.row
   }
 
   return null

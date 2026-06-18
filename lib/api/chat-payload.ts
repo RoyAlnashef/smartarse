@@ -3,6 +3,7 @@ import type {
   ChatCitationSource,
   ChatInlineCitation,
   InterviewChunkData,
+  SurveyChunkData,
 } from "@/lib/types"
 
 export type { ChatInlineCitation }
@@ -116,6 +117,73 @@ function normalizeInterviewChunks(raw: unknown): InterviewChunkData[] | null {
   const out: InterviewChunkData[] = []
   for (const item of raw) {
     const chunk = parseInterviewChunk(item)
+    if (chunk) out.push(chunk)
+  }
+  return out.length > 0 ? out : null
+}
+
+function parseSurveyChunk(raw: unknown): SurveyChunkData | null {
+  const row = asRecord(raw)
+  if (Object.keys(row).length === 0) return null
+  const verbatim =
+    asStringOrNull(row.verbatim) ??
+    asStringOrNull(row.response) ??
+    asStringOrNull(row.text) ??
+    asStringOrNull(row.quote)
+  const question_code =
+    asStringOrNull(row.question_code) ??
+    asStringOrNull(row.questionCode) ??
+    asStringOrNull(row.q_code) ??
+    asStringOrNull(row.qCode)
+  const question_text =
+    asStringOrNull(row.question_text) ??
+    asStringOrNull(row.questionText) ??
+    asStringOrNull(row.question)
+  const country =
+    asStringOrNull(row.country) ??
+    asStringOrNull(row.interview_country) ??
+    asStringOrNull(row.interviewCountry)
+  const gender_label =
+    asStringOrNull(row.gender_label) ??
+    asStringOrNull(row.genderLabel) ??
+    asStringOrNull(row.gender)
+  const age_band =
+    asStringOrNull(row.age_band) ??
+    asStringOrNull(row.ageBand) ??
+    asStringOrNull(row.age)
+  const segment_name =
+    asStringOrNull(row.segment_name) ??
+    asStringOrNull(row.segmentName) ??
+    asStringOrNull(row.segment)
+
+  if (
+    !verbatim &&
+    !question_code &&
+    !question_text &&
+    !country &&
+    !gender_label &&
+    !age_band &&
+    !segment_name
+  ) {
+    return null
+  }
+
+  return {
+    verbatim,
+    question_code,
+    question_text,
+    country,
+    gender_label,
+    age_band,
+    segment_name,
+  }
+}
+
+function normalizeSurveyChunks(raw: unknown): SurveyChunkData[] | null {
+  if (!Array.isArray(raw)) return null
+  const out: SurveyChunkData[] = []
+  for (const item of raw) {
+    const chunk = parseSurveyChunk(item)
     if (chunk) out.push(chunk)
   }
   return out.length > 0 ? out : null
@@ -247,6 +315,9 @@ export function parseCitationSource(raw: unknown, fallbackIndex: number): ChatCi
   const interviewChunks = normalizeInterviewChunks(
     row.interview_chunks_data ?? row.interviewChunks ?? row.interviewChunksData
   )
+  const surveyChunks = normalizeSurveyChunks(
+    row.survey_chunks_data ?? row.surveyChunks ?? row.surveyChunksData
+  )
   const quoteCount =
     asNumber(row.quote_count) ??
     asNumber(row.quoteCount) ??
@@ -277,6 +348,7 @@ export function parseCitationSource(raw: unknown, fallbackIndex: number): ChatCi
     chunkTopic,
     interviewChunks,
     quoteCount,
+    surveyChunks,
   }
 }
 

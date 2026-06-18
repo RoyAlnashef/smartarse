@@ -9,6 +9,7 @@ import type { ChatCitationSource, ChatMessage } from "@/lib/types"
 import {
   citationSourcePrimaryLabel,
   isInterviewCitationSource,
+  isSurveyCitationSource,
   mergeCitationSourcesWithDocColors,
   mergeCitationSourcesWithDocIcons,
   type CitationDocumentRef,
@@ -33,6 +34,7 @@ import {
   citationTooltipContentStyle,
 } from "@/lib/chat/citation-tooltip"
 import { InlineInterviewCitation } from "@/lib/chat/interview-citation"
+import { InlineSurveyCitation } from "@/lib/chat/survey-citation"
 import type { PersonaMock } from "@/lib/personas/segment-mocks"
 import {
   parseCitationHref,
@@ -151,6 +153,20 @@ export function MessageBubble({
                 content={message.content}
                 markerPosition={inlineCitation?.marker_position ?? 0}
                 ariaLabel={`Citation ${citationIndex}: ${primaryLabel}`}
+                segmentPersonas={segmentPersonas}
+                variant="compact"
+              />
+            )
+          }
+          if (isSurveyCitationSource(source)) {
+            return (
+              <InlineSurveyCitation
+                source={source}
+                content={message.content}
+                markerPosition={inlineCitation?.marker_position ?? 0}
+                ariaLabel={`Citation ${citationIndex}: ${primaryLabel}`}
+                primaryLabel={primaryLabel}
+                inlineCitation={inlineCitation}
                 segmentPersonas={segmentPersonas}
                 variant="compact"
               />
