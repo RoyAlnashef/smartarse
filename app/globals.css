@@ -83,19 +83,6 @@
   body {
     @apply bg-background text-foreground;
   }
-
-  /* iOS WebKit auto-zooms focused inputs below 16px; keep text fields at 16px on small screens. */
-  @media (max-width: 767px) {
-    input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not(
-        [type="submit"]
-      ):not([type="reset"]):not([type="file"]):not([type="image"]):not(
-        [type="hidden"]
-      ),
-    textarea,
-    select {
-      font-size: 16px;
-    }
-  }
 }
 
 @layer utilities {
@@ -106,5 +93,18 @@
   /** Login / client marketing backdrop */
   .arse-surface-bg {
     background: var(--arse-cyan);
+  }
+
+  /* iOS WebKit auto-zooms focused inputs below 16px; beat Tailwind text-sm on small screens. */
+  @media (max-width: 767px) {
+    input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not(
+        [type="submit"]
+      ):not([type="reset"]):not([type="file"]):not([type="image"]):not(
+        [type="hidden"]
+      ),
+    textarea,
+    select {
+      font-size: 16px !important;
+    }
   }
 }

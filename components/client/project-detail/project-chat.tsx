@@ -63,6 +63,7 @@ import {
   isLocalToday,
 } from "@/lib/datetime"
 import { cn } from "@/lib/utils"
+import { shouldAutoFocusFormField } from "@/lib/mobile-browser-zoom"
 import { ChatCitationSourcesFooter } from "@/components/chat/chat-citation-sources-footer"
 import {
   CHAT_AVATAR_SIZE_CLASS,
@@ -844,7 +845,7 @@ export function ProjectChat({
 
   useEffect(() => {
     setValue("")
-    if (!disabled) {
+    if (!disabled && shouldAutoFocusFormField()) {
       textareaRef.current?.focus()
     }
   }, [contextResetKey, disabled])
@@ -865,7 +866,7 @@ export function ProjectChat({
       : DEFAULT_CHAT_TONE
 
   const textareaClassName = cn(
-    "block min-w-0 flex-1 resize-none rounded-xl border-4 border-arse-black bg-zinc-100 px-4 pb-4 pt-3 font-arse-body text-sm leading-snug text-arse-black placeholder:text-arse-black/45",
+    "block min-w-0 flex-1 resize-none rounded-xl border-4 border-arse-black bg-zinc-100 px-4 pb-4 pt-3 font-arse-body text-base leading-snug text-arse-black placeholder:text-arse-black/45 md:text-sm",
     "focus:outline-none focus:ring-2 disabled:opacity-50",
     activeChatTone.inputFocusRing,
     disabled && disabledInputTooltip && "pointer-events-none"

@@ -27,3 +27,9 @@ export function resetMobileBrowserZoom(): void {
     meta.setAttribute("content", content)
   })
 }
+
+/** Desktop-only: avoid auto-opening the keyboard and iOS zoom on segment/context changes. */
+export function shouldAutoFocusFormField(): boolean {
+  if (typeof window === "undefined") return false
+  return window.matchMedia("(min-width: 768px)").matches
+}
