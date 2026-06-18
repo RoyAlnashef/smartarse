@@ -1,7 +1,7 @@
 "use client"
 
 import type { CSSProperties, ReactElement, ReactNode } from "react"
-import { useSyncExternalStore } from "react"
+import { usePreferPopoverOverTooltip } from "@/hooks/use-prefer-popover-over-tooltip"
 import {
   Popover,
   PopoverContent,
@@ -12,32 +12,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-
-/** Hover tooltips flash open/closed on touch; use tap-to-toggle popovers instead. */
-const PREFER_CITATION_POPOVER_MQ =
-  "(hover: none), (pointer: coarse), (max-width: 767px)"
-
-function subscribePreferCitationPopover(onStoreChange: () => void) {
-  const mq = window.matchMedia(PREFER_CITATION_POPOVER_MQ)
-  mq.addEventListener("change", onStoreChange)
-  return () => mq.removeEventListener("change", onStoreChange)
-}
-
-function getPreferCitationPopoverSnapshot() {
-  return window.matchMedia(PREFER_CITATION_POPOVER_MQ).matches
-}
-
-function getPreferCitationPopoverServerSnapshot() {
-  return false
-}
-
-function usePreferCitationPopover() {
-  return useSyncExternalStore(
-    subscribePreferCitationPopover,
-    getPreferCitationPopoverSnapshot,
-    getPreferCitationPopoverServerSnapshot
-  )
-}
 
 export function CitationSourceTooltip({
   trigger,
@@ -54,7 +28,7 @@ export function CitationSourceTooltip({
   style?: CSSProperties
   children: ReactNode
 }) {
-  const preferPopover = usePreferCitationPopover()
+  const preferPopover = usePreferPopoverOverTooltip()
 
   if (preferPopover) {
     return (

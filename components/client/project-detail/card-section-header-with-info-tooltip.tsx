@@ -1,11 +1,17 @@
 "use client"
 
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { usePreferPopoverOverTooltip } from "@/hooks/use-prefer-popover-over-tooltip"
 import { cn } from "@/lib/utils"
 
 /** Filled “i in circle” (stroke-free) for tooltips in pink card headers. */
@@ -22,6 +28,9 @@ function SolidInfoIcon({ className }: { className?: string }) {
   )
 }
 
+const INFO_CONTENT_CLASS =
+  "max-w-64 border-dark-800 bg-dark-950 px-3 py-2 font-arse-body text-xs font-normal leading-relaxed text-arse-white/95 shadow-lg"
+
 export function CardSectionHeaderWithInfoTooltip({
   title,
   tooltipText,
@@ -31,6 +40,22 @@ export function CardSectionHeaderWithInfoTooltip({
   tooltipText: string
   className?: string
 }) {
+  const preferPopover = usePreferPopoverOverTooltip()
+
+  const trigger = (
+    <button
+      type="button"
+      className={cn(
+        "mx-auto flex max-w-full items-center justify-center gap-1.5 rounded-sm px-0.5 py-0.5 text-center outline-none transition-opacity hover:opacity-95 focus-visible:ring-2 focus-visible:ring-arse-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-arse-pink",
+        preferPopover ? "cursor-pointer" : "cursor-help",
+      )}
+      aria-label={`About ${title}: ${tooltipText}`}
+    >
+      <span className="font-extrabold">{title}</span>
+      <SolidInfoIcon className="h-3.5 w-3.5 text-arse-white" />
+    </button>
+  )
+
   return (
     <div
       className={cn(
@@ -38,27 +63,28 @@ export function CardSectionHeaderWithInfoTooltip({
         className,
       )}
     >
-      <TooltipProvider delayDuration={200}>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              type="button"
-              className="mx-auto flex max-w-full cursor-help items-center justify-center gap-1.5 rounded-sm px-0.5 py-0.5 text-center outline-none transition-opacity hover:opacity-95 focus-visible:ring-2 focus-visible:ring-arse-white/50 focus-visible:ring-offset-2 focus-visible:ring-offset-arse-pink"
-              aria-label={`About ${title}: ${tooltipText}`}
-            >
-              <span className="font-extrabold">{title}</span>
-              <SolidInfoIcon className="h-3.5 w-3.5 text-arse-white" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent
+      {preferPopover ? (
+        <Popover>
+          <PopoverTrigger asChild>{trigger}</PopoverTrigger>
+          <PopoverContent
             side="right"
             sideOffset={6}
-            className="max-w-64 border-dark-800 bg-dark-950 px-3 py-2 font-arse-body text-xs font-normal leading-relaxed text-arse-white/95 shadow-lg"
+            collisionPadding={16}
+            className={INFO_CONTENT_CLASS}
           >
             {tooltipText}
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+          </PopoverContent>
+        </Popover>
+      ) : (
+        <TooltipProvider delayDuration={200}>
+          <Tooltip>
+            <TooltipTrigger asChild>{trigger}</TooltipTrigger>
+            <TooltipContent side="right" sideOffset={6} className={INFO_CONTENT_CLASS}>
+              {tooltipText}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
     </div>
   )
 }
