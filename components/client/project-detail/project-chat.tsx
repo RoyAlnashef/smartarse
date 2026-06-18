@@ -916,7 +916,7 @@ export function ProjectChat({
         <div className="relative min-h-0 flex-1 overflow-hidden">
           <div
             ref={scrollViewportRef}
-            className="h-full overflow-x-hidden overflow-y-auto p-4 pt-12 sm:px-6 sm:pb-6 sm:pt-12 lg:p-6"
+            className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto p-4 pt-12 sm:px-6 sm:pb-6 sm:pt-12 lg:p-6"
           >
             {focusGroupActive && focusGroupSession ? (
               <div className="space-y-6">
@@ -1106,7 +1106,7 @@ export function ProjectChat({
 
         <form
           onSubmit={handleSubmit}
-          className="flex items-end gap-3 border-t-2 border-arse-black/10 bg-white p-4 sm:p-5"
+          className="flex shrink-0 items-end gap-3 border-t-2 border-arse-black/10 bg-white p-4 sm:p-5"
         >
           <label className="sr-only" htmlFor="project-chat-input">
             Ask a question
