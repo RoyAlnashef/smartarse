@@ -85,7 +85,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { PERSONA_CHAT_SHELL_CLASS } from "@/components/client/project-detail/persona-chat-shell-classes"
+import {
+  isMobileChatShellCompact,
+  PERSONA_CHAT_SHELL_BASE_CLASS,
+  PERSONA_CHAT_SHELL_MOBILE_COMPACT_CLASS,
+  PERSONA_CHAT_SHELL_MOBILE_EXPANDED_CLASS,
+} from "@/components/client/project-detail/persona-chat-shell-classes"
 import type { PersonaMock } from "@/lib/personas/segment-mocks"
 import { MOCK_SEGMENT_PERSONAS } from "@/lib/personas/segment-mocks"
 import { audienceStackColorTokens } from "@/lib/theme/custom-audience-theme"
@@ -774,6 +779,24 @@ export function ProjectChat({
 
   const focusGroupActive = Boolean(focusGroupSession)
 
+  const mobileShellCompact = useMemo(
+    () =>
+      isMobileChatShellCompact({
+        timelineItems,
+        focusGroupActive,
+        focusGroupRoundCount: focusGroupRounds.length,
+        hasLiveFocusGroupRound: liveFocusGroupRound != null,
+        isLoading,
+      }),
+    [
+      timelineItems,
+      focusGroupActive,
+      focusGroupRounds.length,
+      liveFocusGroupRound,
+      isLoading,
+    ]
+  )
+
   useLayoutEffect(() => {
     const justFinished = wasLoadingRef.current && !isLoading
     wasLoadingRef.current = isLoading
@@ -878,10 +901,18 @@ export function ProjectChat({
       className={cn(
         "relative flex scroll-mt-4 flex-col overflow-hidden rounded-3xl border-4 bg-zinc-50",
         activeChatTone.shellBorder,
-        PERSONA_CHAT_SHELL_CLASS
+        PERSONA_CHAT_SHELL_BASE_CLASS,
+        mobileShellCompact
+          ? PERSONA_CHAT_SHELL_MOBILE_COMPACT_CLASS
+          : PERSONA_CHAT_SHELL_MOBILE_EXPANDED_CLASS
       )}
     >
-      <div className="relative flex min-h-0 flex-1 flex-col">
+      <div
+        className={cn(
+          "relative flex flex-col lg:min-h-0 lg:flex-1",
+          !mobileShellCompact && "max-lg:min-h-0 max-lg:flex-1"
+        )}
+      >
         <button
           type="button"
           onClick={() => onOpenPersonas?.()}
@@ -913,10 +944,20 @@ export function ProjectChat({
           Controls
         </button>
 
-        <div className="relative min-h-0 flex-1 overflow-hidden">
+        <div
+          className={cn(
+            "relative lg:min-h-0 lg:flex-1 lg:overflow-hidden",
+            !mobileShellCompact && "max-lg:min-h-0 max-lg:flex-1 max-lg:overflow-hidden"
+          )}
+        >
           <div
             ref={scrollViewportRef}
-            className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto p-4 pt-12 sm:px-6 sm:pb-6 sm:pt-12 lg:p-6"
+            className={cn(
+              "overflow-x-hidden overflow-y-auto p-4 pt-12 sm:px-6 sm:pb-6 sm:pt-12 lg:p-6",
+              mobileShellCompact
+                ? "max-lg:min-h-0 lg:h-full lg:min-h-0 lg:flex-1"
+                : "h-full min-h-0 flex-1"
+            )}
           >
             {focusGroupActive && focusGroupSession ? (
               <div className="space-y-6">
