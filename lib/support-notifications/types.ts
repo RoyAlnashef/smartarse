@@ -42,6 +42,11 @@ export type SupportNotificationLogRow = {
   created_at: string
 }
 
+export type SupportNotificationLogEntry = SupportNotificationLogRow & {
+  project_name: string
+  organization_name: string
+}
+
 export type SupportNotificationProjectContext = {
   projectId: string
   projectName: string
