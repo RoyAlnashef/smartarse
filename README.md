@@ -25,7 +25,7 @@ Status legend: ✅ built, 🟡 partial/in progress, ⚪ planned/not built yet
 - ✅ **Custom audiences**: Build, explore-before-save, and persist saved audiences per project via **`/api/audience/saved`**; apply to chat with segment-stack UI; draft threads can be promoted via `POST /api/chat/promote-draft-custom-audience-thread`.
 - ✅ **Focus groups**: Multi-participant sessions via **`/api/focus-group/sessions`**; rounds charged up-front (`POST /api/credits/charge-focus-group-round` — 2 credits per participant per round); admin transcript view; session metadata in chat history.
 - ✅ **Inline citations**: Assistant Markdown responses render numbered citation chips with source tooltips (survey, interview, document) via `lib/chat/inline-citations.ts`.
-- ✅ **Support email notifications**: Admin **Support alerts** settings (`/settings/support-notifications`); per-project low-credit threshold; daily access-expiry reminders and outbox processing via cron (see Environment).
+- ✅ **Support email notifications**: Admin **Support alerts** settings (`/settings/support-notifications`) with **Settings** and **Logs** tabs; per-project low-credit threshold; daily access-expiry reminders and outbox processing via cron; changing a project's **Access until** clears prior expiry log rows so reminders re-send for the new date (see Environment).
 - 🟡 **Document-based queries**: Upload and selection UX exists; production document-grounded query backend is still evolving
 - ✅ **Credit system**: Balance and management surfaces exist; per-turn chat charges and focus-group round charges (2 credits × participants); live projects auto-pause when remaining **credit_balance** hits zero (DB trigger); end-to-end consumption reporting is still evolving
 - ✅ **Project access window**: Optional end date (`access_until`, inclusive London calendar day). Live projects auto-pause after that day via row triggers, `pause_project_if_access_expired` before chat persist/completion, and a scheduled job (`GET /api/cron/pause-expired-projects`, Vercel Cron in `vercel.json`) when `CRON_SECRET` is set
@@ -38,7 +38,7 @@ Status legend: ✅ built, 🟡 partial/in progress, ⚪ planned/not built yet
   - Auth/session routing with admin/client role-aware redirects; unified login + demo request at `/`
   - Organizations dashboard wired to Supabase (create/update/soft delete via status); table shows **Projects**, **Users**, and **Chats** per organization
   - Users dashboard wired to Supabase for org assignment and admin-only user creation
-  - Admin routes: users CRUD, demo requests approve/reject, demo project config, platform settings, project chat-history/result, focus-group session, credit-alert evaluation
+  - Admin routes: users CRUD, demo requests approve/reject, demo project config, platform settings, support notification logs, project chat-history/result, focus-group session, credit-alert evaluation
   - Chat routes: `history`, `result`, `poll`, `persist`, `n8n-complete`, `cancel`, `promote-draft-custom-audience-thread`; n8n proxy at `POST /api/n8n`
   - Audience + focus group routes: `/api/audience/saved`, `/api/focus-group/sessions`, `/api/credits/charge-focus-group-round`
   - Demo routes: `POST /api/demo/request`, approve/reject (email + API), session, password setup, first-login recording
@@ -46,6 +46,7 @@ Status legend: ✅ built, 🟡 partial/in progress, ⚪ planned/not built yet
   - Client hooks: `useChatHistory`, `useChatQuestion`, `useFocusGroupRound`, `useDemoSession`
   - Supabase migrations for admin RLS, credits/auto-pause, storage RLS, `chat_results`, `focus_groups`, custom audiences, demo access, support notifications, `access_until`
 - **Recent progress**:
+  - **Support alerts**: Delivery log on `/settings/support-notifications` (Logs tab, `GET /api/admin/support-notification-logs`); updating **Access until** resets expiry notification state via DB trigger
   - **Dashboard**: Project cards show user count, chat count, optional **Access until**, credits meter; nav includes **Demo requests**, **Support alerts**, **Organizations**
   - **Chat UI**: GFM Markdown + inline citation chips; focus-group and custom-audience context in history rows; admin focus-group transcript
   - **Client workspace**: Chat history card in main column; Personas | Studio right sidebar; custom audience builder and focus-group launcher in persona panel
@@ -78,15 +79,15 @@ Detailed feature plans, standards, and references live under [`agent-os/`](agent
 
 ### Prerequisites
 
-- Node.js 18+
+- Node.js 20.9+ (required by Next.js 16)
 - pnpm
 
 ### Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/smart-arse.git
-cd smart-arse
+git clone https://github.com/RoyAlnashef/smartarse.git
+cd smartarse
 
 # Install dependencies
 pnpm install
@@ -168,7 +169,7 @@ With `pnpm dev` running, open **`http://localhost:3000/dev/emails`** to preview 
 │   │   ├── demo-requests/    # Demo access approval queue
 │   │   ├── analytics/        # Analytics (mock data)
 │   │   ├── settings/         # Admin account settings
-│   │   │   └── support-notifications/  # Support alert toggles + inbox
+│   │   │   └── support-notifications/  # Support alert toggles + delivery log
 │   │   ├── faq/              # Internal FAQ (dashboard shell)
 │   │   └── privacy/          # Redirects to /help/privacy
 │   ├── client/               # Client-facing area (branded shell)
@@ -187,7 +188,7 @@ With `pnpm dev` running, open **`http://localhost:3000/dev/emails`** to preview 
 │   │   ├── focus-group/sessions/  # Focus group session lifecycle
 │   │   ├── credits/          # charge-focus-group-round
 │   │   ├── demo/             # request, approve, reject, session, password setup
-│   │   ├── admin/            # users, demo-requests, demo-project, platform-settings, projects/*
+│   │   ├── admin/            # users, demo-requests, demo-project, platform-settings, support-notification-logs, projects/*
 │   │   └── cron/             # pause-expired-projects, expire-demo-requests, support-notifications*
 │   ├── demo/                 # Legacy redirect → /
 │   ├── dev/emails/           # Email template preview (dev only)
@@ -286,7 +287,6 @@ Recommended PR flow:
 | `pnpm dev`    | Start dev server (Turbopack) |
 | `pnpm build`  | Production build             |
 | `pnpm start`  | Start production server      |
-| `pnpm lint`   | Run ESLint                   |
 | `pnpm test`   | Run Vitest unit tests        |
 
 
@@ -359,8 +359,9 @@ This sends from `onboarding@resend.dev`. Resend may only deliver to the **email 
 
 **Support notifications** (low credits + access expiry — see `[agent-os/specs/2026-06-02-1200-disrupt-support-email-notifications/plan.md](agent-os/specs/2026-06-02-1200-disrupt-support-email-notifications/plan.md)`):
 
-- Admin settings: `/settings/support-notifications` (support inbox + three toggles).
+- Admin settings: `/settings/support-notifications` — **Settings** tab (support inbox + three toggles) and **Logs** tab (paginated delivery history via `GET /api/admin/support-notification-logs`).
 - Per-project threshold: project **Settings → Credits → Email support when balance below**.
+- Changing a project's **Access until** clears prior 28d/14d expiry log rows so the daily cron can re-send against the new date.
 - Uses the same `EMAIL_PROVIDER_API_KEY` / Resend setup as demo access.
 - `DEMO_NOTIFICATION_EMAIL` overrides the support inbox for all internal notification emails during testing.
 - Scheduled jobs (require `CRON_SECRET`):
