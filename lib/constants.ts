@@ -1,6 +1,9 @@
 /** Default page size for admin dashboard tables (users, organizations, etc.). */
 export const LIST_PAGE_SIZE = 25
 
+/** Page size for the admin demo requests table. */
+export const DEMO_REQUESTS_PAGE_SIZE = 20
+
 /**
  * Scoped shadcn `--accent` for admin dashboard main column and portaled surfaces.
  * Makes outline/ghost `hover:bg-accent` use brand pink instead of global cyan.

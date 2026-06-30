@@ -2,14 +2,16 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { toast } from "sonner"
-import { useAuth } from "@/lib/auth-context"
-import { getSupabaseBrowserClient } from "@/lib/supabase/client"
-import type { DemoAccessRequestDto, DemoAccessRequestStatus } from "@/lib/demo-access/types"
+import { ListPagination } from "@/components/dashboard/list-pagination"
 import { DemoRequestsDemoProjectBanner } from "@/components/dashboard/demo-requests-demo-project-banner"
 import {
   DemoRequestsTable,
   DemoRequestsTableSkeleton,
 } from "@/components/dashboard/demo-requests-table"
+import { useAuth } from "@/lib/auth-context"
+import { DEMO_REQUESTS_PAGE_SIZE } from "@/lib/constants"
+import type { DemoAccessRequestDto, DemoAccessRequestStatus } from "@/lib/demo-access/types"
+import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 
 const STATUS_FILTER_OPTIONS: {
   value: DemoAccessRequestStatus | "all"
@@ -31,6 +33,8 @@ export default function DemoRequestsPage() {
   const [statusFilter, setStatusFilter] = useState<DemoAccessRequestStatus | "all">(
     "all"
   )
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
   const [actingId, setActingId] = useState<string | null>(null)
 
   const isAdmin = user?.role === "admin"
@@ -49,7 +53,10 @@ export default function DemoRequestsPage() {
       throw new Error("Session expired. Sign in again.")
     }
 
-    const params = new URLSearchParams()
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(DEMO_REQUESTS_PAGE_SIZE),
+    })
     if (statusFilter !== "all") params.set("status", statusFilter)
 
     const res = await fetch(`/api/admin/demo-requests?${params.toString()}`, {
@@ -60,9 +67,13 @@ export default function DemoRequestsPage() {
       throw new Error("Failed to load demo requests.")
     }
 
-    const data = (await res.json()) as { items: DemoAccessRequestDto[] }
+    const data = (await res.json()) as {
+      items: DemoAccessRequestDto[]
+      total: number
+    }
     setItems(data.items)
-  }, [statusFilter])
+    setTotal(data.total)
+  }, [page, statusFilter])
 
   useEffect(() => {
     if (!isAdmin) {
@@ -167,7 +178,10 @@ export default function DemoRequestsPage() {
           <button
             key={opt.value}
             type="button"
-            onClick={() => setStatusFilter(opt.value)}
+            onClick={() => {
+              setPage(1)
+              setStatusFilter(opt.value)
+            }}
             className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
               statusFilter === opt.value
                 ? "bg-dark-950 text-white"
@@ -193,6 +207,14 @@ export default function DemoRequestsPage() {
           emptyMessage={emptyMessage}
           onApprove={(id) => void runAction(id, "approve")}
           onReject={(id) => void runAction(id, "reject")}
+          footer={
+            <ListPagination
+              currentPage={page}
+              totalItems={total}
+              pageSize={DEMO_REQUESTS_PAGE_SIZE}
+              onPageChange={setPage}
+            />
+          }
         />
       )}
     </div>

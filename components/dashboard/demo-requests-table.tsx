@@ -1,5 +1,6 @@
 "use client"
 
+import type { ReactNode } from "react"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { DemoAccessRequestDto, DemoAccessRequestStatus } from "@/lib/demo-access/types"
 import { formatLocalDateTime } from "@/lib/datetime"
@@ -95,12 +96,14 @@ export function DemoRequestsTable({
   emptyMessage,
   onApprove,
   onReject,
+  footer,
 }: {
   items: DemoAccessRequestDto[]
   actingId: string | null
   emptyMessage: string
   onApprove: (id: string) => void
   onReject: (id: string) => void
+  footer?: ReactNode
 }) {
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card">
@@ -187,6 +190,7 @@ export function DemoRequestsTable({
           </tbody>
         </table>
       </div>
+      {footer}
     </div>
   )
 }
